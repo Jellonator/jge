@@ -71,6 +71,9 @@ function Node:update(dt)
 	for i, c in pairs(self.components) do
 		c:on_update(self, dt);
 	end
+	for i, node in pairs(self.children) do
+		node:update(dt)
+	end
 end
 
 function Node:draw()
