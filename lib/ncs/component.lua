@@ -7,6 +7,9 @@ local function function_empty() end
 
 function Component.register_component(name, t)
 	local self = Component;
+	if self.components[name] then
+		error(("A component named %s already exists!"):format(name))
+	end
 	self.components[name] = t
 	-- warn for components not implementing serialization
 	if not t.on_serialize or not t.on_loadstring then

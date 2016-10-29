@@ -12,9 +12,6 @@ inputmanager:add_event("rotr",  lib.Input.IMatch(EVENTTYPE.keyboard, "e"))
 inputmanager:override_love();
 
 local prefab = lib.ncs.Prefab({
-	x = 80, y = 80, -- at (80, 80)
-	scalex = 2, scaley = 2, -- scaled by 2
-	rotation = 0, -- no rotation
 	children = {
 		{ -- One child named `foo`
 			name="foo",
@@ -54,11 +51,19 @@ local prefab = lib.ncs.Prefab({
 });
 
 root = lib.ncs.Node();
+tree = root:add_child("tree")
+tree:add_component("camera", 400*2, 224*2)
 
 function love.load(arg)
-	root:add_child("a", prefab:instance(100, 100));
-	root:add_child("b", prefab:instance(500, 120));
-	root:add_child("c", prefab:instance(250, 200));
+	for ix = -800, 800, 40 do
+		for iy = -448, 448, 56 do
+			tree:add_child(("%i_%i"):format(ix, iy), prefab:instance(ix, iy));
+
+		end
+	end
+	-- tree:add_child("a", prefab:instance(-200, -100));
+	-- tree:add_child("b", prefab:instance( 200, -100));
+	-- tree:add_child("c", prefab:instance(   0,  200));
 	-- node = lib.ncs.Node(100, 100);
 	-- -- node:add_component("drawable_rect", "fill");
 	-- node.transform:scale(2, 1);
