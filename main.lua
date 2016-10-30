@@ -11,7 +11,7 @@ inputmanager:override_love();
 
 root = lib.ncs.Node();
 tree = root:add_child("tree")
-tree:add_component("camera", 400, 224)
+local camera = tree:add_component("camera", 400, 224)
 
 local player_script = {}
 function player_script:on_init(node)end
@@ -47,6 +47,13 @@ function player_script:on_update(node, dt)
 		node:get_component("animation"):play()
 	end
 	node.transform:translate(dx, dy)
+
+	-- local x,y = love.mouse.getPosition()
+	local x, y = camera.camera:mousePosition();
+	x, y = node:transform_point_inv(x,y)
+	local pt = node:get_component("drawable_circle")
+	pt.x = x
+	pt.y = y
 end
 
 function love.load(arg)
@@ -56,7 +63,7 @@ function love.load(arg)
 		{ 0, 16, 16, 16}, {16, 16, 16, 16}, {32, 16, 16, 16},
 		{ 0, 32, 16, 16}, {16, 32, 16, 16}, {32, 32, 16, 16},
 		{ 0, 48, 16, 16}, {16, 48, 16, 16}, {32, 48, 16, 16},
-		}, nil, 0, 0, 0, 1, 1, 16, 16);
+	}, nil, 0, 0, 0, 1, 1, 8, 8);
 	n:add_component("animation", {
 		down  = {{1,{sprite= 1}}, {1,{sprite= 2}}, {1,{sprite= 3}}, {1,{sprite= 2}}},
 		left  = {{1,{sprite= 4}}, {1,{sprite= 5}}, {1,{sprite= 6}}, {1,{sprite= 5}}},
@@ -66,6 +73,7 @@ function love.load(arg)
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
 	n:add_component("script", player_script)
+	n:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
 end
 
 function love.update(dt)

@@ -57,6 +57,7 @@ end
 function Transform:transform(x, y)
 	x = x * self.scalex;
 	y = y * self.scaley;
+
 	if self.rotation ~= 0 then
 		local len = math.sqrt(x*x + y*y)
 		local rot = math.atan2(y, x) + self.rotation;
@@ -66,6 +67,23 @@ function Transform:transform(x, y)
 
 	x = x + self.x
 	y = y + self.y
+
+	return x, y
+end
+
+function Transform:transform_inv(x, y)
+	x = x - self.x
+	y = y - self.y
+
+	if self.rotation ~= 0 then
+		local len = math.sqrt(x*x + y*y)
+		local rot = math.atan2(y, x) + self.rotation;
+		x = math.cos(-rot)*len
+		y = math.sin(-rot)*len
+	end
+
+	x = x / self.scalex;
+	y = y / self.scaley;
 
 	return x, y
 end

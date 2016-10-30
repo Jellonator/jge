@@ -21,11 +21,20 @@ function Node.new(x, y)
 end
 
 -- Transform functions
-function Node:transform_point(x, y)
+function Node:transform_point(x, y) -- local -> global
 	if self._parent then
 		return self._parent:transform_point(self.transform:transform(x, y))
 	else
 		return self.transform:transform(x, y);
+	end
+end
+
+function Node:transform_point_inv(x, y) -- global -> local
+	if self._parent then
+		return self.transform:transform_inv(
+			self._parent:transform_point_inv(x, y));
+	else
+		return self.transform:transform_inv(x, y);
 	end
 end
 

@@ -39,6 +39,26 @@ function DrawableRect:on_draw(node)
 end
 lib.ncs.Component.register_component("drawable_rectangle", DrawableRect);
 
+local DrawableCircle = {
+	mode = "fill",
+	x = 0,
+	y = 0,
+	radius = 10,
+	color = {255, 255, 255, 255}
+}
+function DrawableCircle:on_init(node, mode, x, y, radius, color)
+	self.mode = mode or self.mode
+	self.x = x or self.x
+	self.y = y or self.y
+	self.radius = radius or self.radius
+	self.color = color or {unpack(self.color)}
+end
+function DrawableCircle:on_draw(node)
+	love.graphics.setColor(self.color);
+	love.graphics.circle(self.mode, self.x, self.y, self.radius)
+end
+lib.ncs.Component.register_component("drawable_circle", DrawableCircle);
+
 -- An image or drawable
 local Drawable = {
 	drawable = nil,
