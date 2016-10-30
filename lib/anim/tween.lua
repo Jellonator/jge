@@ -9,7 +9,10 @@ values = {
 }
 Possible metadata:
 wraparound - whether interpolation should occur when looping back around
-interpolation
+interpolation - cubic, linear, or none
+object - table to modify value of
+key - key of the value in the table to modify
+func - call a function instead of modifying a function
 --]]
 local _defaultmeta = {
 	rot = {wraparound = false},
@@ -18,19 +21,23 @@ local _defaultmeta = {
 	rotation = {wraparound = false},
 	_default = {
 		wraparound = true,
-		interpolation = "linear"
+		interpolation = "none"
 	}
 }
 
-function Tween.new(object, values, meta)
-	return setmetatable({
+function Tween.new(object, values, meta, speed)
+	local self = setmetatable({
 		object = object,
 		values = values,
 		meta = meta or {},
 		i = 1,
 		t = 0,
-		_i_am_a_tween = true
+		_i_am_a_tween = true,
+		recall_functions = true,
+		speed = speed or 1
 	}, Tween)
+
+	return self
 end
 
 function Tween:get_current()
@@ -105,7 +112,8 @@ function Tween:_apply()
 		local value;
 		if is_interpolated and nextvals[k] and type(v) == "number"
 		and type(nextvals[k]) == "number"
-		and (not at_end or self:get_meta(k, "wraparound")) then
+		and (not at_end or self:get_meta(k, "wraparound"))
+		and (not is_cubic or (nextnextvals[k] and prevvals[k])) then
 			if is_cubic then
 				local p0 = v
 				local p1 = nextvals[k]
@@ -134,21 +142,36 @@ function Tween:_apply()
 		end
 
 		if func then
-			func(object, value)
+			if self.recall_functions or is_interpolated then
+				if type(func) == "function" then
+					func(object, value)
+				else
+					object[func](object, value)
+				end
+			end
 		else
 			object[self:get_meta(k, "key") or k] = value
 		end
 	end
+	self.recall_functions = false
+end
+
+function Tween:reset()
+	self.t = 0
+	self.i = 1
+	self.recall_functions = true
+	self:_apply()
 end
 
 function Tween:step(dt)
-	self.t = self.t + dt;
+	self.t = self.t + dt*self.speed
 	while self.t >= self.values[self.i][1] do
 		self.t = self.t - self.values[self.i][1];
 		self.i = self.i + 1;
 		if self.i > #self.values then
 			self.i = 1
 		end
+		self.recall_functions = true
 	end
 	self:_apply();
 end

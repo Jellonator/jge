@@ -98,6 +98,9 @@ function Node:get_parent_with_component(cname, canretself)
 end
 
 function Node:add_child(name, child)
+	if name == nil or type(name) == "table" then
+		return self:add_child(#self.children+1, name)
+	end
 	if not child then
 		child = Node()
 	end
@@ -156,6 +159,7 @@ function Node:add_component(name, ...)
 	end
 	self.components_named[name] = c;
 	c:on_init(self, ...);
+	return c
 end
 
 return setmetatable(Node, {
