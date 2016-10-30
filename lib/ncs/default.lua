@@ -36,19 +36,60 @@ function DrawableRect:on_draw(node)
 	love.graphics.setColor(self.color);
 	love.graphics.rectangle(self.mode, self.x1, self.y1,
 		self.x2 - self.x1, self.y2 - self.y1)
-	--
-	-- love.graphics.push()
-	-- love.graphics.origin();
-	-- local x1, y1, x2, y2 = self.x1, self.y1, self.x2, self.y2
-	-- local x3, y3 = node:transform_point(x1, y2);
-	-- local x4, y4 = node:transform_point(x2, y1);
-	-- x1, y1 = node:transform_point(x1, y1);
-	-- x2, y2 = node:transform_point(x2, y2);
-	-- love.graphics.setColor(100, 255, 0, 255);
-	-- love.graphics.polygon("line", x1,y1, x4,y4, x2,y2, x3,y3);
-	-- love.graphics.pop();
 end
-lib.ncs.Component.register_component("drawable_rect", DrawableRect);
+lib.ncs.Component.register_component("drawable_rectangle", DrawableRect);
+
+-- An image or drawable
+local Drawable = {
+	drawable = nil,
+	x = 0,
+	y = 0,
+	rot = 0,
+	sx = 1,
+	sy = 1,
+	ox = 0,
+	oy = 0,
+	kx = 0,
+	ky = 0
+}
+function Drawable:on_init(node, drawable, x, y, r, sx, sy, ox, oy, kx, ky)
+	self.drawable = drawable
+	self.x = x or self.x
+	self.y = y or self.y
+	self.rot = r or self.rot
+	self.sx = sx or self.sx
+	self.sy = sy or self.sy
+	self.ox = ox or self.ox
+	self.oy = oy or self.oy
+	self.kx = kx or self.kx
+	self.ky = ky or self.ky
+end
+function Drawable:on_draw(node)
+	love.graphics.draw(self.drawable, self.x, self.y, self.rot,
+		self.sx, self.sy, self.ox, self.oy, self.kx, self.ky);
+end
+
+-- Tweens
+local Tween = {
+	tween = nil
+}
+function Tween:on_init(node, values, meta)
+	if values.i_am_a_tween then
+		self.tween = values
+		return
+	end
+	for k,v in pairs(meta) do
+		v.object = v.node and node:get_node(v.node) or v.object or node
+		if v.component then
+			v.object = v.object:get_component(v.component)
+		end
+	end
+	self.tween = lib.anim.Tween(node, values, meta)
+end
+function Tween:on_update(node, dt)
+	self.tween:update(dt);
+end
+lib.ncs.Component.register_component("tween", Tween)
 
 -- A camera
 local Camera = {
@@ -106,5 +147,4 @@ function Camera:post_draw(node)
 	self.camera:detach();
 	love.graphics.setScissor();
 end
-
 lib.ncs.Component.register_component("camera", Camera);

@@ -43,7 +43,15 @@ end
 function Transform:set_translation(x, y)
 	self.x = x
 	self.y = y
-	self._id = self_id + 1
+	self._id = self._id + 1
+end
+
+function Transform:set_x(x)
+	self:set_translation(x, self.y)
+end
+
+function Transform:set_y(y)
+	self:set_translation(self.x, y)
 end
 
 function Transform:transform(x, y)

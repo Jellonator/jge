@@ -20,7 +20,6 @@ function string.split(s)
 end
 
 return {
-	hc    = reqlocal("HC"),
 	vec   = reqlocal("hump.vector"),
 	vlt   = reqlocal("hump.vector-light"),
 	hcam  = reqlocal("hump.camera"),
@@ -28,5 +27,6 @@ return {
 	tiled = reqlocal("tiled"),
 	ncs   = reqlocal("ncs"),
 	Input = reqlocal("input"),
+	anim  = reqlocal("anim"),
 	Transform = reqlocal("transform"),
 }

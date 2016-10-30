@@ -13,10 +13,12 @@ EVENTTYPE = {
 	]]
 }
 
+local NAME = ...
+
 local ret = {
-    Event = require("lib.input.event"),
-    IMatch = require("lib.input.match"),
-    Manager = require("lib.input.manager"),
+	Event = require(NAME .. ".event"),
+	IMatch = require(NAME .. ".match"),
+	Manager = require(NAME .. ".manager"),
 }
 
 return ret

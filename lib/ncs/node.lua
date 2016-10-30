@@ -12,8 +12,6 @@ function Node.new(x, y)
 		-- be lazily evaluated for efficiency
 		_cache_x = x or 0,
 		_cache_y = y or 0,
-		_cache_scalex = 1,
-		_cache_scaley = 1,
 		_cache_rotation = 0,
 		-- incremental IDs that correspond to '_id' in 'transform'
 		-- If IDs are different, then caches need to be recalculated
@@ -22,6 +20,7 @@ function Node.new(x, y)
 	}, Node);
 end
 
+-- Transform functions
 function Node:transform_point(x, y)
 	if self._parent then
 		return self._parent:transform_point(self.transform:transform(x, y))
@@ -38,14 +37,9 @@ function Node:_recalculate()
 			self._parent_id = self._parent.transform._id;
 
 			local prot = self._parent:getrot()
-			local psx, psy = self._parent:getscale();
 			self._cache_rotation = prot + self.transform.rotation;
-			self._cache_scalex, self._cache_scaley =
-				psx*self.transform.scalex, psy*self.transform.scaley
 		else
 			self._cache_rotation = self.transform.rotation;
-			self._cache_scalex, self._cache_scaley =
-				self.transform.scalex, self.transform.scaley
 		end
 		self._cache_x, self._cache_y = self:transform_point(0, 0);
 	end
@@ -59,11 +53,6 @@ end
 function Node:getrot()
 	self:_recalculate();
 	return self._cache_rotation;
-end
-
-function Node:getscale()
-	self:_recalculate();
-	return self._cache_scalex, self._cache_scaley;
 end
 
 -- Regular functions
@@ -90,7 +79,24 @@ function Node:draw()
 	self.transform:draw_pop();
 end
 
--- Children functions
+-- Children/parent functions
+function Node:get_root()
+	if self._parent then
+		return self._parent:get_root()
+	else
+		return self
+	end
+end
+
+function Node:get_parent_with_component(cname, canretself)
+	local c = self:get_component(cname);
+	if canretself == true and c then
+		return self, c
+	elseif self._parent then
+		return self._parent:get_parent_with_component(cname, true);
+	end
+end
+
 function Node:add_child(name, child)
 	if not child then
 		child = Node()
@@ -111,11 +117,14 @@ function Node:remove_child(child)
 	end
 end
 
-function Node:get_child(name)
+function Node:get_node(name)
+	if name == ".." then return self._parent end
+	if name == "." then return self end
 	local pos_s, pos_e = name:find('/');
 	if pos_s then
-		local c = self:get_child(name:sub(1,pos_s-1));
-		return c:get_child(name:sub(pos_e+1))
+		local pre, post = name:sub(1,pos_s-1), name:sub(pos_e+1);
+		local c = pre == "" and self:get_root() or self:get_child(pre);
+		return c:get_child(post)
 	else
 		return self.children[name]
 	end
