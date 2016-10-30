@@ -60,7 +60,8 @@ end]]
 
 function IMatch.new(event_type, ...)
 	local self = setmetatable({
-		event_type = event_type or EVENTTYPE.null
+		event_type = event_type or EVENTTYPE.null,
+		is_down = false
 	}, IMatch);
 
 	if event_type == EVENTTYPE.keyboard then
@@ -92,20 +93,28 @@ function IMatch:match(event)
 			local diffy = self.y - event.y
 			local radius = self.radius
 			if not (diffx*diffx + diffy*diffy < radius*radius) then
+				self.is_down = false
 				return false
 			end
 		else
 			if not (event.x >= self.x1 and event.x <= self.x2
 			and event.y >= self.y1 and event.y <= self.y2) then
+				self.is_down = false
 				return false
 			end
 		end
 	end
 	if self.event_type == EVENTTYPE.keyboard then
+		if self.keycode == event.keycode and not event.is_repeat then
+			self.is_down = self.release == event.release
+		end
 		return self.keycode == event.keycode and self.release == event.release
 		and (self.allow_repeat or not event.is_repeat)
 
 	elseif self.event_type == EVENTTYPE.mousebutton then
+		if self.button == event.button then
+			self.is_down = self.release == event.release
+		end
 		return self.button == event.button and self.release == event.release
 
 	elseif self.event_type == EVENTTYPE.mousewheel then
@@ -115,6 +124,7 @@ function IMatch:match(event)
 		or     self.wheel == WHEELDIR.down  and event.y < 0
 
 	elseif self.event_type == EVENTTYPE.mousemove then
+		self.is_down = true
 		return true
 	end
 

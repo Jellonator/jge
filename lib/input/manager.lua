@@ -8,6 +8,12 @@ function Manager.new()
 	return self
 end
 
+function Manager:get_event(name)
+	local ev = self.events[name]
+	if not ev then return false end
+	return ev.is_down
+end
+
 function Manager:add_event(name, imatch)
 	self.events[name] = imatch
 end

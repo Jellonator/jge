@@ -192,6 +192,7 @@ function Animation:on_init(node, tweens, meta, speed)
 	end
 end
 function Animation:play(name, doreset)
+	self.playing = true
 	local doreset = try_or(doreset, false)
 	if name == self.current and doreset == false then
 		return
@@ -203,7 +204,6 @@ function Animation:play(name, doreset)
 			tween:reset()
 		end
 	end
-	self.playing = true
 end
 function Animation:pause()
 	self.playing = false
