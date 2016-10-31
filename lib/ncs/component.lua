@@ -1,7 +1,6 @@
 local Component = {
 	components = {}
 }
-local has_first_instance = false;
 
 local function function_empty() end
 
@@ -46,20 +45,12 @@ function Component.register_component(name, t)
 	t.__index = t;
 end
 
-local function _instance(name)
+function Component.instance(name)
 	local self = Component;
 	if not self.components[name] then
 		error(("No such component of name %s!"):format(name))
 	end
 	return setmetatable({}, self.components[name])
-end
-
-function Component.instance(name)
-	local self = Component;
-	-- loads default components on first instance
-	require("lib.ncs.default");
-	self.instance = _instance;
-	return _instance(name);
 end
 
 return Component;

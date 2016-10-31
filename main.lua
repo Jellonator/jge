@@ -50,8 +50,9 @@ function player_script:on_update(node, dt)
 
 	-- local x,y = love.mouse.getPosition()
 	local x, y = camera.camera:mousePosition();
-	x, y = node:transform_point_inv(x,y)
 	local pt = node:get_component("drawable_circle")
+	pt.color[1] = node:get_component("shape"):contains_point(node, x, y) and 255 or 0
+	x, y = node:transform_point_inv(x,y)
 	pt.x = x
 	pt.y = y
 end
@@ -72,6 +73,8 @@ function love.load(arg)
 	}, {
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
+	print(lib.Shape.new_polygon)
+	n:add_component("shape", lib.Shape.new_polygon(-12,-12, 12,-12, 12,12, -12,12, 4,0));
 	n:add_component("script", player_script)
 	n:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
 end
@@ -84,6 +87,7 @@ function love.draw()
 	root:draw(dt);
 	love.graphics.setColor(255, 0, 0);
 	love.graphics.print(("FPS: %.2f"):format(love.timer.getFPS()))
+	-- love.graphics.polygon("fill", 100,100, 400,200, 300,300)
 end
 
 function love.quit()

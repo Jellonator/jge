@@ -6,4 +6,8 @@ local ncs = {
 	Prefab    = require(NAME .. ".prefab")
 }
 
+register_component = ncs.Component.register_component;
+require(NAME .. ".default");
+register_component = nil
+
 return ncs;

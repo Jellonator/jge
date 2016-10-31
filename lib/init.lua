@@ -19,6 +19,12 @@ function string.split(s)
 	return s:gmatch("[^%s]")
 end
 
+function math.sign(x)
+	if x == 0 then return 0
+	elseif x > 0 then return 1
+	else return -1 end
+end
+
 return {
 	vec   = reqlocal("hump.vector"),
 	vlt   = reqlocal("hump.vector-light"),
@@ -26,7 +32,8 @@ return {
 	jlle  = reqlocal("jlle"),
 	tiled = reqlocal("tiled"),
 	ncs   = reqlocal("ncs"),
-	Input = reqlocal("input"),
 	anim  = reqlocal("anim"),
+	Input = reqlocal("input"),
 	Transform = reqlocal("transform"),
+	Shape = reqlocal("shape")
 }
