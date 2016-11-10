@@ -74,8 +74,6 @@ function love.load(arg)
 	}, {
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
-	-- n:add_component("shape", lib.Shape.new_circle(4,4, 16));
-	-- n:add_component("shape", lib.Shape.new_polygon(0,0, 0,10, 10,4, 10,-4, 0,-10, -1,-10, -10,4));
 	n:add_component("script", player_script)
 	n:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
 	n:add_component("collisionbody", "rectangle", -8,-8,16,16)

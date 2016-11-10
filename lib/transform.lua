@@ -1,6 +1,7 @@
 local Transform = {}
 Transform.__index = Transform;
 
+-- A more-sane way to transform points
 function Transform.new(x, y)
 	return setmetatable({
 		x = x or 0,
@@ -20,7 +21,7 @@ end
 
 function Transform:scale(sx, sy)
 	self.scalex = self.scalex * sx;
-	self.scaley = self.scaley * sy;
+	self.scaley = self.scaley * (sy or sx);
 	self._id = self._id + 1;
 end
 
@@ -122,16 +123,16 @@ end
 
 function Transform:get_mat()
 	return lib.Matrix3()
-		:scale(self.scalex, self.scaley)
-		:rotate(self.rotation)
 		:translate(self.x, self.y)
+		:rotate(self.rotation)
+		:scale(self.scalex, self.scaley)
 end
 
 function Transform:get_mat_inv()
 	return lib.Matrix3()
-		:translate(-self.x, -self.y)
-		:rotate(-self.rotation)
 		:scale(1/self.scalex, 1/self.scaley)
+		:rotate(-self.rotation)
+		:translate(-self.x, -self.y)
 end
 
 return setmetatable(Transform, {

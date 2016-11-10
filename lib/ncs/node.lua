@@ -31,7 +31,7 @@ end
 
 function Node:get_mat_inv()
 	if self._parent then
-		return  self.transform:get_mat_inv() * self._parent:get_mat_inv()
+		return self.transform:get_mat_inv() * self._parent:get_mat_inv()
 	else
 		return self.transform:get_mat_inv()
 	end

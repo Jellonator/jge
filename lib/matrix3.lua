@@ -1,5 +1,11 @@
 local Matrix3 = {}
 Matrix3.__index = Matrix3;
+function Matrix3:__tostring()
+	return
+	([=[[%.2f, %.2f, %.2f,
+ %.2f, %.2f, %.2f,
+ %.2f, %.2f, %.2f]]=]):format(unpack(self))
+end
 
 local default_mat = {1,0,0, 0,1,0, 0,0,1}
 function Matrix3.new(...)
@@ -45,6 +51,8 @@ function Matrix3:inverse()
 	for i = 1,9 do
 		self[i] = self[i] / det
 	end
+
+	return self
 end
 
 function Matrix3:transform_point(x, y, w)
