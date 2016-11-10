@@ -7,6 +7,7 @@ function Node.new(x, y)
 		components = {},
 		components_named = {},
 		children = {},
+		_i_am_a_node = true,
 		_parent = nil,
 		-- A system of caches so that positions can
 		-- be lazily evaluated for efficiency
@@ -15,42 +16,68 @@ function Node.new(x, y)
 		_cache_rotation = 0,
 		-- incremental IDs that correspond to '_id' in 'transform'
 		-- If IDs are different, then caches need to be recalculated
-		_parent_id = -1, -- Parent's transform's '_id'
 		_self_id = -1 -- Own transform's '_id'
 	}, Node);
 end
 
+-- Matrix functions
+function Node:get_mat()
+	if self._parent then
+		return self._parent:get_mat() * self.transform:get_mat()
+	else
+		return self.transform:get_mat()
+	end
+end
+
+function Node:get_mat_inv()
+	if self._parent then
+		return  self.transform:get_mat_inv() * self._parent:get_mat_inv()
+	else
+		return self.transform:get_mat_inv()
+	end
+end
+
 -- Transform functions
 function Node:transform_point(x, y) -- local -> global
-	if self._parent then
-		return self._parent:transform_point(self.transform:transform(x, y))
-	else
-		return self.transform:transform(x, y);
-	end
+	local mat = self:get_mat()
+	return mat:transform_point(x, y)
+	-- if self._parent then
+	-- 	return self._parent:transform_point(self.transform:transform(x, y))
+	-- else
+	-- 	return self.transform:transform(x, y);
+	-- end
 end
 
 function Node:transform_point_inv(x, y) -- global -> local
-	if self._parent then
-		return self.transform:transform_inv(
-			self._parent:transform_point_inv(x, y));
-	else
-		return self.transform:transform_inv(x, y);
-	end
+	local mat = self:get_mat_inv();
+	return mat:transform_point(x, y)
+	-- print(x, y)
+	-- if self._parent then
+	-- 	return self.transform:transform_inv(
+	-- 		self._parent:transform_point_inv(x, y));
+	-- else
+	-- 	return self.transform:transform_inv(x, y);
+	-- end
 end
 
 function Node:_recalculate()
-	if (self._self_id ~= self.transform._id) or
-	(self._parent and (self._parent_id ~= self._parent.transform._id)) then
+	if self._self_id ~= self.transform._id  then
 		self._self_id = self.transform._id;
 		if self._parent then
-			self._parent_id = self._parent.transform._id;
-
 			local prot = self._parent:getrot()
 			self._cache_rotation = prot + self.transform.rotation;
 		else
 			self._cache_rotation = self.transform.rotation;
 		end
 		self._cache_x, self._cache_y = self:transform_point(0, 0);
+
+		-- callback for components and nodes
+		for i, c in pairs(self.components) do
+			c:on_transform(self.transform);
+		end
+		for i, node in pairs(self.children) do
+			node:_recalculate()
+		end
 	end
 end
 
@@ -66,8 +93,9 @@ end
 
 -- Regular functions
 function Node:update(dt)
+	self:_recalculate();
 	for i, c in pairs(self.components) do
-		c:on_update(self, dt);
+		c:on_update(dt);
 	end
 	for i, node in pairs(self.children) do
 		node:update(dt)
@@ -77,13 +105,13 @@ end
 function Node:draw()
 	self.transform:draw_push();
 	for i, c in pairs(self.components) do
-		c:on_draw(self);
+		c:on_draw();
 	end
 	for i, node in pairs(self.children) do
 		node:draw();
 	end
 	for i, c in pairs(self.components) do
-		c:post_draw(self);
+		c:post_draw();
 	end
 	self.transform:draw_pop();
 end
@@ -167,7 +195,8 @@ function Node:add_component(name, ...)
 		table.insert(self.components, c);
 	end
 	self.components_named[name] = c;
-	c:on_init(self, ...);
+	c.node = self;
+	c:on_init(...);
 	return c
 end
 

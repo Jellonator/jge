@@ -34,6 +34,7 @@ function Component.register_component(name, t)
 	t.post_draw = t.post_draw or function_empty;
 	t.on_input  = t.on_input  or function_empty;
 	t.on_init   = t.on_init   or function_empty;
+	t.on_transform  = t.on_transform  or function_empty;
 	t.on_serialize  = t.on_serialize  or function_empty;
 	t.on_loadstring = t.on_loadstring or function_empty;
 

@@ -8,7 +8,7 @@ local DrawableRect = {
 	y2 =  10,
 	_depends = {"position"}
 }
-function DrawableRect:on_init(node, mode, x1, y1, x2, y2, color)
+function DrawableRect:on_init(mode, x1, y1, x2, y2, color)
 	self.x1 = x1 or self.x1;
 	self.y1 = y1 or self.y1;
 	self.x2 = x2 or self.x2;
@@ -16,7 +16,7 @@ function DrawableRect:on_init(node, mode, x1, y1, x2, y2, color)
 	self.mode = mode or mode;
 	self.color = color or {unpack(self.color)};
 end
-function DrawableRect:on_draw(node)
+function DrawableRect:on_draw()
 	-- local x, y = node:getpos();
 	love.graphics.setColor(self.color);
 	love.graphics.rectangle(self.mode, self.x1, self.y1,
@@ -31,14 +31,14 @@ local DrawableCircle = {
 	radius = 10,
 	color = {255, 255, 255, 255}
 }
-function DrawableCircle:on_init(node, mode, x, y, radius, color)
+function DrawableCircle:on_init(mode, x, y, radius, color)
 	self.mode = mode or self.mode
 	self.x = x or self.x
 	self.y = y or self.y
 	self.radius = radius or self.radius
 	self.color = color or {unpack(self.color)}
 end
-function DrawableCircle:on_draw(node)
+function DrawableCircle:on_draw()
 	love.graphics.setColor(self.color);
 	love.graphics.circle(self.mode, self.x, self.y, self.radius)
 end
@@ -57,7 +57,7 @@ local Drawable = {
 	kx = 0,
 	ky = 0
 }
-function Drawable:on_init(node, drawable, x, y, r, sx, sy, ox, oy, kx, ky)
+function Drawable:on_init(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
 	self.drawable = drawable
 	self.x = x or self.x
 	self.y = y or self.y
@@ -69,7 +69,7 @@ function Drawable:on_init(node, drawable, x, y, r, sx, sy, ox, oy, kx, ky)
 	self.kx = kx or self.kx
 	self.ky = ky or self.ky
 end
-function Drawable:on_draw(node)
+function Drawable:on_draw()
 	love.graphics.draw(self.drawable, self.x, self.y, self.rot,
 		self.sx, self.sy, self.ox, self.oy, self.kx, self.ky);
 end
@@ -91,7 +91,7 @@ local Spritemap = {
 	kx = 0,
 	ky = 0
 }
-function Spritemap:on_init(node, texture, sprites, current,
+function Spritemap:on_init(texture, sprites, current,
 x, y, r, sx, sy, ox, oy, kx, ky)
 	self.quads = {}
 	self.texture = texture

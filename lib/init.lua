@@ -25,7 +25,7 @@ function math.sign(x)
 	else return -1 end
 end
 
-return {
+local Lib = {
 	vec   = reqlocal("hump.vector"),
 	vlt   = reqlocal("hump.vector-light"),
 	hcam  = reqlocal("hump.camera"),
@@ -35,5 +35,14 @@ return {
 	anim  = reqlocal("anim"),
 	Input = reqlocal("input"),
 	Transform = reqlocal("transform"),
-	Shape = reqlocal("shape")
+	Matrix3 = reqlocal("matrix3"),
+	Shape = reqlocal("shape"),
+	HC = reqlocal("HC")
 }
+
+function Lib.bind(f, x, ...)
+	if not x then return f end
+	return Lib.bind(function(...) return f(x, ...) end, ...)
+end
+
+return Lib

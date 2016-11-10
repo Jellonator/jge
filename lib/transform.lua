@@ -88,6 +88,18 @@ function Transform:transform_inv(x, y)
 	return x, y
 end
 
+function Transform:transform_shape(shape)
+	shape:scale(self.scalex, self.scaley)
+	shape:rotate(self.rotation)
+	shape:move(self.x, self.y)
+end
+
+function Transform:transform_shape_inv(shape)
+	shape:move(-self.x, -self.y)
+	shape:rotate(-self.rotation)
+	shape:scale(1/self.scalex, 1/self.scaley)
+end
+
 function Transform:draw_push()
 	love.graphics.push()
 	love.graphics.translate(self.x, self.y)
@@ -97,6 +109,29 @@ end
 
 function Transform:draw_pop()
 	love.graphics.pop()
+end
+
+function Transform:copy(other)
+	self.x = other.x;
+	self.y = other.y;
+	self.scalex = other.scalex;
+	self.scaley = other.scaley;
+	self.rotation = other.rotation;
+	self._id = self._id + 1;
+end
+
+function Transform:get_mat()
+	return lib.Matrix3()
+		:scale(self.scalex, self.scaley)
+		:rotate(self.rotation)
+		:translate(self.x, self.y)
+end
+
+function Transform:get_mat_inv()
+	return lib.Matrix3()
+		:translate(-self.x, -self.y)
+		:rotate(-self.rotation)
+		:scale(1/self.scalex, 1/self.scaley)
 end
 
 return setmetatable(Transform, {

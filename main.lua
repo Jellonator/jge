@@ -12,10 +12,11 @@ inputmanager:override_love();
 root = lib.ncs.Node();
 tree = root:add_child("tree")
 local camera = tree:add_component("camera", 400, 224)
+tree:add_component("collisionworld");
 
 local player_script = {}
-function player_script:on_init(node)end
-function player_script:on_update(node, dt)
+function player_script:on_init()end
+function player_script:on_update(dt)
 	local up    = inputmanager:get_event("up");
 	local left  = inputmanager:get_event("left");
 	local right = inputmanager:get_event("right");
@@ -33,26 +34,26 @@ function player_script:on_update(node, dt)
 	dx = dx * 64 * dt
 	dy = dy * 64 * dt
 	if up and not down then
-		node:get_component("animation"):play("up")
+		self.node:get_component("animation"):play("up")
 	elseif left and not right then
-		node:get_component("animation"):play("left")
+		self.node:get_component("animation"):play("left")
 	elseif right and not left then
-		node:get_component("animation"):play("right")
+		self.node:get_component("animation"):play("right")
 	elseif down and not up then
-		node:get_component("animation"):play("down")
+		self.node:get_component("animation"):play("down")
 	end
 	if dx == 0 and dy == 0 then
-		node:get_component("animation"):pause()
+		self.node:get_component("animation"):pause()
 	else
-		node:get_component("animation"):play()
+		self.node:get_component("animation"):play()
 	end
-	node.transform:translate(dx, dy)
+	self.node.transform:translate(dx, dy)
 
 	-- local x,y = love.mouse.getPosition()
 	local x, y = camera.camera:mousePosition();
-	local pt = node:get_component("drawable_circle")
-	pt.color[1] = node:get_component("shape"):contains_point(node, x, y) and 255 or 0
-	x, y = node:transform_point_inv(x,y)
+	local pt = self.node:get_component("drawable_circle")
+	-- pt.color[1] = self.node:get_component("shape"):contains_point(self.node, x, y) and 255 or 0
+	x, y = self.node:transform_point_inv(x,y)
 	pt.x = x
 	pt.y = y
 end
@@ -73,10 +74,11 @@ function love.load(arg)
 	}, {
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
-	print(lib.Shape.new_polygon)
-	n:add_component("shape", lib.Shape.new_polygon(-12,-12, 12,-12, 12,12, -12,12, 4,0));
+	-- n:add_component("shape", lib.Shape.new_circle(4,4, 16));
+	-- n:add_component("shape", lib.Shape.new_polygon(0,0, 0,10, 10,4, 10,-4, 0,-10, -1,-10, -10,4));
 	n:add_component("script", player_script)
 	n:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
+	n:add_component("collisionbody", "rectangle", -8,-8,16,16)
 end
 
 function love.update(dt)

@@ -33,12 +33,12 @@ end
 function Camera:zoomBy(val)
 	self:set_zoom(self.zoom*val)
 end
-function Camera:on_init(node, width, height)
+function Camera:on_init(width, height)
 	self.width = width or self.width
 	self.height = height or self.height
 	self.camera = lib.hcam(0, 0)
 end
-function Camera:on_draw(node)
+function Camera:on_draw()
 	local window_width, window_height = love.graphics.getDimensions()
 	local window_scale = math.min(
 		window_width/self.width, window_height/self.height)
@@ -50,7 +50,7 @@ function Camera:on_draw(node)
 		(window_scale*self.height - window_height) * -0.5,
 		self.width*window_scale, self.height*window_scale);
 end
-function Camera:post_draw(node)
+function Camera:post_draw()
 	self.camera:detach();
 	love.graphics.setScissor();
 end
