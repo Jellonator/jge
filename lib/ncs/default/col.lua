@@ -12,6 +12,7 @@ end
 
 function Body:_move_node(x, y)
 	self.node.transform:translate(x, y);
+	self.pmat:translate(-x, -y)
 end
 
 --[[ MOVEMENT FUNCTIONS ]]
@@ -34,11 +35,8 @@ function Body:move_try(x, y, can_resolve)
 		if sx ~= 0 or sy ~= 0 then
 			cx, cy = lib.vlt.project(x,y, lib.vlt.perpendicular(sx,sy))
 		end
-		-- self.shape:move(-x, -y);
 		if can_resolve then
-			-- self.shape:move(-x, -y)
 			self:_move_node(x, y)
-			self.pmat:translate(-x, -y)
 			self:resolve(col)
 		else
 			self.shape:move(-x, -y)
@@ -46,7 +44,6 @@ function Body:move_try(x, y, can_resolve)
 	else
 		-- move body if no collision
 		self:_move_node(x, y)
-		self.pmat:translate(-x, -y)
 	end
 	return ret, col, cx, cy
 end
@@ -97,7 +94,6 @@ function Body:resolve(collisions)
 		if does and sx and sy then
 			self.shape:move(sx, sy)
 			self:_move_node(sx, sy)
-			self.pmat:translate(-sx, -sy)
 			--self:move_try(sx*1.01, sy*1.01, false)
 		end
 	end
