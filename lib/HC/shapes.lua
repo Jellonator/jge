@@ -47,6 +47,24 @@ local Shape = {}
 function Shape:init(t)
 	self._type = t
 	self._rotation = 0
+	self._layer = {[""]=true}
+	self._mask = ""
+end
+
+function Shape:add_layer(name)
+	self._layer[name] = true
+end
+
+function Shape:remove_layer(name)
+	self._layer[name] = nil
+end
+
+function Shape:set_mask(name)
+	self._mask = name;
+end
+
+function Shape:can_mask_collide(other)
+	return self._layer[other._mask] or other._layer[self._mask]
 end
 
 function Shape:moveTo(x,y)

@@ -45,4 +45,6 @@ function Lib.bind(f, x, ...)
 	return Lib.bind(function(...) return f(x, ...) end, ...)
 end
 
+function Lib.nullfunc()end
+
 return Lib

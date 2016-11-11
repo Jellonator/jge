@@ -115,12 +115,16 @@ function HC:collisions(shape)
 	local candidates = self:neighbors(shape)
 	local does_collide = false;
 	for other in pairs(candidates) do
-		local collides, dx, dy = shape:collidesWith(other)
-		if collides then
-			dx = dx or 0
-			dy = dy or 0
-			does_collide = true
-			rawset(candidates, other, {dx,dy, x=dx, y=dy})
+		if shape:can_mask_collide(other) then
+			local collides, dx, dy = shape:collidesWith(other)
+			if collides then
+				dx = dx or 0
+				dy = dy or 0
+				does_collide = true
+				rawset(candidates, other, {dx,dy, x=dx, y=dy})
+			else
+				rawset(candidates, other, nil)
+			end
 		else
 			rawset(candidates, other, nil)
 		end

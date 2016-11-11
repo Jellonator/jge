@@ -7,6 +7,7 @@ function Body:on_init(shape, ...)
 		shape = self.world:create(shape, ...)
 	end
 	self.shape = shape
+	self.shape.body = self
 	self.pmat = lib.Matrix3();
 end
 
@@ -15,8 +16,31 @@ function Body:_move_node(x, y)
 	self.pmat:translate(-x, -y)
 end
 
+local function _get_correction(x, y, collisions)
+	local sx,sy,count = 0,0,0
+	for _, sep in pairs(collisions) do
+		sx = sx + sep.x
+		sy = sy + sep.y
+		count = count + 1
+	end
+	sx = sx / count
+	sy = sy / count
+	if sx ~= 0 or sy ~= 0 then
+		local cx, cy = lib.vlt.project(x,y, lib.vlt.perpendicular(sx,sy))
+		return lib.vlt.mul(lib.vlt.len(x,y),lib.vlt.normalize(cx,cy))
+	end
+	return x, y;
+end
+
 --[[ MOVEMENT FUNCTIONS ]]
 -- Move by (x,y) if that position is free; most basic form of movement
+function Body:can_move(x, y)
+	self.shape:move(x, y);
+	local col, ret = self.world:collisions(self.shape);
+	self.shape:move(-x, -y);
+	return not ret, col
+end
+
 function Body:move_try(x, y, can_resolve)
 	local can_resolve = try_or(can_resolve, true)
 	self.shape:move(x, y);
@@ -36,9 +60,11 @@ function Body:move_try(x, y, can_resolve)
 			cx, cy = lib.vlt.project(x,y, lib.vlt.perpendicular(sx,sy))
 		end
 		if can_resolve then
+			-- move, then resolve
 			self:_move_node(x, y)
 			self:resolve(col)
 		else
+			-- return back
 			self.shape:move(-x, -y)
 		end
 	else
@@ -80,8 +106,59 @@ function Body:move_step_size(x, y, stepsize)
 end
 
 -- Use a binary search algorithm to move by (x, y)
-function Body:move_step_binary(x, y, maxdiv)
+function Body:move_step_binary(x, y, maxdiv, corrective)
+	if (x == 0 and y == 0) or maxdiv == 0 then return false end
+	if not self:move_try(x, y, false) then return false end
+	local corrective = try_or(corrective, false);
+	local pos = 0.5;
+	local step = 0.25;
+	local final = 0;
+	local lastcol = nil
+	local didcollide = false
+	while maxdiv > 0 do
+		maxdiv = maxdiv - 1
+		local canmove, col = self:can_move(pos*x, pos*y)
+		if not canmove then
+			lastcol = col
+			didcollide = true
+		end
+		if canmove then
+			final = pos
+			pos = pos + step
+		elseif corrective then
+			-- change direction!
+			local cx, cy = _get_correction(x*(1-pos),y*(1-pos), col)
+			x = x * pos
+			y = y * pos
+			self.shape:move(x, y)
+			self:_move_node(x, y);
+			self:resolve()
+			return self:move_step_binary(cx, cy, maxdiv, corrective)
+		else
+			pos = pos - step
+		end
+		step = step / 2
+	end
+	x = x * final
+	y = y * final
+	self.shape:move(x, y)
+	self:_move_node(x, y);
+	return didcollide, lastcol
+end
 
+-- Autodetect number of steps
+function Body:move_step_binary_auto(x, y, len, maxsteps, corrective)
+	if x == 0 and y == 0 then return false end
+	local maxsteps = maxsteps or 8
+	local len = len or 1
+	local steps = math.min(maxsteps, math.max(math.ceil(math.sqrt(x^2+y^2) / len), 1))
+	return self:move_step_binary(x, y, steps, corrective)
+end
+
+-- Default movement functionality, probably most useful
+function Body:move(x, y)
+	-- use a corrective two-step method
+	return self:move_step_binary(x, y, 2, true)
 end
 
 -- Resolve a colliding body so that it no longer collides with anything
@@ -92,6 +169,8 @@ function Body:resolve(collisions)
 	for obj, sep in pairs(collisions) do
 		local does, sx, sy = self.shape:collidesWith(obj);
 		if does and sx and sy then
+			sx = sx * 1.001
+			sy = sy * 1.001
 			self.shape:move(sx, sy)
 			self:_move_node(sx, sy)
 			--self:move_try(sx*1.01, sy*1.01, false)

@@ -42,13 +42,16 @@ function Camera:on_draw()
 	local window_width, window_height = love.graphics.getDimensions()
 	local window_scale = math.min(
 		window_width/self.width, window_height/self.height)
-	self.camera:lookAt(self.x, self.y);
+	-- self.camera:lookAt(self.x, self.y);
+	local px, py = self.camera.x, self.camera.y
+	self.camera:move(self.x, self.y)
 	self.camera:rotateTo(self.rot);
 	self.camera:zoomTo(self.zoom*window_scale);
 	self.camera:attach(
 		(window_scale*self.width  - window_width ) * -0.5,
 		(window_scale*self.height - window_height) * -0.5,
 		self.width*window_scale, self.height*window_scale);
+	self.camera:lookAt(px, py);
 end
 function Camera:post_draw()
 	self.camera:detach();
