@@ -41,23 +41,11 @@ end
 function Node:transform_point(x, y) -- local -> global
 	local mat = self:get_mat()
 	return mat:transform_point(x, y)
-	-- if self._parent then
-	-- 	return self._parent:transform_point(self.transform:transform(x, y))
-	-- else
-	-- 	return self.transform:transform(x, y);
-	-- end
 end
 
 function Node:transform_point_inv(x, y) -- global -> local
 	local mat = self:get_mat_inv();
 	return mat:transform_point(x, y)
-	-- print(x, y)
-	-- if self._parent then
-	-- 	return self.transform:transform_inv(
-	-- 		self._parent:transform_point_inv(x, y));
-	-- else
-	-- 	return self.transform:transform_inv(x, y);
-	-- end
 end
 
 function Node:_recalculate()
@@ -92,7 +80,11 @@ function Node:getrot()
 end
 
 -- Regular functions
+-- local val = 100 / math.pi
 function Node:update(dt)
+	-- val = val * math.pi * 0.01
+	-- print(("%.70f"):format(val))
+	-- val = val / math.pi * 100
 	self:_recalculate();
 	for i, c in pairs(self.components) do
 		c:on_update(dt);

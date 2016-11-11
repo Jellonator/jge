@@ -31,12 +31,13 @@ function Component.register_component(name, t)
 	-- give default functions
 	t.on_update = t.on_update or function_empty;
 	t.on_draw   = t.on_draw   or function_empty;
-	t.post_draw = t.post_draw or function_empty;
 	t.on_input  = t.on_input  or function_empty;
 	t.on_init   = t.on_init   or function_empty;
 	t.on_transform  = t.on_transform  or function_empty;
 	t.on_serialize  = t.on_serialize  or function_empty;
 	t.on_loadstring = t.on_loadstring or function_empty;
+	t.post_draw = t.post_draw or function_empty;
+	t.pre_transform  = t.pre_transform  or function_empty;
 
 	-- modify some metadata
 	t._allow_multiple = try_or(t._allow_multiple, true);

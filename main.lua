@@ -26,7 +26,7 @@ function player_script:on_update(dt)
 	if down  then dy = dy + 1 end
 	if left  then dx = dx - 1 end
 	if right then dx = dx + 1 end
-	local len = math.sqrt(dx*dy)
+	local len = math.sqrt(dx^2+dy^2)
 	if len > 1 then
 		dx = dx / len
 		dy = dy / len
@@ -47,19 +47,28 @@ function player_script:on_update(dt)
 	else
 		self.node:get_component("animation"):play()
 	end
-	self.node.transform:translate(dx, dy)
+	-- self.node.transform:translate(dx, dy)
+	local body = self.node:get_component("collisionbody")
+	body:move_step_count(dx, dy, 4)
+	-- print(math.sqrt(dx^2+dy^2))
 
 	-- local x,y = love.mouse.getPosition()
 	local x, y = camera.camera:mousePosition();
 	local pt = self.node:get_component("drawable_circle")
-	-- pt.color[1] = self.node:get_component("shape"):contains_point(self.node, x, y) and 255 or 0
+	pt.color[1] = body:contains_point(x, y) and 255 or 0
 	x, y = self.node:transform_point_inv(x,y)
 	pt.x = x
 	pt.y = y
 end
 
+function generate_solid(...)
+	local n = tree:add_child();
+	n:add_component("collisionbody", "polygon", ...);
+end
+generate_solid(-160,-100, 100,-100, 70,-25, -130,-25, -100,-50)
+
 function love.load(arg)
-	local n = tree:add_child()
+	local n = tree:add_child("player");
 	n:add_component("spritemap", love.graphics.newImage("res/Girl.png"),{
 		{ 0,  0, 16, 16}, {16,  0, 16, 16}, {32,  0, 16, 16},
 		{ 0, 16, 16, 16}, {16, 16, 16, 16}, {32, 16, 16, 16},
@@ -79,8 +88,18 @@ function love.load(arg)
 	n:add_component("collisionbody", "rectangle", -8,-8,16,16)
 end
 
+local update_delta = 1/60;
+local update_timer = 0;
+local MAX_UPDATE_FRAMES = 3;
 function love.update(dt)
-	root:update(dt);
+	update_timer = update_timer + dt;
+	local i = 0;
+	while update_timer >= update_delta and i < MAX_UPDATE_FRAMES do
+		update_timer = update_timer - update_delta;
+		root:update(update_delta);
+		i = i + 1
+	end
+	update_timer = update_timer % update_delta;
 end
 
 function love.draw()

@@ -10,6 +10,10 @@ function Transform.new(x, y)
 		scaley = 1,
 		rotation = 0,
 		_id = 0,
+		_matid = -1,
+		_matcache = lib.Matrix3():const(),
+		_invid = -1,
+		_invcache = lib.Matrix3():const(),
 	}, Transform)
 end
 
@@ -122,17 +126,23 @@ function Transform:copy(other)
 end
 
 function Transform:get_mat()
-	return lib.Matrix3()
-		:translate(self.x, self.y)
-		:rotate(self.rotation)
-		:scale(self.scalex, self.scaley)
+	if self._matid ~= self._id then
+		lib.Matrix3.identity(self._matcache)
+		lib.Matrix3.translate(self._matcache, self.x, self.y)
+		lib.Matrix3.rotate(self._matcache, self.rotation)
+		lib.Matrix3.scale(self._matcache, self.scalex, self.scaley)
+	end
+	return self._matcache
 end
 
 function Transform:get_mat_inv()
-	return lib.Matrix3()
-		:scale(1/self.scalex, 1/self.scaley)
-		:rotate(-self.rotation)
-		:translate(-self.x, -self.y)
+	if self._invid ~= self._id then
+		lib.Matrix3.identity(self._invcache)
+		lib.Matrix3.scale(self._invcache, 1/self.scalex, 1/self.scaley)
+		lib.Matrix3.rotate(self._invcache, -self.rotation)
+		lib.Matrix3.translate(self._invcache, -self.x, -self.y)
+	end
+	return self._invcache
 end
 
 return setmetatable(Transform, {

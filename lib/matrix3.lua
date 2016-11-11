@@ -1,5 +1,8 @@
+-- 3x3 matrix class, used for point transformation
 local Matrix3 = {}
 Matrix3.__index = Matrix3;
+local Matrix3Const = {}
+Matrix3Const.__index = Matrix3Const;
 function Matrix3:__tostring()
 	return
 	([=[[%.2f, %.2f, %.2f,
@@ -20,6 +23,15 @@ function Matrix3:clone()
 	return Matrix3(unpack(self))
 end
 
+-- Create a matrix3 that cannot be modified by normal means
+function Matrix3:const()
+	setmetatable(self, Matrix3Const);
+	self.clone = Matrix3.clone
+	self.transform_point = Matrix3.transform_point;
+	return self
+end
+
+-- Operations on a mat3 will modify the mat3 and return itself
 function Matrix3:copy(other)
 	for i = 1,9 do
 		self[i] = other[i]
@@ -55,27 +67,27 @@ function Matrix3:inverse()
 	return self
 end
 
-function Matrix3:transform_point(x, y, w)
-	local w = w or 1
-	return
-		self[1]*x + self[2]*y + self[3]*w,
-		self[4]*x + self[5]*y + self[6]*w,
-		self[7]*x + self[8]*y + self[9]*w;
-end
-
 function Matrix3:translate(x, y)
 	if x == 0 and y == 0 then return self end
-	return self:mul(1,0,x, 0,1,y, 0,0,1);
+	return Matrix3.mul(self, 1,0,x, 0,1,y, 0,0,1);
 end
 
 function Matrix3:scale(sx, sy)
 	if sx == 1 and sy == 1 then return self end
-	return self:mul(sx,0,0, 0,sy,0, 0,0,1);
+	return Matrix3.mul(self, sx,0,0, 0,sy,0, 0,0,1);
+end
+
+function Matrix3:skewx(kx)
+	return Matrix3.mul(self, 1,kx,0, 0,1,0, 0,0,1)
+end
+
+function Matrix3:skewy(kx)
+	return Matrix3.mul(self, 1,0,0, ky,1,0, 0,0,1)
 end
 
 function Matrix3:rotate(rot)
 	if rot == 0 then return self end
-	return self:mul(
+	return Matrix3.mul(self,
 		 math.cos(rot), -math.sin(rot), 0,
 		 math.sin(rot),  math.cos(rot), 0,
 		0, 0, 1)
@@ -83,7 +95,7 @@ end
 
 function Matrix3:mul(o1,o2,o3, o4,o5,o6, o7,o8,o9)
 	if not o2 and o1 then
-		return self:mul(unpack(o1));
+		return Matrix3.mul(self, unpack(o1));
 	end
 
 	-- I'm almost certain this works
@@ -102,8 +114,39 @@ function Matrix3:mul(o1,o2,o3, o4,o5,o6, o7,o8,o9)
 		s7*o1+s8*o4+s9*o7, s7*o2+s8*o5+s9*o8, s7*o3+s8*o6+s9*o9;
 	return self
 end
-
 Matrix3.__mul = Matrix3.mul
+
+-- Transform a point with the mat3
+function Matrix3:transform_point(x, y, w)
+	local w = w or 1
+	return
+	self[1]*x + self[2]*y + self[3]*w,
+	self[4]*x + self[5]*y + self[6]*w,
+	self[7]*x + self[8]*y + self[9]*w;
+end
+
+-- Constant mat3 copies some functionality
+for k,v in pairs(Matrix3) do
+	Matrix3Const[k] = v
+end
+
+-- mat3 operations on a mat3const creates a new mat3
+for _,name in pairs({"mul", "__mul", "rotate",
+"translate", "scale", "skewx", "skewy", "inverse", "identity"}) do
+	Matrix3Const[name] = function(self, ...)
+		local obj = Matrix3(unpack(self))
+		return obj[name](obj, ...)
+	end
+end
+
+-- mat3const cannot copy anything
+Matrix3Const.copy = nil
+
+-- nothing is stoppying someone from modifying a mat3 through standard means,
+-- e.g. mat3const[2] = 4
+-- or   Matrix3.rotate(mat3const, math.pi*4/3)
+-- however, I find that unlikely and if someone does
+-- this they probably have a good reason for it
 
 return setmetatable(Matrix3, {
 	__call = function(t, ...)
