@@ -36,7 +36,7 @@ function player_script:on_init(x, y)
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
 	self.node:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
-	local body = self.node:add_component("collisionbody", "rectangle", -8,-8,16,16)
+	local body = self.node:add_component("collisionbody", "rectangle", -4, 0, 8, 8)
 	body.shape:set_mask("player")
 	body.shape:add_layer("solid")
 end
@@ -89,7 +89,7 @@ function generate_solid(...)
 	local body = n:add_component("collisionbody", "polygon", ...);
 	body.shape:set_mask("solid")
 end
-generate_solid(-160,-100, 100,-100, 25,-25, -130,-25, -100,-50)
+generate_solid(-150,-100, 100,-100, 25,-25, -125,-25, -100,-50)
 
 function generate_script(script, ...)
 	local n = tree:add_child();

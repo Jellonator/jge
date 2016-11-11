@@ -379,12 +379,11 @@ end
 
 -- local ROOT_2 = math.math.sqrt(2);
 function CircleShape:transform_mat(mat)
-	self._center.x, self._center.y =
-		mat:transform_point(self._center.x, self._center.y);
-	local x2,y2 = mat:transform_point(self._center.x+1, self._center.y+1)
+	local x1,y1 = mat:transform_point(self._center.x, self._center.y)
+	local x2,y2 = mat:transform_point(self._center.x+self._radius, self._center.y+self._radius)
+	self._center.x, self._center.y = mat:transform_point(self._center.x, self._center.y);
 
-	-- circles cant be scaled irregularly, but whatever :)
-	self:scale(math.sqrt((x2-self._center.x)^2 + (y2-self._center.y)^2))
+	self._radius = (x2-x1 + y2-y1) / 2
 end
 
 function ConcavePolygonShape:rotate(angle,cx,cy)
