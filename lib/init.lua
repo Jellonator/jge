@@ -47,4 +47,8 @@ end
 
 function Lib.nullfunc()end
 
+function Lib.lerp(val, a, b)
+	return val*b + (1-val)*a
+end
+
 return Lib

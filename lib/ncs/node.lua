@@ -16,7 +16,13 @@ function Node.new(x, y)
 		_cache_rotation = 0,
 		-- incremental IDs that correspond to '_id' in 'transform'
 		-- If IDs are different, then caches need to be recalculated
-		_self_id = -1 -- Own transform's '_id'
+		_self_id = -1, -- Own transform's '_id'
+		-- Draw data for previous frame
+		_prev_x = 0,
+		_prev_y = 0,
+		_prev_rot = 0,
+		_prev_scalex = 1,
+		_prev_scaley = 1,
 	}, Node);
 end
 
@@ -81,10 +87,26 @@ end
 
 -- Regular functions
 -- local val = 100 / math.pi
+function Node:update_real(dt)
+	self:_recalculate();
+	for i, c in pairs(self.components) do
+		c:on_update_real(dt);
+	end
+	for i, node in pairs(self.children) do
+		node:update_real(dt)
+	end
+end
+
 function Node:update(dt)
 	-- val = val * math.pi * 0.01
 	-- print(("%.70f"):format(val))
 	-- val = val / math.pi * 100
+	self._prev_x = self.transform.x
+	self._prev_y = self.transform.y
+	self._prev_scalex = self.transform.scalex
+	self._prev_scaley = self.transform.scaley
+	self._prev_rot = self.transform.rotation
+
 	self:_recalculate();
 	for i, c in pairs(self.components) do
 		c:on_update(dt);
@@ -94,18 +116,36 @@ function Node:update(dt)
 	end
 end
 
-function Node:draw()
+function Node:draw(lerp)
+	local x = self.transform.x
+	local y = self.transform.y
+	local scalex = self.transform.scalex
+	local scaley = self.transform.scaley
+	local rot = self.transform.rotation
+
+	self.transform.x = lib.lerp(lerp, self._prev_x, x)
+	self.transform.y = lib.lerp(lerp, self._prev_y, y)
+	self.transform.scalex = lib.lerp(lerp, self._prev_scalex, scalex)
+	self.transform.scaley = lib.lerp(lerp, self._prev_scaley, scaley)
+	self.transform.rotation = lib.lerp(lerp, self._prev_rot, rot)
+
 	self.transform:draw_push();
 	for i, c in pairs(self.components) do
-		c:on_draw();
+		c:on_draw(lerp);
 	end
 	for i, node in pairs(self.children) do
-		node:draw();
+		node:draw(lerp);
 	end
 	for i, c in pairs(self.components) do
-		c:post_draw();
+		c:post_draw(lerp);
 	end
 	self.transform:draw_pop();
+
+	self.transform.x = x
+	self.transform.y = y
+	self.transform.scalex = scalex
+	self.transform.scaley = scaley
+	self.transform.rotation = rot
 end
 
 -- Children/parent functions

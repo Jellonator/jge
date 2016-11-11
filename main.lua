@@ -77,6 +77,9 @@ function player_script:on_update(dt)
 	local pt = self.node:get_component("drawable_circle")
 	pt.color[1] = body:contains_point(x, y) and 255 or 0
 	pt.x, pt.y = self.node:transform_point_inv(x, y)
+end
+
+function player_script:on_update_real(dt)
 	local cx, cy = self.node:getpos()
 	camera.camera:lockPosition(cx, cy, lib.hcam.smooth.damped(5))
 end
@@ -97,7 +100,7 @@ function love.load(arg)
 	generate_script(player_script, -50, 0)
 end
 
-local update_delta = 1/10;
+local update_delta = 1/60;
 local update_timer = 0;
 local MAX_UPDATE_FRAMES = 2;
 
@@ -109,6 +112,7 @@ love.timer.getDelta = function()
 	if is_in_update then return update_delta
 	else return old_get_delta() end
 end
+
 function love.update(dt)
 	update_timer = update_timer + dt;
 	local i = 0;
@@ -120,10 +124,13 @@ function love.update(dt)
 	end
 	is_in_update = false;
 	update_timer = update_timer % update_delta;
+
+	root:update_real(dt);
 end
 
 function love.draw()
-	root:draw(dt);
+	if update_timer > update_delta then print("timer is greater than delta!") end
+	root:draw(update_timer/update_delta);
 	love.graphics.setColor(255, 0, 0);
 	love.graphics.print(("FPS: %.2f"):format(love.timer.getFPS()))
 	-- love.graphics.polygon("fill", 100,100, 400,200, 300,300)
