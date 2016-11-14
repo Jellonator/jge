@@ -6,7 +6,6 @@ local DrawableRect = {
 	y1 = -10,
 	x2 =  10,
 	y2 =  10,
-	_depends = {"position"}
 }
 function DrawableRect:on_init(mode, x1, y1, x2, y2, color)
 	self.x1 = x1 or self.x1;
@@ -43,6 +42,36 @@ function DrawableCircle:on_draw()
 	love.graphics.circle(self.mode, self.x, self.y, self.radius)
 end
 register_component("drawable_circle", DrawableCircle);
+
+local DrawablePolygon = {
+	mode = "fill",
+	color = {255, 255, 255, 255},
+}
+
+function DrawablePolygon:on_init(mode, color, ...)
+	self.mode = mode or self.mode
+	if type(color) == "table" then
+		self.color = {unpack(color)}
+		self:_add_point(...)
+	else
+		self:_add_point(color, ...)
+	end
+end
+
+function DrawablePolygon:_add_point(x,y,...)
+	if x and y then
+		table.insert(self, x)
+		table.insert(self, y)
+		self:_add_point(...)
+	end
+end
+
+function DrawablePolygon:on_draw()
+	love.graphics.setColor(self.color);
+	love.graphics.polygon(self.mode, self)
+end
+
+register_component("drawable_polygon", DrawablePolygon)
 
 -- An image or drawable
 local Drawable = {

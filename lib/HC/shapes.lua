@@ -414,7 +414,6 @@ function PointShape:rotate(angle, cx,cy)
 	self._pos.x,self._pos.y = vector.add(cx,cy, vector.rotate(angle, self._pos.x-cx, self._pos.y-cy))
 end
 
-
 function ConcavePolygonShape:scale(s)
 	assert(type(s) == "number" and s > 0, "Invalid argument. Scale must be greater than 0")
 	local cx,cy = self:center()

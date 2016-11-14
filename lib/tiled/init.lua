@@ -674,21 +674,21 @@ end
 --- Draw every Layer
 -- @return nil
 function Map:draw()
-	local current_canvas = lg.getCanvas()
-	lg.setCanvas(self.canvas)
-	lg.clear()
+	-- local current_canvas = lg.getCanvas()
+	-- lg.setCanvas(self.canvas)
+	-- lg.clear()
 
 	for _, layer in ipairs(self.layers) do
 		if layer.visible and layer.opacity > 0 then
 			self:drawLayer(layer)
 		end
 	end
-
-	lg.setCanvas(current_canvas)
-	lg.push()
-	lg.origin()
-	lg.draw(self.canvas)
-	lg.pop()
+	--
+	-- lg.setCanvas(current_canvas)
+	-- lg.push()
+	-- lg.origin()
+	-- lg.draw(self.canvas)
+	-- lg.pop()
 end
 
 --- Draw an individual Layer

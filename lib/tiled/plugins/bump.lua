@@ -25,7 +25,13 @@ return {
 				-- Every object in every instance of a tile
 				if tile.properties and tile.properties.collidable == true and map.tileInstances[gid] then
 					for _, instance in ipairs(map.tileInstances[gid]) do
-						local t = {properties = tile.properties, x = instance.x + map.offsetx, y = instance.y + map.offsety, width = map.tilewidth, height = map.tileheight, layer = instance.layer }
+						local t = {
+							properties = tile.properties,
+							x = instance.x + map.offsetx,
+							y = instance.y + map.offsety,
+							width = map.tilewidth, height = map.tileheight,
+							layer = instance.layer
+						}
 						world:add(t,  t.x,t.y, t.width,t.height)
 						table.insert(collidables,t)
 					end
@@ -39,7 +45,13 @@ return {
 				if layer.type == "tilelayer" then
 					for y, tiles in ipairs(layer.data) do
 						for x, tile in pairs(tiles) do
-							local t = {properties = tile.properties, x = (x - 1) * map.tilewidth + tile.offset.x + map.offsetx, y = (y - 1) * map.tileheight + tile.offset.y + map.offsety, width = tile.width, height = tile.height, layer = layer }
+							local t = {
+								properties = tile.properties,
+								x = (x - 1) * map.tilewidth + tile.offset.x + map.offsetx,
+								y = (y - 1) * map.tileheight + tile.offset.y + map.offsety,
+								width = tile.width, height = tile.height,
+								layer = layer
+							}
 							world:add(t, t.x,t.y, t.width,t.height )
 							table.insert(collidables,t)
 						end

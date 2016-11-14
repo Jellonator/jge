@@ -10,17 +10,21 @@ inputmanager:add_event("rotr",  lib.Input.IMatch(EVENTTYPE.keyboard, "e"))
 inputmanager:override_love();
 
 root = lib.ncs.Node();
-tree = root:add_child("tree")
-local camera = tree:add_component("camera", 400, 224)
-tree:add_component("collisionworld");
+tree = root:add_child("tree");
+local camera = root:add_component("camera", 400*2, 224*2)
+root:add_component("collisionworld");
+root:add_component("tiledmaploader", "res/testlevel.lua")
+
+-- tree.transform:scale(1/4)
 
 local player_script = {}
 function player_script:on_init(x, y)
 	print(x, y)
 	local x = x or 0
 	local y = y or 0
-	self.speed = 64
+	self.speed = 64*3
 	self.node.transform:translate(x, y)
+	self.node.transform:scale(2)
 	self.node:add_component("spritemap", love.graphics.newImage("res/Girl.png"),{
 		{ 0,  0, 16, 16}, {16,  0, 16, 16}, {32,  0, 16, 16},
 		{ 0, 16, 16, 16}, {16, 16, 16, 16}, {32, 16, 16, 16},
@@ -87,6 +91,7 @@ end
 function generate_solid(...)
 	local n = tree:add_child();
 	local body = n:add_component("collisionbody", "polygon", ...);
+	n:add_component("drawable_polygon", 'line', {0,0,255}, ...)
 	body.shape:set_mask("solid")
 end
 generate_solid(-150,-100, 100,-100, 25,-25, -125,-25, -100,-50)

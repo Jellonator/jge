@@ -9,6 +9,8 @@ function Node.new(x, y)
 		children = {},
 		_i_am_a_node = true,
 		_parent = nil,
+		_paused = false,
+		_timescale = 1,
 		-- A system of caches so that positions can
 		-- be lazily evaluated for efficiency
 		_cache_x = x or 0,
@@ -16,7 +18,7 @@ function Node.new(x, y)
 		_cache_rotation = 0,
 		-- incremental IDs that correspond to '_id' in 'transform'
 		-- If IDs are different, then caches need to be recalculated
-		_self_id = -1, -- Own transform's '_id'
+		_self_id = -1,
 		-- Draw data for previous frame
 		_prev_x = 0,
 		_prev_y = 0,
@@ -24,6 +26,19 @@ function Node.new(x, y)
 		_prev_scalex = 1,
 		_prev_scaley = 1,
 	}, Node);
+end
+
+function Node:pause()
+	self._paused = true
+end
+
+function Node:unpause()
+	self._paused = false
+end
+
+function Node:set_timescale(scale)
+	scale = scale or 1
+	self._timescale = scale
 end
 
 -- Matrix functions
@@ -88,6 +103,8 @@ end
 -- Regular functions
 -- local val = 100 / math.pi
 function Node:update_real(dt)
+	if self._paused then return end
+	dt = dt * self._timescale;
 	self:_recalculate();
 	for i, c in pairs(self.components) do
 		c:on_update_real(dt);
@@ -98,6 +115,8 @@ function Node:update_real(dt)
 end
 
 function Node:update(dt)
+	if self._paused then return end
+	dt = dt * self._timescale;
 	-- val = val * math.pi * 0.01
 	-- print(("%.70f"):format(val))
 	-- val = val / math.pi * 100

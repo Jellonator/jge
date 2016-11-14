@@ -33,7 +33,7 @@ local function _get_correction(x, y, collisions)
 end
 
 --[[ MOVEMENT FUNCTIONS ]]
--- Move by (x,y) if that position is free; most basic form of movement
+-- Test if body can move in a given direction
 function Body:can_move(x, y)
 	self.shape:move(x, y);
 	local col, ret = self.world:collisions(self.shape);
@@ -41,6 +41,7 @@ function Body:can_move(x, y)
 	return not ret, col
 end
 
+-- Move by (x,y) if that position is free; most basic form of movement
 function Body:move_try(x, y, can_resolve)
 	local can_resolve = try_or(can_resolve, true)
 	self.shape:move(x, y);
@@ -75,7 +76,7 @@ function Body:move_try(x, y, can_resolve)
 end
 
 function Body:_move_stepped(dx, dy, count, corrective)
-	local corrective = try_or(corrective, true)
+	local corrective = try_or(corrective, false)
 	for i = 1, count do
 		local ret, col, cx, cy = self:move_try(dx, dy)
 		if ret then
@@ -88,19 +89,20 @@ function Body:_move_stepped(dx, dy, count, corrective)
 	end
 	return false
 end
+
 -- Move by (x,y) distributed over a set number of steps
-function Body:move_step_count(x, y, steps)
-	return self:_move_stepped(x/steps, y/steps, steps);
+function Body:move_step_count(x, y, steps, corrective)
+	return self:_move_stepped(x/steps, y/steps, steps, corrective);
 end
 
 -- Move by (x, y) with each step going over a set distance
-function Body:move_step_size(x, y, stepsize)
+function Body:move_step_size(x, y, stepsize, corrective)
 	local dis = math.sqrt(x^2 + y^2)
 	x,y = x/dis, y/dis
 	local ratio = dis / stepsize
 	local count = math.floor(ratio)
 	local leftover = dis - stepsize*count
-	if (not self:_move_stepped(x*stepsize, y*stepsize, count)) and leftover > 0 then
+	if (not self:_move_stepped(x*stepsize, y*stepsize, count, corrective)) and leftover > 0 then
 		self:move_try(x * leftover, y * leftover)
 	end
 end
@@ -216,14 +218,13 @@ function World:on_init(cellsize)
 end
 
 function World:on_update(dt)
-
 end
 
 function World:on_draw()
-	love.graphics.setColor(0, 255, 0, 140)
-	for s in pairs(self.world.hash:shapes()) do
-		s:draw('line')
-	end
+	-- love.graphics.setColor(0, 255, 0, 140)
+	-- for s in pairs(self.world.hash:shapes()) do
+	-- 	s:draw('line')
+	-- end
 end
 
 function World:get_neighbors(shape)
@@ -248,3 +249,28 @@ function World:get_collisions(shape)
 	return self.world:collisions(shape)
 end
 register_component("collisionworld", World)
+
+local Map = {}
+
+function Map:on_init(fname)
+	self.map = lib.tiled(fname, {"hc"})
+	local parent, world = self.node:get_parent_with_component("collisionworld", true);
+	if parent and world then
+		print("INIT")
+		self.map:hc_init(world.world)
+	end
+end
+
+function Map:on_update(dt)
+	self.map:update(dt)
+end
+
+function Map:on_draw()
+	self.map:draw();
+
+	-- Draw Collision Map (useful for debugging)
+    -- love.graphics.setColor(255, 0, 0, 255)
+    -- self.map:hc_draw()
+end
+
+register_component("tiledmaploader", Map)
