@@ -473,33 +473,33 @@ function Map:setObjectSpriteBatches(layer)
 	local batches  = {}
 
 	for _, object in ipairs(layer.objects) do
+		for k,v in pairs(object) do
+			print("\t" .. tostring(k) .. ": " .. tostring(v))
+		end
+		local width = object.width or object.w or tileW
+		local height = object.height or object.h or tileH
+		local scalex = width/tileW
+		local scaley = height/tileH
+		local tileW = width
+		local tileH = height
 		if object.gid then
 			local tile    = self.tiles[object.gid] or self:setFlippedGID(object.gid)
 			local tileset = tile.tileset
 			local image   = self.tilesets[tile.tileset].image
 
+			local sx = tile.sx * scalex
+			local sy = tile.sy * scaley
+
 			batches[tileset] = batches[tileset] or newBatch(image, 100)
 
 			local batch = batches[tileset]
 			local tileX = object.x + tile.offset.x
-			local tileY = object.y + tile.offset.y - tile.height
+			local tileY = object.y + tile.offset.y
 			local tileR = math.rad(object.rotation)
-			local oy    = 0
+			tileX = tileX + math.sin(tileR)*tileH
+			tileY = tileY - math.cos(tileR)*tileH
 
-			-- Compensation for scale/rotation shift
-			if tile.sx == 1 and tile.sy == 1 then
-				if tileR ~= 0 then
-					tileY = tileY + tileH
-					oy    = tileH
-				end
-			else
-				if tile.sx < 0 then tileX = tileX + tileW end
-				if tile.sy < 0 then tileY = tileY + tileH end
-				if tileR   > 0 then tileX = tileX + tileW end
-				if tileR   < 0 then tileY = tileY + tileH end
-			end
-
-			local id = batch:add(tile.quad, tileX, tileY, tileR, tile.sx, tile.sy, 0, oy)
+			local id = batch:add(tile.quad, tileX, tileY, tileR, sx, sy)--, ox, oy)
 			self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
 			table.insert(self.tileInstances[tile.gid], {
 				layer = layer,
@@ -508,8 +508,7 @@ function Map:setObjectSpriteBatches(layer)
 				gid   = tile.gid,
 				x     = tileX,
 				y     = tileY,
-				r     = tileR,
-				oy    = oy
+				r     = tileR
 			})
 		end
 	end
