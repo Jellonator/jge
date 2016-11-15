@@ -13,6 +13,8 @@ local STI = {
 }
 STI.__index = STI
 
+local THETA = 1e-3
+
 local path       = (...):gsub('%.init$', '') .. "."
 local pluginPath = string.gsub(path, "[.]", "/") .. "plugins/"
 local utils      = require(path .. "utils")
@@ -443,8 +445,23 @@ function Map:setSpriteBatches(layer)
 						tileX = (x - 1) * colW + tile.offset.x
 					end
 				end
-
-				local id = batch:add(tile.quad, tileX, tileY, tile.r, tile.sx, tile.sy)
+				local sx = tile.sx
+				local sy = tile.sy
+				if sx > 0 then
+					sx = sx + THETA * 2
+					tileX = tileX - THETA
+				elseif sx < 0 then
+					sx = sx - THETA * 2
+					tileX = tileX + THETA
+				end
+				if sy > 0 then
+					sy = sy + THETA * 2
+					tileY = tileY - THETA
+				elseif sy < 0 then
+					sy = sy - THETA * 2
+					tileY = tileY + THETA
+				end
+				local id = batch:add(tile.quad, tileX-THETA, tileY-THETA, tile.r, tile.sx+THETA*2, tile.sy+THETA*2)
 				self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
 				table.insert(self.tileInstances[tile.gid], {
 					layer = layer,
@@ -473,9 +490,6 @@ function Map:setObjectSpriteBatches(layer)
 	local batches  = {}
 
 	for _, object in ipairs(layer.objects) do
-		for k,v in pairs(object) do
-			print("\t" .. tostring(k) .. ": " .. tostring(v))
-		end
 		local width = object.width or object.w or tileW
 		local height = object.height or object.h or tileH
 		local scalex = width/tileW
@@ -673,21 +687,16 @@ end
 --- Draw every Layer
 -- @return nil
 function Map:draw()
-	-- local current_canvas = lg.getCanvas()
-	-- lg.setCanvas(self.canvas)
-	-- lg.clear()
+	if self.backgroundcolor then
+		love.graphics.setColor(self.backgroundcolor)
+		love.graphics.rectangle('fill', 0, 0, self.width*self.tilewidth, self.height*self.tileheight)
+	end
 
 	for _, layer in ipairs(self.layers) do
 		if layer.visible and layer.opacity > 0 then
 			self:drawLayer(layer)
 		end
 	end
-	--
-	-- lg.setCanvas(current_canvas)
-	-- lg.push()
-	-- lg.origin()
-	-- lg.draw(self.canvas)
-	-- lg.pop()
 end
 
 --- Draw an individual Layer

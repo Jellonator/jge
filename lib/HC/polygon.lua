@@ -140,6 +140,7 @@ end
 -- Polygon class
 --
 local Polygon = {}
+
 function Polygon:init(...)
 	local vertices = removeCollinear( toVertexList({}, ...) )
 	assert(#vertices >= 3, "Need at least 3 non collinear points to build polygon (got "..#vertices..")")
@@ -261,11 +262,17 @@ function Polygon:isConvex()
 end
 
 function Polygon:transform_mat(mat)
-	for i,v in ipairs(self.vertices) do
-		v.x,v.y = mat:transform_point(v.x,v.y)
-	end
 	self.centroid.x,self.centroid.y =
 		mat:transform_point(self.centroid.x,self.centroid.y);
+	-- local scale = (math.abs(mat[1]) + math.abs(mat[2])) * (math.abs(mat[4]) + math.abs(mat[5]))
+	-- self.area = self.area * scale
+
+	self._radius = 0
+	for i,v in ipairs(self.vertices) do
+		v.x,v.y = mat:transform_point(v.x,v.y)
+		self._radius = math.max(self._radius,
+			vector.dist(v.x, v.y, self.centroid.x,self.centroid.y))
+	end
 end
 
 function Polygon:move(dx, dy)

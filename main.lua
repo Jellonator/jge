@@ -10,12 +10,12 @@ inputmanager:add_event("rotr",  lib.Input.IMatch(EVENTTYPE.keyboard, "e"))
 inputmanager:override_love();
 
 root = lib.ncs.Node();
-tree = root:add_child("tree");
 local camera = root:add_component("camera", 400*2, 224*2)
 root:add_component("collisionworld");
-root:add_component("tiledmaploader", "res/testlevel.lua")
 
--- tree.transform:scale(1/4)
+tree = root:add_child("tree");
+tree:add_component("tiledmaploader", "res/testlevel.lua")
+
 
 local player_script = {}
 function player_script:on_init(x, y)
@@ -74,7 +74,7 @@ function player_script:on_update(dt)
 
 	-- movement
 	local body = self.node:get_component("collisionbody")
-	body:move(dx, dy)
+	body:move(dx, dy)--, 10, true)
 
 	-- mouse dot detection
 	local x, y = camera.camera:mousePosition();

@@ -10,14 +10,33 @@ function Body:on_init(shape, ...)
 	self.shape.body = self
 	self.pmat = lib.Matrix3();
 end
+--
+-- function Body:on_draw()
+-- 	love.graphics.setColor(0,255,255)
+-- 	self.shape:draw('line')
+-- end
 
 function Body:_move_node(x, y)
-	self.node.transform:translate(x, y);
+	-- x = x * 1.01
+	-- y = y * 1.01
+	-- shape needs to be transformed back by world coordinates
 	self.pmat:translate(-x, -y)
+
+	-- and node needs to be transformed in local coordinates
+	x, y = self:motion_world_to_local(x, y, 0)
+	self.node.transform:translate(x, y);
+end
+
+function Body:motion_local_to_world(x, y)
+	return self.node:get_mat():transform_point(x, y, 0)
+end
+
+function Body:motion_world_to_local(x, y)
+	return self.node:get_mat_inv():transform_point(x, y, 0)
 end
 
 local function _get_correction(x, y, collisions)
-	local sx,sy,count = 0,0,0
+	local sx,sy,count,avglen = 0,0,0
 	for _, sep in pairs(collisions) do
 		sx = sx + sep.x
 		sy = sy + sep.y
@@ -35,18 +54,20 @@ end
 --[[ MOVEMENT FUNCTIONS ]]
 -- Test if body can move in a given direction
 function Body:can_move(x, y)
-	self.shape:move(x, y);
+	local mx, my = self:motion_local_to_world(x, y);
+	self.shape:move(mx, my);
 	local col, ret = self.world:collisions(self.shape);
-	self.shape:move(-x, -y);
+	self.shape:move(-mx, -my);
 	return not ret, col
 end
 
 -- Move by (x,y) if that position is free; most basic form of movement
 function Body:move_try(x, y, can_resolve)
-	local can_resolve = try_or(can_resolve, true)
-	self.shape:move(x, y);
+	local mx, my = self:motion_local_to_world(x, y);
+	local can_resolve = try_or(can_resolve, false)
+	self.shape:move(mx, my);
 	local col, ret = self.world:collisions(self.shape);
-	local cx, cy = x, y
+	local cx, cy = mx, my
 	if ret then
 		-- correct direction if collision
 		local sx,sy,count = 0,0,0
@@ -58,24 +79,25 @@ function Body:move_try(x, y, can_resolve)
 		sx = sx / count
 		sy = sy / count
 		if sx ~= 0 or sy ~= 0 then
-			cx, cy = lib.vlt.project(x,y, lib.vlt.perpendicular(sx,sy))
+			cx, cy = lib.vlt.project(mx,my, lib.vlt.perpendicular(sx,sy))
 		end
 		if can_resolve then
 			-- move, then resolve
-			self:_move_node(x, y)
+			self:_move_node(mx, my)
 			self:resolve(col)
 		else
 			-- return back
-			self.shape:move(-x, -y)
+			self.shape:move(-mx, -my)
 		end
 	else
 		-- move body if no collision
-		self:_move_node(x, y)
+		self:_move_node(mx, my)
 	end
-	return ret, col, cx, cy
+	return ret, col, self:motion_world_to_local(cx, cy)
 end
 
 function Body:_move_stepped(dx, dy, count, corrective)
+	-- local mx, my = self:motion_local_to_world(x, y);
 	local corrective = try_or(corrective, false)
 	for i = 1, count do
 		local ret, col, cx, cy = self:move_try(dx, dy)
@@ -112,6 +134,7 @@ function Body:move_step_binary(x, y, maxdiv, corrective)
 	if (x == 0 and y == 0) or maxdiv == 0 then return false end
 	if not self:move_try(x, y, false) then return false end
 	local corrective = try_or(corrective, false);
+	local mx, my = self:motion_local_to_world(x, y);
 	local pos = 0.5;
 	local step = 0.25;
 	local final = 0;
@@ -129,22 +152,22 @@ function Body:move_step_binary(x, y, maxdiv, corrective)
 			pos = pos + step
 		elseif corrective then
 			-- change direction!
-			local cx, cy = _get_correction(x*(1-pos),y*(1-pos), col)
-			x = x * pos
-			y = y * pos
-			self.shape:move(x, y)
-			self:_move_node(x, y);
+			local cx, cy = _get_correction(x*(1-final),y*(1-final), col)
+			mx = mx * final
+			my = my * final
+			self.shape:move(mx, my)
+			self:_move_node(mx, my);
 			self:resolve()
-			return self:move_step_binary(cx, cy, maxdiv, corrective)
+			return self:move_step_binary(cx, cy, maxdiv)
 		else
 			pos = pos - step
 		end
 		step = step / 2
 	end
-	x = x * final
-	y = y * final
-	self.shape:move(x, y)
-	self:_move_node(x, y);
+	mx = mx * final
+	my = my * final
+	self.shape:move(mx, my)
+	self:_move_node(mx, my);
 	return didcollide, lastcol
 end
 
@@ -159,23 +182,55 @@ end
 
 -- Default movement functionality, probably most useful
 function Body:move(x, y)
-	-- use a corrective two-step method
-	return self:move_step_binary(x, y, 2, true)
+	local mx, my = self:motion_local_to_world(x, y);
+	self.shape:move(mx, my);
+	self:_move_node(mx, my);
+	local col, ret = self.world:collisions(self.shape);
+	if ret then
+		self:resolve()
+	end
 end
 
 -- Resolve a colliding body so that it no longer collides with anything
 function Body:resolve(collisions)
 	if not collisions then
-		collisions = self.world:collisions(self.shape)
+		collisions = self.world:neighbors(self.shape)
 	end
+
+	local _col = {}
 	for obj, sep in pairs(collisions) do
+		sep.obj = obj
+		table.insert(_col, sep)
+	end
+	collisions = _col
+
+	local selfx, selfy = self.shape:center()
+	table.sort(collisions, function(asep, bsep)
+		local aobj = asep.obj
+		local bobj = bsep.obj
+		return lib.vlt.dist(selfx, selfy, aobj:center())
+		     < lib.vlt.dist(selfx, selfy, bobj:center())
+	end)
+
+	for _, sep in ipairs(collisions) do
+		local obj = sep.obj
 		local does, sx, sy = self.shape:collidesWith(obj);
 		if does and sx and sy then
-			sx = sx * 1.001
-			sy = sy * 1.001
-			self.shape:move(sx, sy)
-			self:_move_node(sx, sy)
-			--self:move_try(sx*1.01, sy*1.01, false)
+			local seplist = obj._allsep
+			if seplist and #seplist > 1 then
+				for _, sep in pairs(seplist) do
+					local does, sx, sy, seplist = self.shape:collidesWith(sep.obj);
+					if does then
+						sx,sy = lib.vlt.mul(1.01, sx,sy)
+						self.shape:move(sx, sy)
+						self:_move_node(sx, sy)
+					end
+				end
+			else
+				sx,sy = lib.vlt.mul(1.01, sx,sy)
+				self.shape:move(sx, sy)
+				self:_move_node(sx, sy)
+			end
 		end
 	end
 end
@@ -258,6 +313,9 @@ function Map:on_init(fname)
 	if parent and world then
 		print("INIT")
 		self.map:hc_init(world.world)
+		for shape in pairs(self.map.hc_collidables) do
+			self.node:add_component("collisionbody", shape)
+		end
 	end
 end
 

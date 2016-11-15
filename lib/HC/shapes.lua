@@ -156,20 +156,32 @@ function ConcavePolygonShape:collidesWith(other)
 		return other:collidesWith(self)
 	end
 
-	-- TODO: better way of doing this. report all the separations?
-	local collide,dx,dy = false,0,0
+	local otherx, othery = other:center();
+	local collide = false
+	local dx = 0
+	local dy = 0
+	local maxlen = 0
+	local allsep = {}
 	for _,s in ipairs(self._shapes) do
 		local status, sx,sy = s:collidesWith(other)
 		collide = collide or status
 		if status then
-			if math.abs(dx) < math.abs(sx) then
+			if math.abs(sx) > math.abs(dx) then
 				dx = sx
 			end
-			if math.abs(dy) < math.abs(sy) then
+			if math.abs(sy) > math.abs(dy) then
 				dy = sy
 			end
+			maxlen = math.max(maxlen, lib.vlt.len(sx, sy))
+			table.insert(allsep, {x=sx,y=sy,obj=s})
 		end
 	end
+
+	maxlen = math.max(maxlen, lib.vlt.len(dx, dy))
+	dx,dy = lib.vlt.mul(maxlen, lib.vlt.normalize(dx,dy))
+
+	self._allsep = allsep
+
 	return collide, dx, dy
 end
 
@@ -420,7 +432,7 @@ function ConcavePolygonShape:scale(s)
 	self._polygon:scale(s, cx,cy)
 	for _, p in ipairs(self._shapes) do
 		local dx,dy = vector.sub(cx,cy, p:center())
-		p:scale(s)
+		p:scale(s, cx, cy)
 		p:moveTo(cx-dx*s, cy-dy*s)
 	end
 end
@@ -443,10 +455,15 @@ end
 function ConvexPolygonShape:draw(mode)
 	mode = mode or 'line'
 	love.graphics.polygon(mode, self._polygon:unpack())
+	love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
+	love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
 end
 
 function ConcavePolygonShape:draw(mode, wireframe)
 	local mode = mode or 'line'
+	love.graphics.polygon(mode, self._polygon:unpack())
+	love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
+	love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
 	if mode == 'line' then
 		love.graphics.polygon('line', self._polygon:unpack())
 		if not wireframe then return end
@@ -454,6 +471,7 @@ function ConcavePolygonShape:draw(mode, wireframe)
 	for _,p in ipairs(self._shapes) do
 		love.graphics.polygon(mode, p._polygon:unpack())
 	end
+
 end
 
 function CircleShape:draw(mode, segments)

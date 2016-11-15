@@ -60,7 +60,7 @@ function HC:register(shape)
 	self.hash:register(shape, shape:bbox())
 
 	-- keep track of where/how big the shape is
-	for _, f in ipairs({'move', 'rotate', 'scale'}) do
+	for _, f in ipairs({'move', 'rotate', 'scale', 'transform_mat'}) do
 		local old_function = shape[f]
 		shape[f] = function(this, ...)
 			local x1,y1,x2,y2 = this:bbox()
