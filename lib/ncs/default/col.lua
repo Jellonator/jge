@@ -317,7 +317,7 @@ function Map:on_init(fname)
 	self.map = lib.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
-		print("INIT")
+		-- print("INIT")
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
 			self.node:add_component("collisionbody", shape)

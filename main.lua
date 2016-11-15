@@ -19,7 +19,6 @@ tree:add_component("tiledmaploader", "res/testlevel.lua")
 
 local player_script = {}
 function player_script:on_init(x, y)
-	print(x, y)
 	local x = x or 0
 	local y = y or 0
 	self.speed = 64*3

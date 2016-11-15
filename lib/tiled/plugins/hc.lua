@@ -64,7 +64,7 @@ local function load_objectgroup(map, hc, layer, collidables)
 			or (object.shape == "ellipse" and w ~= h) then
 				local shape = hc:polygon(unpack_points(polygon));
 				-- shape:rotate(rot, x, y)
-				print("rot", rot)
+				-- print("rot", rot)
 				collidables[shape] = shape
 			elseif object.shape == "ellipse" then
 				local r = w/2
