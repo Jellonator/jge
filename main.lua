@@ -15,13 +15,13 @@ root:add_component("collisionworld");
 
 tree = root:add_child("tree");
 tree:add_component("tiledmaploader", "res/testlevel.lua")
-
+-- tree.transform:scale(6)
 
 local player_script = {}
 function player_script:on_init(x, y)
 	local x = x or 0
 	local y = y or 0
-	self.speed = 64*3
+	self.speed = 64*2
 	self.node.transform:translate(x, y)
 	self.node.transform:scale(2)
 	self.node:add_component("spritemap", love.graphics.newImage("res/Girl.png"),{
@@ -39,7 +39,7 @@ function player_script:on_init(x, y)
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
 	self.node:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
-	local body = self.node:add_component("collisionbody", "rectangle", -4, 0, 8, 8)
+	local body = self.node:add_component("collisionbody", "circle", 0, 4, 4)
 	body.shape:set_mask("player")
 	body.shape:add_layer("solid")
 end
@@ -49,6 +49,7 @@ function player_script:on_update(dt)
 	local left  = inputmanager:get_event("left");
 	local right = inputmanager:get_event("right");
 	local down  = inputmanager:get_event("down");
+
 
 	-- calculate direction (dx, dy)
 	local dx = (left and -1 or 0) + (right and 1 or 0)
@@ -80,6 +81,13 @@ function player_script:on_update(dt)
 	local pt = self.node:get_component("drawable_circle")
 	pt.color[1] = body:contains_point(x, y) and 255 or 0
 	pt.x, pt.y = self.node:transform_point_inv(x, y)
+
+	if inputmanager:get_event("rotl") then
+		self.node.transform:rotate(-dt*math.pi)
+	end
+	if inputmanager:get_event("rotr") then
+		self.node.transform:rotate(dt*math.pi)
+	end
 end
 
 function player_script:on_update_real(dt)

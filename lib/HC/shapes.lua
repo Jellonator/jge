@@ -391,11 +391,13 @@ end
 
 -- local ROOT_2 = math.math.sqrt(2);
 function CircleShape:transform_mat(mat)
-	local x1,y1 = mat:transform_point(self._center.x, self._center.y)
-	local x2,y2 = mat:transform_point(self._center.x+self._radius, self._center.y+self._radius)
 	self._center.x, self._center.y = mat:transform_point(self._center.x, self._center.y);
 
-	self._radius = (x2-x1 + y2-y1) / 2
+	-- calculate new radius sorta(its kinda weird, but hey, it works)
+	local radroot = math.sqrt(self._radius^2 / 2)
+	local rx, ry = radroot, radroot;
+	rx, ry = mat:transform_point(rx, ry, 0)
+	self._radius = math.sqrt(rx^2 + ry^2)
 end
 
 function ConcavePolygonShape:rotate(angle,cx,cy)

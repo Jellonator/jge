@@ -123,6 +123,15 @@ local Spritemap = {
 function Spritemap:on_init(texture, sprites, current,
 x, y, r, sx, sy, ox, oy, kx, ky)
 	self.quads = {}
+	if not sprites._i_am_inited then
+		for k,v in pairs(sprites) do
+			v[1] = v[1] + 0.1
+			v[2] = v[2] + 0.1
+			v[3] = v[3] - 0.2
+			v[4] = v[4] - 0.2
+		end
+		sprites._i_am_inited = true
+	end
 	self.texture = texture
 	self.sprites = sprites or self.sprites
 	self.current = current or self.current

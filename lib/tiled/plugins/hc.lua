@@ -78,6 +78,12 @@ local function load_objectgroup(map, hc, layer, collidables)
 end
 
 local function load_tilelayer(map, hc, layer, collidables)
+	-- local get_tile = function(x, y)
+	-- 	local t = layer.data[y];
+	-- 	if t then
+	-- 		return layer.data[y][x]
+	-- 	end
+	-- end
 	for gid, tiles in pairs(map.tileInstances) do
 		local tile = map.tiles[gid]
 		local tileset = map.tilesets[tile.tileset]

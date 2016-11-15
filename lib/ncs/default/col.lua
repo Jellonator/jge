@@ -17,13 +17,10 @@ end
 -- end
 
 function Body:_move_node(x, y)
-	-- x = x * 1.01
-	-- y = y * 1.01
 	-- shape needs to be transformed back by world coordinates
 	self.pmat:translate(-x, -y)
-
 	-- and node needs to be transformed in local coordinates
-	x, y = self:motion_world_to_local(x, y, 0)
+	-- x, y = self:motion_world_to_local(x, y)
 	self.node.transform:translate(x, y);
 end
 
