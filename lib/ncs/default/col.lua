@@ -191,6 +191,12 @@ function Body:move(x, y)
 	end
 end
 
+function Body:move_count(x, y, count)
+	for i = 1, count do
+		self:move(x/count,y/count)
+	end
+end
+
 -- Resolve a colliding body so that it no longer collides with anything
 function Body:resolve(collisions)
 	if not collisions then

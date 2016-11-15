@@ -74,7 +74,7 @@ function player_script:on_update(dt)
 
 	-- movement
 	local body = self.node:get_component("collisionbody")
-	body:move(dx, dy)--, 10, true)
+	body:move_count(dx, dy, 5)
 
 	-- mouse dot detection
 	local x, y = camera.camera:mousePosition();
