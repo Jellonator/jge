@@ -24,10 +24,10 @@ end
 function Camera:set_zoom(val)
 	self.zoom = val
 end
-function Camera:moveBy(x, y)
+function Camera:move_by(x, y)
 	self:moveTo(self.x+x, self.y+y)
 end
-function Camera:rotateBy(phi)
+function Camera:rotate_by(phi)
 	self:set_rotation(self.rot + phi)
 end
 function Camera:zoomBy(val)
@@ -43,15 +43,16 @@ function Camera:on_draw()
 	local window_scale = math.min(
 		window_width/self.width, window_height/self.height)
 	-- self.camera:lookAt(self.x, self.y);
-	local px, py = self.camera.x, self.camera.y
+	local px, py, prot = self.camera.x, self.camera.y, self.camera.rot
 	self.camera:move(self.x, self.y)
-	self.camera:rotateTo(self.rot);
+	self.camera:rotate(self.rot);
 	self.camera:zoomTo(self.zoom*window_scale);
 	self.camera:attach(
 		(window_scale*self.width  - window_width ) * -0.5,
 		(window_scale*self.height - window_height) * -0.5,
 		self.width*window_scale, self.height*window_scale);
 	self.camera:lookAt(px, py);
+	self.camera.rot = prot
 end
 function Camera:post_draw()
 	self.camera:detach();

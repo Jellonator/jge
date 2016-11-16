@@ -39,7 +39,7 @@ function player_script:on_init(x, y)
 		sprite={component="spritemap", func="set_frame"},
 	}, 6);
 	self.node:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
-	local body = self.node:add_component("collisionbody", "circle", 0, 4, 4)
+	local body = self.node:add_component("collisionbody", "circle", 0, 4, 3.75)
 	body.shape:set_mask("player")
 	body.shape:add_layer("solid")
 end
@@ -93,6 +93,8 @@ end
 function player_script:on_update_real(dt)
 	local cx, cy = self.node:getpos()
 	camera.camera:lockPosition(cx, cy, lib.hcam.smooth.damped(5))
+	camera.camera:rotateTo(-self.node:getrot())
+	-- print(self.node:getrot())
 end
 
 function generate_solid(...)
