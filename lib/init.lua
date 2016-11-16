@@ -29,16 +29,17 @@ function math.sign(x)
 end
 
 local Lib = {
-	vec   = reqlocal("hump.vector"),
 	vlt   = reqlocal("hump.vector-light"),
+	vec   = reqlocal("hump.vector"),
 	hcam  = reqlocal("hump.camera"),
-	tiled = reqlocal("tiled"),
-	ncs   = reqlocal("ncs"),
-	anim  = reqlocal("anim"),
-	Input = reqlocal("input"),
 	Transform = reqlocal("transform"),
 	Matrix3 = reqlocal("matrix3"),
-	HC = reqlocal("HC")
+	Input = reqlocal("input"),
+	json  = reqlocal("dkjson"),
+	tiled = reqlocal("tiled"),
+	anim  = reqlocal("anim"),
+	ncs   = reqlocal("ncs"),
+	HC    = reqlocal("HC"),
 }
 
 function Lib.bind(f, x, ...)

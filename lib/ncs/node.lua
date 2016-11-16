@@ -251,6 +251,51 @@ function Node:add_component(name, ...)
 	return c
 end
 
+function Node:_add_component_json(name, jsondata)
+	local c = lib.ncs.Component.instance(name);
+	if c._allow_multiple then
+		table.insert(self.components, c);
+	end
+	self.components_named[name] = c;
+	c.node = self;
+	-- c:from_json(jsondata);
+	return c
+end
+
+local _contains = function(t, val)
+	for _,v in pairs(t) do
+		if v == val then return true end
+	end
+	return false
+end
+function Node:from_json(json)
+	if type(json) == "string" then
+		local contents = love.filesystem.read(json)
+		json,pos,err = lib.json.decode(contents)
+		if err then error(err) end
+	end
+	local t = {}
+	for k,v in pairs(json) do
+		local obj = self:_add_component_json(k, v)
+		table.insert(t, obj)
+		obj._depends = v.depends or obj._depends
+	end
+	table.sort(t, function(a, b)
+		local a_dependson_b = a._depends and _contains(a._depends, b._name) or false
+		local b_dependson_a = b._depends and _contains(b._depends, a._name) or false
+		if a_dependson_b and b_dependson_a then
+			error("Circular dependencies!")
+		end
+		if a_dependson_b then
+			return false
+		end
+		return true
+	end)
+	for i,v in ipairs(t) do
+		v:from_json(json[v._name])
+	end
+end
+
 return setmetatable(Node, {
 	__call = function(t, ...)
 		return Node.new(...)

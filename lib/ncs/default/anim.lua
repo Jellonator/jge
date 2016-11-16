@@ -55,6 +55,9 @@ function Animation:on_init(tweens, meta, speed)
 		end
 	end
 end
+function Animation:from_json(json)
+	self:on_init(json.animations, json.metadata, json.speed)
+end
 function Animation:play(name, doreset)
 	self.playing = true
 	local doreset = try_or(doreset, false)

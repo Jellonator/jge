@@ -145,6 +145,11 @@ x, y, r, sx, sy, ox, oy, kx, ky)
 	self.kx = kx or self.kx
 	self.ky = ky or self.ky
 end
+function Spritemap:from_json(json)
+	self:on_init(love.graphics.newImage(json.image), json.frames, json.current,
+		json.x, json.y, json.rot, json.sx, json.sy,
+		json.ox, json.oy, json.kx, json.ky)
+end
 function Spritemap:set_frame(id)
 	self.current = id
 end

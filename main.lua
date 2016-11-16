@@ -19,25 +19,10 @@ tree:add_component("tiledmaploader", "res/testlevel.lua")
 
 local player_script = {}
 function player_script:on_init(x, y)
-	local x = x or 0
-	local y = y or 0
 	self.speed = 64*2
-	self.node.transform:translate(x, y)
+	self.node.transform:translate(x or 0, y or 0)
 	self.node.transform:scale(2)
-	self.node:add_component("spritemap", love.graphics.newImage("res/Girl.png"),{
-		{ 0,  0, 16, 16}, {16,  0, 16, 16}, {32,  0, 16, 16},
-		{ 0, 16, 16, 16}, {16, 16, 16, 16}, {32, 16, 16, 16},
-		{ 0, 32, 16, 16}, {16, 32, 16, 16}, {32, 32, 16, 16},
-		{ 0, 48, 16, 16}, {16, 48, 16, 16}, {32, 48, 16, 16},
-	}, nil, 0, 0, 0, 1, 1, 8, 8);
-	self.node:add_component("animation", {
-		down  = {{1,{sprite= 1}}, {1,{sprite= 2}}, {1,{sprite= 3}}, {1,{sprite= 2}}},
-		left  = {{1,{sprite= 4}}, {1,{sprite= 5}}, {1,{sprite= 6}}, {1,{sprite= 5}}},
-		right = {{1,{sprite= 7}}, {1,{sprite= 8}}, {1,{sprite= 9}}, {1,{sprite= 8}}},
-		up    = {{1,{sprite=10}}, {1,{sprite=11}}, {1,{sprite=12}}, {1,{sprite=11}}},
-	}, {
-		sprite={component="spritemap", func="set_frame"},
-	}, 6);
+	self.node:from_json("res/playeranim.json")
 	self.node:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
 	local body = self.node:add_component("collisionbody", "circle", 0, 4, 3.75)
 	body.shape:set_mask("player")
@@ -49,7 +34,6 @@ function player_script:on_update(dt)
 	local left  = inputmanager:get_event("left");
 	local right = inputmanager:get_event("right");
 	local down  = inputmanager:get_event("down");
-
 
 	-- calculate direction (dx, dy)
 	local dx = (left and -1 or 0) + (right and 1 or 0)

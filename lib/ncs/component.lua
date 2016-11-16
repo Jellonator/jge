@@ -4,6 +4,7 @@ local Component = {
 
 local function function_empty() end
 
+local required_components = {"from_json", "to_json"}
 function Component.register_component(name, t)
 	local self = Component;
 	if self.components[name] then
@@ -11,21 +12,20 @@ function Component.register_component(name, t)
 	end
 	self.components[name] = t
 	-- warn for components not implementing serialization
-	if not t.on_serialize or not t.on_loadstring then
-		local s = "";
-		if not t.on_serialize then
-			s = "'serialize'";
+	local has_all_components = true;
+	local warnstr = ""
+	for i,v in pairs(required_components) do
+		if not t[v] then
+			if not has_all_components then
+				warnstr = warnstr .. ", "
+			end
+			warnstr = warnstr .. "'"..v.."'"
+			has_all_components = false
 		end
-		if not t.on_serialize and not t.on_loadstring then
-			s = "s " .. s .. " or ";
-		else
-			s = " " .. s;
-		end
-		if not t.on_loadstring then
-			s = s .. "'loadstring'";
-		end
-		print(("WARNING! component %s does not define the function%s!")
-			:format(name, s))
+	end
+	if not has_all_components then
+			print(("WARNING! component %s does not define the function(s): %s!")
+				:format(name, warnstr))
 	end
 
 	-- give default functions

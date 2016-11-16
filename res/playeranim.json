@@ -1,0 +1,29 @@
+{
+	"spritemap": {
+		"image": "res/Girl.png",
+		"ox": 8,
+		"oy": 8,
+		"frames": [
+			[ 0,  0, 16, 16], [16,  0, 16, 16], [32,  0, 16, 16],
+			[ 0, 16, 16, 16], [16, 16, 16, 16], [32, 16, 16, 16],
+			[ 0, 32, 16, 16], [16, 32, 16, 16], [32, 32, 16, 16],
+			[ 0, 48, 16, 16], [16, 48, 16, 16], [32, 48, 16, 16]
+		],
+	},
+	"animation": {
+		"depends": ["spritemap"],
+		"speed": 6,
+		"animations": {
+			"down":  [[1,{"sprite": 1}], [1,{"sprite": 2}], [1,{"sprite": 3}], [1,{"sprite": 2}]],
+			"left":  [[1,{"sprite": 4}], [1,{"sprite": 5}], [1,{"sprite": 6}], [1,{"sprite": 5}]],
+			"right": [[1,{"sprite": 7}], [1,{"sprite": 8}], [1,{"sprite": 9}], [1,{"sprite": 8}]],
+			"up":    [[1,{"sprite":10}], [1,{"sprite":11}], [1,{"sprite":12}], [1,{"sprite":11}]]
+		},
+		"metadata": {
+			"sprite": {
+				"component": "spritemap",
+				"func": "set_frame"
+			}
+		}
+	}
+}
