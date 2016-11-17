@@ -10,6 +10,32 @@ function Body:on_init(shape, ...)
 	self.shape.body = self
 	self.pmat = lib.Matrix3();
 end
+
+function Body:from_json(json)
+	local shape = json.shape;
+	if shape == "rectangle" then
+		self:on_init(shape, json.x, json.y, json.w or json.width, json.h or json.height)
+	elseif shape == "point" then
+		self:on_init(shape, json.x, json.y)
+	elseif shape == "circle" then
+		self:on_init(shape, json.x, json.y, json.r or json.radius)
+	elseif shape == "polygon" then
+		self:on_init(shape, unpack(json.points or json.vertices))
+		self.shape:move(json.x or 0, json.y or 0)
+	else
+		error("No such shape of name '"..tostring(shape).."'")
+	end
+
+	if json.layers then
+		for _,v in pairs(json.layers) do
+			self.shape:add_layer(v);
+		end
+	end
+	if json.mask then
+		self.shape:set_mask(json.mask)
+	end
+end
+
 --
 -- function Body:on_draw()
 -- 	love.graphics.setColor(0,255,255)
@@ -201,22 +227,18 @@ function Body:resolve(collisions)
 	end
 
 	local _col = {}
-	for obj, sep in pairs(collisions) do
-		sep.obj = obj
-		table.insert(_col, sep)
+	for obj in pairs(collisions) do
+		table.insert(_col, obj)
 	end
 	collisions = _col
 
 	local selfx, selfy = self.shape:center()
-	table.sort(collisions, function(asep, bsep)
-		local aobj = asep.obj
-		local bobj = bsep.obj
+	table.sort(collisions, function(aobj, bobj)
 		return lib.vlt.dist(selfx, selfy, aobj:center())
 		     < lib.vlt.dist(selfx, selfy, bobj:center())
 	end)
 
-	for _, sep in ipairs(collisions) do
-		local obj = sep.obj
+	for _, obj in ipairs(collisions) do
 		local does, sx, sy = self.shape:collidesWith(obj);
 		if does and sx and sy then
 			local seplist = obj._allsep

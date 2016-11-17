@@ -107,6 +107,11 @@ end
 -- collision detection
 function HC:neighbors(shape)
 	local neighbors = self.hash:inSameCells(shape:bbox())
+	-- for other in pairs(neighbors) do
+	-- 	if not shape:can_mask_collide(other) then
+	-- 		rawset(neighbors, other, nil)
+	-- 	end
+	-- end
 	rawset(neighbors, shape, nil)
 	return neighbors
 end
@@ -115,7 +120,7 @@ function HC:collisions(shape)
 	local candidates = self:neighbors(shape)
 	local does_collide = false;
 	for other in pairs(candidates) do
-		if shape:can_mask_collide(other) then
+		-- if shape:can_mask_collide(other) then
 			local collides, dx, dy = shape:collidesWith(other)
 			if collides then
 				dx = dx or 0
@@ -125,9 +130,9 @@ function HC:collisions(shape)
 			else
 				rawset(candidates, other, nil)
 			end
-		else
-			rawset(candidates, other, nil)
-		end
+		-- else
+			-- rawset(candidates, other, nil)
+		-- end
 	end
 	return candidates, does_collide
 end

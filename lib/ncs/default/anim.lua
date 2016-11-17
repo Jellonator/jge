@@ -58,6 +58,11 @@ end
 function Animation:from_json(json)
 	self:on_init(json.animations, json.metadata, json.speed)
 end
+function Animation:reset()
+	if self.tweens[self.current] then
+		self.tweens[self.current]:reset()
+	end
+end
 function Animation:play(name, doreset)
 	self.playing = true
 	local doreset = try_or(doreset, false)
@@ -74,6 +79,9 @@ function Animation:play(name, doreset)
 end
 function Animation:pause()
 	self.playing = false
+end
+function Animation:get_current()
+	return self.current
 end
 function Animation:on_update(dt)
 	local tween = self.tweens[self.current]

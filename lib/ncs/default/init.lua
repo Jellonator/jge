@@ -17,4 +17,8 @@ function Script:on_init(t, ...)
 		t.on_init(self, ...)
 	end
 end
+function Script:from_json(json)
+	local t = loadfile(json.script)();
+	self:on_init(t);
+end
 register_component("script", Script);

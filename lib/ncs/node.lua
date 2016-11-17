@@ -269,30 +269,53 @@ local _contains = function(t, val)
 	return false
 end
 function Node:from_json(json)
+	-- load json
 	if type(json) == "string" then
 		local contents = love.filesystem.read(json)
 		json,pos,err = lib.json.decode(contents)
 		if err then error(err) end
 	end
-	local t = {}
-	for k,v in pairs(json) do
-		local obj = self:_add_component_json(k, v)
-		table.insert(t, obj)
-		obj._depends = v.depends or obj._depends
+	-- load components
+	if json.components then
+		local t = {}
+		for k,v in pairs(json.components) do
+			local cname = v.component or k
+			local obj = self:_add_component_json(cname, v)
+			table.insert(t, obj)
+			obj._depends = v.depends or obj._depends
+			obj._jsondata = v
+		end
+		table.sort(t, function(a, b)
+			local a_dependson_b = a._depends and _contains(a._depends, b._name) or false
+			local b_dependson_a = b._depends and _contains(b._depends, a._name) or false
+			if a_dependson_b and b_dependson_a then
+				error("Circular dependencies!")
+			end
+			if a_dependson_b then
+				return false
+			end
+			if b_dependson_a then
+				return true
+			end
+			return tostring(a) < tostring(b)
+		end)
+		for i,v in ipairs(t) do
+			v:from_json(v._jsondata)
+		end
 	end
-	table.sort(t, function(a, b)
-		local a_dependson_b = a._depends and _contains(a._depends, b._name) or false
-		local b_dependson_a = b._depends and _contains(b._depends, a._name) or false
-		if a_dependson_b and b_dependson_a then
-			error("Circular dependencies!")
+	-- load transforms
+	self.transform:scale(
+		json.scale or json.sx or json.scalex or 1,
+		json.scale or json.sy or json.scaley or 1)
+	self.transform:translate(json.x or 0, json.y or 0)
+	self.transform:rotate(
+		json.r or json.rot or json.rotation or json.angle or 0)
+	-- load children
+	if json.children then
+		for k,v in pairs(json.children) do
+			local c = self:add_child(k);
+			c:from_json(v)
 		end
-		if a_dependson_b then
-			return false
-		end
-		return true
-	end)
-	for i,v in ipairs(t) do
-		v:from_json(json[v._name])
 	end
 end
 

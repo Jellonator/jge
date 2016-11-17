@@ -170,9 +170,10 @@ function Map:setTiles(index, tileset, gid)
 				gid         = gid,
 				tileset     = index,
 				quad        = quad(
-					quadX,  quadY,
+					--this should be right I assume
+					quadX+(quadX+1)/imageW,  quadY+(quadY+1)/imageH,
 					tileW,  tileH,
-					imageW, imageH
+					imageW+1, imageH+1
 				),
 				properties  = properties or {},
 				terrain     = terrain,

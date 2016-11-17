@@ -36,43 +36,62 @@ local function generate_shape(hc, dat)
 	return shape
 end
 
-local function load_objectgroup(map, hc, layer, collidables)
+local function generate_object_shape(map, hc, object, collidables, ox, oy)
+	ox = ox or 0
+	oy = oy or 0
+	local dat = {
+		shape = object.shape
+	}
+	local x       = object.dx or object.x
+	local y       = object.dy or object.y
+	local w       = object.width
+	local h       = object.height
+	local polygon = object.polygon or object.polyline or object.ellipse or object.rectangle
+	local rot     = math.rad(object.rotation or 0)
+	-- x = x + ox
+	-- y = y + oy
+	-- if polygon then
+	-- 	for _,p in pairs(polygon) do
+	-- 		p.x = p.x + ox
+	-- 		p.y = p.y + oy
+	-- 	end
+	-- end
+	local shape;
+	local is_polygon = false;
+	if object.shape == "rectangle" then
+		shape = hc:rectangle(0, 0, w, h)
+		shape:rotate(rot, 0, 0)
+		if object.gid then
+			local tileset = map.tilesets[map.tiles[object.gid].tileset]
+			local ox = math.sin(rot)*h
+			local oy = -math.cos(rot)*h
+			shape:move(ox, oy)
+		end
+	elseif object.shape == "polygon" or object.shape == "polyline"
+	or (object.shape == "ellipse" and w ~= h) then
+		is_polygon = true;
+		shape = hc:polygon(unpack_points(polygon));
+	elseif object.shape == "ellipse" then
+		local r = w/2
+		local cy = math.sin(rot)*r + math.cos(rot)*r
+		local cx = math.cos(rot)*r - math.sin(rot)*r
+		shape = hc:circle(cx, cy, w/2)
+	end
+	collidables[shape] = shape
+	if is_polygon then
+		x = 0
+		y = 0
+	end
+	shape:move(ox+x, oy+y)
+end
+
+local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
+	force_col = force_col ~= nil and force_col or false
 	local layer_collidable = get_property(layer, "collidable", false)
 	for _, object in ipairs(layer.objects) do
 		local object_collidable = get_property(object, "collidable", false)
-		if object_collidable or layer_collidable then
-			local dat = {
-				shape = object.shape
-			}
-			local x       = object.dx or object.x
-			local y       = object.dy or object.y
-			local w       = object.width
-			local h       = object.height
-			local polygon = object.polygon or object.polyline or object.ellipse or object.rectangle
-			local rot     = math.rad(object.rotation or 0)
-			if object.shape == "rectangle" then
-				local shape = hc:rectangle(x, y, w, h)
-				shape:rotate(rot, x, y)
-				if object.gid then
-					local tileset = map.tilesets[map.tiles[object.gid].tileset]
-					local ox = math.sin(rot)*h
-					local oy = -math.cos(rot)*h
-					shape:move(ox, oy)
-				end
-				collidables[shape] = shape
-			elseif object.shape == "polygon" or object.shape == "polyline"
-			or (object.shape == "ellipse" and w ~= h) then
-				local shape = hc:polygon(unpack_points(polygon));
-				-- shape:rotate(rot, x, y)
-				-- print("rot", rot)
-				collidables[shape] = shape
-			elseif object.shape == "ellipse" then
-				local r = w/2
-				local cy = math.sin(rot)*r + math.cos(rot)*r
-				local cx = math.cos(rot)*r - math.sin(rot)*r
-				local shape = hc:circle(x+cx, y+cy, w/2)
-				collidables[shape] = shape
-			end
+		if object_collidable or layer_collidable or force_col then
+			generate_object_shape(map, hc, object, collidables, ox, oy)
 		end
 	end
 end
@@ -90,15 +109,23 @@ local function load_tilelayer(map, hc, layer, collidables)
 
 		for _, instance in ipairs(tiles) do
 			if instance.layer == layer then
-				local object = {
-					shape  = "rectangle",
-					x      = instance.x,
-					y      = instance.y,
-					width  = tileset.tilewidth,
-					height = tileset.tileheight,
-				}
-				local shape = generate_shape(hc, object)
-				collidables[shape] = shape
+				if tile.objectGroup then
+					-- for _, object in pairs(tile.objectGroup) do
+						-- generate_object_shape(map, hc, object, instance.x, instance.y, collidables)
+					load_objectgroup(map, hc, tile.objectGroup, collidables,
+						instance.x, instance.y, true)
+					-- end
+				else
+					local object = {
+						shape  = "rectangle",
+						x      = instance.x,
+						y      = instance.y,
+						width  = tileset.tilewidth,
+						height = tileset.tileheight,
+					}
+					local shape = generate_shape(hc, object)
+					collidables[shape] = shape
+				end
 			end
 		end
 	end

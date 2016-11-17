@@ -4,7 +4,7 @@ local Component = {
 
 local function function_empty() end
 
-local required_components = {"from_json", "to_json"}
+local required_components = {"from_json", --[["to_json"]]}
 function Component.register_component(name, t)
 	local self = Component;
 	if self.components[name] then
@@ -34,11 +34,11 @@ function Component.register_component(name, t)
 	t.on_input  = t.on_input  or function_empty;
 	t.on_init   = t.on_init   or function_empty;
 	t.on_transform  = t.on_transform  or function_empty;
-	t.on_serialize  = t.on_serialize  or function_empty;
-	t.on_loadstring = t.on_loadstring or function_empty;
 	t.post_draw = t.post_draw or function_empty;
 	t.pre_transform  = t.pre_transform  or function_empty;
 	t.on_update_real = t.on_update_real or function_empty;
+	-- no default provided for 'from_json!' if you try,
+	-- you deserve the crash for not implementing it
 
 	-- modify some metadata
 	t._allow_multiple = try_or(t._allow_multiple, true);
