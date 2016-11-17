@@ -170,10 +170,13 @@ function Map:setTiles(index, tileset, gid)
 				gid         = gid,
 				tileset     = index,
 				quad        = quad(
-					--this should be right I assume
-					quadX+(quadX+1)/imageW,  quadY+(quadY+1)/imageH,
-					tileW,  tileH,
-					imageW+1, imageH+1
+					-- This should be right I assume
+					-- Since I can't mess up the quad's width or height, I
+					-- instead have to use a different approach for padding
+					-- tiles.
+
+					(quadX+0.5) * (1 + 1/tileW), (quadY+0.5) * (1 + 1/tileH),
+					tileW, tileH, imageW+imageW/tileW, imageH+imageH/tileH
 				),
 				properties  = properties or {},
 				terrain     = terrain,
