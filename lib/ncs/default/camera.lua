@@ -38,7 +38,7 @@ function Camera:on_init(width, height)
 	self.height = height or self.height
 	self.camera = lib.hcam(0, 0)
 end
-function Camera:on_draw()
+function Camera:pre_draw()
 	local window_width, window_height = love.graphics.getDimensions()
 	local window_scale = math.min(
 		window_width/self.width, window_height/self.height)

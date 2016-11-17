@@ -48,14 +48,6 @@ local function generate_object_shape(map, hc, object, collidables, ox, oy)
 	local h       = object.height
 	local polygon = object.polygon or object.polyline or object.ellipse or object.rectangle
 	local rot     = math.rad(object.rotation or 0)
-	-- x = x + ox
-	-- y = y + oy
-	-- if polygon then
-	-- 	for _,p in pairs(polygon) do
-	-- 		p.x = p.x + ox
-	-- 		p.y = p.y + oy
-	-- 	end
-	-- end
 	local shape;
 	local is_polygon = false;
 	if object.shape == "rectangle" then
@@ -78,11 +70,13 @@ local function generate_object_shape(map, hc, object, collidables, ox, oy)
 		shape = hc:circle(cx, cy, w/2)
 	end
 	collidables[shape] = shape
-	if is_polygon then
+	if is_polygon and ox == 0 and oy == 0 then
 		x = 0
 		y = 0
 	end
 	shape:move(ox+x, oy+y)
+	shape.tiledobject = object
+	shape.tiledproperties = object.properties
 end
 
 local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)

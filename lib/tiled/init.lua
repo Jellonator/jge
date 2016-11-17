@@ -85,22 +85,26 @@ function Map:init(path, plugins, ox, oy)
 	}
 	self.offsetx = ox or 0
 	self.offsety = oy or 0
+	self._path = path
 
 	-- Set tiles, images
 	local gid = 1
 	for i, tileset in ipairs(self.tilesets) do
-		assert(tileset.image, "STI does not support Tile Collections.\nYou need to create a Texture Atlas.")
+		-- assert(tileset.image, "STI does not support Tile Collections.\nYou need to create a Texture Atlas.")
+		if tileset.image then
+			-- Cache images
+			local formatted_path = utils.format_path(path .. tileset.image)
+			if not STI.cache[formatted_path] then
+				utils.cache_image(STI, formatted_path)
+			end
 
-		-- Cache images
-		local formatted_path = utils.format_path(path .. tileset.image)
-		if not STI.cache[formatted_path] then
-			utils.cache_image(STI, formatted_path)
+			-- Pull images from cache
+			tileset.image = STI.cache[formatted_path]
+
+			gid = self:setTiles(i, tileset, gid)
+		else
+			gid = self:setTiles(i, tileset, gid)
 		end
-
-		-- Pull images from cache
-		tileset.image = STI.cache[formatted_path]
-
-		gid = self:setTiles(i, tileset, gid)
 	end
 
 	-- Set layers
@@ -139,9 +143,51 @@ function Map:setTiles(index, tileset, gid)
 	local tileH   = tileset.tileheight
 	local margin  = tileset.margin
 	local spacing = tileset.spacing
+
+	if not tileset.image then
+		for i,tile in ipairs(tileset.tiles) do
+			-- local id = tile.id
+			local id = tile.id
+			-- Cache images
+			local formatted_path = utils.format_path(self._path .. tile.image)
+			if not STI.cache[formatted_path] then
+				utils.cache_image(STI, formatted_path)
+			end
+
+			-- Pull images from cache
+			tile.image = STI.cache[formatted_path]
+			gid = tileset.firstgid + id
+
+			local tile = {
+				id          = id,
+				gid         = gid,
+				tileset     = index,
+				quad        = quad(
+					0.5, 0.5,
+					tile.width, tile.height, tile.width + 1, tile.height + 1
+				),
+				properties  = tile.properties or {},
+				terrain     = tile.terrain,
+				animation   = tile.animation,
+				objectGroup = tile.objectGroup,
+				frame       = 1,
+				time        = 0,
+				width       = tile.width,
+				height      = tile.height,
+				sx          = 1,
+				sy          = 1,
+				r           = 0,
+				offset      = tileset.tileoffset,
+				image       = tile.image
+			}
+			self.tiles[gid] = tile
+			gid = gid + 1
+		end
+		return gid
+	end
+
 	local w       = utils.get_tiles(imageW, tileW, margin, spacing)
 	local h       = utils.get_tiles(imageH, tileH, margin, spacing)
-
 	for y = 1, h do
 		for x = 1, w do
 			local id    = gid - tileset.firstgid
@@ -503,7 +549,7 @@ function Map:setObjectSpriteBatches(layer)
 		if object.gid then
 			local tile    = self.tiles[object.gid] or self:setFlippedGID(object.gid)
 			local tileset = tile.tileset
-			local image   = self.tilesets[tile.tileset].image
+			local image   = tile.image or self.tilesets[tile.tileset].image
 
 			local sx = tile.sx * scalex
 			local sy = tile.sy * scaley
@@ -518,6 +564,8 @@ function Map:setObjectSpriteBatches(layer)
 			tileY = tileY - math.cos(tileR)*tileH
 
 			local id = batch:add(tile.quad, tileX, tileY, tileR, sx, sy)--, ox, oy)
+			object.batch = batch
+			object.batchid = id
 			self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
 			table.insert(self.tileInstances[tile.gid], {
 				layer = layer,

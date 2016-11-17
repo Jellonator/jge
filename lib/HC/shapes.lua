@@ -457,15 +457,15 @@ end
 function ConvexPolygonShape:draw(mode)
 	mode = mode or 'line'
 	love.graphics.polygon(mode, self._polygon:unpack())
-	love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
-	love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
+	-- love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
+	-- love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
 end
 
 function ConcavePolygonShape:draw(mode, wireframe)
 	local mode = mode or 'line'
 	love.graphics.polygon(mode, self._polygon:unpack())
-	love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
-	love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
+	-- love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
+	-- love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
 	if mode == 'line' then
 		love.graphics.polygon('line', self._polygon:unpack())
 		if not wireframe then return end
@@ -481,7 +481,7 @@ function CircleShape:draw(mode, segments)
 end
 
 function PointShape:draw()
-	love.graphics.point(self:center())
+	love.graphics.points(self:center())
 end
 
 

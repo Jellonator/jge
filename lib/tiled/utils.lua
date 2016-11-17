@@ -51,6 +51,7 @@ function utils.cache_image(sti, path)
 	local image = love.graphics.newImage(path)
 	image:setFilter("nearest", "nearest")
 	sti.cache[path] = image
+	return image
 end
 
 -- We just don't know.

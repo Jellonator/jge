@@ -35,6 +35,7 @@ function Component.register_component(name, t)
 	t.on_init   = t.on_init   or function_empty;
 	t.on_transform  = t.on_transform  or function_empty;
 	t.post_draw = t.post_draw or function_empty;
+	t.pre_draw = t.pre_draw or function_empty;
 	t.pre_transform  = t.pre_transform  or function_empty;
 	t.on_update_real = t.on_update_real or function_empty;
 	-- no default provided for 'from_json!' if you try,

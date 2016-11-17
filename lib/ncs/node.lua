@@ -69,24 +69,28 @@ function Node:transform_point_inv(x, y) -- global -> local
 	return mat:transform_point(x, y)
 end
 
-function Node:_recalculate()
-	if self._self_id ~= self.transform._id  then
-		self._self_id = self.transform._id;
-		if self._parent then
-			local prot = self._parent:getrot()
-			self._cache_rotation = prot + self.transform.rotation;
-		else
-			self._cache_rotation = self.transform.rotation;
-		end
-		self._cache_x, self._cache_y = self:transform_point(0, 0);
+function Node:_transformed()
+	self._self_id = self.transform._id;
+	if self._parent then
+		local prot = self._parent:getrot()
+		self._cache_rotation = prot + self.transform.rotation;
+	else
+		self._cache_rotation = self.transform.rotation;
+	end
+	self._cache_x, self._cache_y = self:transform_point(0, 0);
 
-		-- callback for components and nodes
-		for i, c in pairs(self.components) do
-			c:on_transform(self.transform);
-		end
-		for i, node in pairs(self.children) do
-			node:_recalculate()
-		end
+	-- callback for components and nodes
+	for i, c in pairs(self.components) do
+		c:on_transform(self.transform);
+	end
+	for i, node in pairs(self.children) do
+		node:_transformed()
+	end
+end
+
+function Node:_recalculate()
+	if self._self_id ~= self.transform._id or force then
+		self:_transformed();
 	end
 end
 
@@ -148,6 +152,9 @@ function Node:draw(lerp)
 	self.transform.scaley = lib.lerp(lerp, self._prev_scaley, scaley)
 	self.transform.rotation = lib.lerp(lerp, self._prev_rot, rot)
 
+	for i, c in pairs(self.components) do
+		c:pre_draw(lerp);
+	end
 	self.transform:draw_push();
 	for i, c in pairs(self.components) do
 		c:on_draw(lerp);

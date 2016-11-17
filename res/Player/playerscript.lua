@@ -48,7 +48,7 @@ end
 function player_script:on_update_real(dt)
 	local camera = self.node:get_root():get_component("camera")
 	local cx, cy = self.node:getpos()
-	camera.camera:lockPosition(cx, cy, lib.hcam.smooth.damped(5))
+	camera.camera:lockPosition(cx, cy, lib.hcam.smooth.none(5))
 	camera.camera:rotateTo(-self.node:getrot())
 end
 

@@ -28,6 +28,10 @@ function math.sign(x)
 	else return -1 end
 end
 
+function printf(s, ...)
+	print(s:format(...))
+end
+
 local Lib = {
 	vlt   = reqlocal("hump.vector-light"),
 	vec   = reqlocal("hump.vector"),

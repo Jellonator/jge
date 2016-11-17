@@ -1,11 +1,12 @@
 local Body = {}
 function Body:on_init(shape, ...)
+	self.world = self.node
+		:get_parent_with_component("collisionworld")
+		:get_component("collisionworld").world
 	if type(shape) == "string" then
-		self.world = self.node
-			:get_parent_with_component("collisionworld")
-			:get_component("collisionworld").world
 		shape = self.world:create(shape, ...)
 	end
+	self.pushable = false
 	self.shape = shape
 	self.shape.body = self
 	self.pmat = lib.Matrix3();
@@ -34,19 +35,33 @@ function Body:from_json(json)
 	if json.mask then
 		self.shape:set_mask(json.mask)
 	end
+	if json.pushable ~= nil then
+		self:set_pushable(json.pushable)
+	end
+end
+
+function Body:set_pushable(value)
+	self.pushable = value
 end
 
 --
--- function Body:on_draw()
--- 	love.graphics.setColor(0,255,255)
--- 	self.shape:draw('line')
--- end
+function Body:post_draw()
+	if not self.draw then return end
+	love.graphics.setColor(0,255,255)
+	self.shape:transform_mat(self.pmat);
+	-- love.graphics.push()
+	-- love.graphics.origin()
+	self.shape:draw('line')
+	-- love.graphics.pop()
+	self.shape:transform_mat(self.pmat:clone():inverse());
+end
 
 function Body:_move_node(x, y)
 	-- shape needs to be transformed back by world coordinates
 	self.pmat:translate(-x, -y)
 	-- and node needs to be transformed in local coordinates
-	-- x, y = self:motion_world_to_local(x, y)
+	x, y = self:motion_world_to_local(x, y)
+	x, y = self.node.transform:get_mat():transform_point(x, y, 0)
 	self.node.transform:translate(x, y);
 end
 
@@ -260,6 +275,18 @@ function Body:resolve(collisions)
 	end
 end
 
+-- Resolves all nearby neighbors
+function Body:resolve_neighbors(collisions)
+	if not collisions then
+		collisions = self.world:neighbors(self.shape)
+	end
+	for neighbor, _ in pairs(collisions) do
+		if neighbor.body and neighbor:collidesWith(self.shape) and neighbor.body.pushable then
+			neighbor.body:resolve();
+		end
+	end
+end
+
 --[[ TESTING FUNCTIONS ]]
 function Body:contains_point(x, y)
 	return self.shape:contains(x, y)
@@ -337,9 +364,45 @@ function Map:on_init(fname)
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
 		-- print("INIT")
+		for _,layer in ipairs(self.map.layers) do
+			if layer.type == "objectgroup" then
+				local i = 1;
+				while i <= #layer.objects do
+					local object = layer.objects[i];
+					local t = object.gid and self.map.tiles[object.gid];
+					local json = t and t.properties and t.properties.json
+						or object.properties and object.properties.json
+					if json then
+						object.batch:set(object.batchid, 0,0,0,0,1,1)
+						json = self.map._path .. json
+						local o = self.node:add_child();
+						local r = math.rad(object.rotation)
+						o:from_json(json)
+
+						local x,y = object.x+object.width/2, object.y+object.height/2
+						y = y - math.cos(r)*object.height
+						o.transform:translate(x, y)
+						o.transform:rotate(r)
+
+						table.remove(layer.objects, i)
+					else
+						i = i + 1
+					end
+				end
+			end
+		end
+
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
-			self.node:add_component("collisionbody", shape)
+			local c = self.node:add_child();
+			c:add_component("collisionbody", shape)
+			local cx, cy = shape:center();
+			c.transform:translate(cx, cy)
+			shape:move(-cx, -cy)
+			local script = shape.tiledproperties and shape.tiledproperties.script
+			if script then
+				c:add_component("script", self.map._path .. script)
+			end
 		end
 	end
 end

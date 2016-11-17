@@ -123,15 +123,15 @@ local Spritemap = {
 function Spritemap:on_init(texture, sprites, current,
 x, y, r, sx, sy, ox, oy, kx, ky)
 	self.quads = {}
-	if not sprites._i_am_inited then
-		for k,v in pairs(sprites) do
-			v[1] = v[1] + 0.1
-			v[2] = v[2] + 0.1
-			v[3] = v[3] - 0.2
-			v[4] = v[4] - 0.2
-		end
-		sprites._i_am_inited = true
-	end
+	-- if not sprites._i_am_inited then
+	-- 	for k,v in pairs(sprites) do
+	-- 		v[1] = v[1] + 0.1
+	-- 		v[2] = v[2] + 0.1
+	-- 		v[3] = v[3] - 0.2
+	-- 		v[4] = v[4] - 0.2
+	-- 	end
+	-- 	sprites._i_am_inited = true
+	-- end
 	self.texture = texture
 	self.sprites = sprites or self.sprites
 	self.current = current or self.current
@@ -165,9 +165,19 @@ function Spritemap:get_quad(id)
 	else
 		local sprite = self.sprites[id]
 		if sprite then
+			local x = sprite[1]
+			local y = sprite[2]
+			local w = sprite[3]
+			local h = sprite[4]
+			local iw, ih = self.texture:getDimensions()
+			--(quadX+0.5) * (1 + 1/tileW), (quadY+0.5) * (1 + 1/tileH),
+			--tileW, tileH, imageW+imageW/tileW, imageH+imageH/tileH
 			self.quads[id] = love.graphics.newQuad(
-				sprite[1], sprite[2], sprite[3], sprite[4],
-				self.texture:getDimensions())
+				(x+0.5) * (1 + 1/w), (y+0.5) * (1 + 1/h),
+				w, h, iw + iw/w, ih + ih/h
+			)
+				-- sprite[1], sprite[2], sprite[3], sprite[4],
+				-- self.texture:getDimensions())
 			return self.quads[id]
 		end
 	end
