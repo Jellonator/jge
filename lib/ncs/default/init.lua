@@ -23,6 +23,9 @@ function Script:on_init(t, ...)
 	end
 end
 function Script:from_json(json)
+	for k,v in pairs(json) do
+		self[k] = v
+	end
 	self:on_init(json.script);
 end
 register_component("script", Script);

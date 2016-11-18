@@ -90,7 +90,6 @@ function Map:init(path, plugins, ox, oy)
 	-- Set tiles, images
 	local gid = 1
 	for i, tileset in ipairs(self.tilesets) do
-		-- assert(tileset.image, "STI does not support Tile Collections.\nYou need to create a Texture Atlas.")
 		if tileset.image then
 			-- Cache images
 			local formatted_path = utils.format_path(path .. tileset.image)
@@ -103,6 +102,7 @@ function Map:init(path, plugins, ox, oy)
 
 			gid = self:setTiles(i, tileset, gid)
 		else
+			-- tile collections
 			gid = self:setTiles(i, tileset, gid)
 		end
 	end

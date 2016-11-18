@@ -228,30 +228,50 @@ function Node:get_node(name)
 	end
 end
 
+function Node:get_children_recursive(t)
+	t = t or {}
+	for _, child in pairs(self.children) do
+		table.insert(t, child)
+		child:get_children_recursive(t)
+	end
+	return t
+end
+
 -- Component functions
+function Node:call_signal(cname, fname, recursive, ...)
+	local recursive = try_or(recursive, false)
+	for _,c in pairs(self.components) do
+		if (cname == nil or c._name == cname) and c[fname] then
+			c[fname](c, ...)
+		end
+	end
+
+	if recursive == true or recursive > 1 then
+		local next_recursive = recursive == true and true or recursive - 1
+		for _, node in pairs(self.children) do
+			node:call_signal(cname, fname, next_recursive, ...)
+		end
+	end
+end
+
 function Node:get_component(name)
 	return self.components_named[name];
 end
+Node.has_component = Node.get_component;
 
 function Node:get_components_all(name)
-	if self.components_named[name]._allow_multiple then
-		local ret = {};
-		for i, c in pairs(self.components) do
-			if c._name == name then
-				table.insert(ret, c)
-			end
+	local ret = {};
+	for i, c in pairs(self.components) do
+		if c._name == name then
+			table.insert(ret, c)
 		end
-		return ret
-	else
-		return {self.components_named[name]}
 	end
+	return ret
 end
 
 function Node:add_component(name, ...)
 	local c = lib.ncs.Component.instance(name);
-	if c._allow_multiple then
-		table.insert(self.components, c);
-	end
+	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
 	c:on_init(...);
@@ -260,12 +280,9 @@ end
 
 function Node:_add_component_json(name, jsondata)
 	local c = lib.ncs.Component.instance(name);
-	if c._allow_multiple then
-		table.insert(self.components, c);
-	end
+	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
-	-- c:from_json(jsondata);
 	return c
 end
 
@@ -275,18 +292,41 @@ local _contains = function(t, val)
 	end
 	return false
 end
-function Node:from_json(json)
+function Node:from_json(json, override)
 	-- load json
 	if type(json) == "string" then
 		local contents = love.filesystem.read(json)
 		json,pos,err = lib.json.decode(contents)
 		if err then error(err) end
 	end
+	local override_t = {}
+	if override then
+		for ok, ov in pairs(override) do
+			local target_key = json.override and json.override[ok] or ok
+			local a, b = target_key:match("([^,]+)%.(.*)")
+			-- print(ok, target_key, a, b)
+			if a and b then
+				override_t[a] = override_t[a] or {}
+				override_t[a][b] = ov
+				-- local c = json.components and json.components[a]
+				-- print(c, json.components)
+				-- if c then
+				-- 	c[b] = ov
+				-- end
+			end
+		end
+	end
 	-- load components
 	if json.components then
 		local t = {}
 		for k,v in pairs(json.components) do
 			local cname = v.component or k
+			local override_component = override_t[cname]
+			if override_component then
+				for ok, ov in pairs(override_component) do
+					v[ok] = ov
+				end
+			end
 			local obj = self:_add_component_json(cname, v)
 			table.insert(t, obj)
 			obj._depends = v.depends or obj._depends

@@ -1,6 +1,6 @@
 local player_script = {}
 function player_script:on_init()
-	self.speed = 128
+	self.speed = self.speed or 128
 	self.dirstr = "down"
 	self.node:add_component("drawable_circle", "fill", 0, 0, 2, {0, 100, 200})
 end
@@ -35,8 +35,7 @@ function player_script:on_update(dt)
 
 	-- movement
 	local body = self.node:get_component("collisionbody")
-	body:move_count(dx, dy, 5)
-
+	body:move_count(dx, dy, 20)
 	if inputmanager:get_event("rotl") then
 		self.node.transform:rotate(-dt*math.pi)
 	end

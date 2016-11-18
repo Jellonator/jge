@@ -363,7 +363,7 @@ function Map:on_init(fname)
 	self.map = lib.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
-		-- print("INIT")
+		-- load objects from json files
 		for _,layer in ipairs(self.map.layers) do
 			if layer.type == "objectgroup" then
 				local i = 1;
@@ -373,18 +373,23 @@ function Map:on_init(fname)
 					local json = t and t.properties and t.properties.json
 						or object.properties and object.properties.json
 					if json then
-						object.batch:set(object.batchid, 0,0,0,0,1,1)
+						-- load json
 						json = self.map._path .. json
 						local o = self.node:add_child();
-						local r = math.rad(object.rotation)
-						o:from_json(json)
+						o.properties = lib.table_union(
+							t.properties or {}, object.properties or {})
+						o:from_json(json, o.properties)
 
+						-- set position
+						local r = math.rad(object.rotation)
 						local x,y = object.x+object.width/2, object.y+object.height/2
 						y = y - math.cos(r)*object.height
 						o.transform:translate(x, y)
 						o.transform:rotate(r)
 
+						-- remove
 						table.remove(layer.objects, i)
+						object.batch:set(object.batchid, 0,0,0,0,1,1)
 					else
 						i = i + 1
 					end
@@ -392,6 +397,7 @@ function Map:on_init(fname)
 			end
 		end
 
+		-- create solid bodies
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
 			local c = self.node:add_child();

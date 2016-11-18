@@ -1,4 +1,7 @@
 {
+	"override": {
+		"speed": "script.speed"
+	},
 	"scale": 2,
 	"components": [
 		{
@@ -36,7 +39,7 @@
 		},
 		{
 			"component": "script",
-			"script": "res/Player/playerscript.lua"
+			"script": "res/Player/playerscript.lua",
 		},
 		{
 			"component": "collisionbody",

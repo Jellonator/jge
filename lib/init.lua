@@ -83,4 +83,22 @@ function Lib.infnorm(x, n)
 	return x / (math.abs(x) + n)
 end
 
+function Lib.table_clear(t)
+	for k in pairs(t) do
+		t[k] = nil
+	end
+end
+
+local function _union(ret, a, ...)
+	if not a then return ret end
+	for k, v in pairs(a) do
+		ret[k] = v
+	end
+	return _union(ret, ...)
+end
+
+function Lib.table_union(...)
+	return _union({}, ...)
+end
+
 return Lib

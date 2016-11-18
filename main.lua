@@ -1,4 +1,5 @@
 lib = require("lib");
+require("battle");
 do
 	local major, minor, patch, codename = love.getVersion()
 	printf("Love2d version %d.%d.%d %s, running on %s",
