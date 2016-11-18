@@ -61,7 +61,7 @@ function love.load(arg)
 	tree = lib.ncs.Node();
 	camera = tree:add_component("camera", 400*2, 224*2)
 	tree:add_component("collisionworld");
-	tree.transform:translate(400, 224)
+	-- tree.transform:translate(400, 224)
 	-- camera:set_position(4*400, 4*224)
 
 	-- tree = root:add_child("tree");
@@ -87,7 +87,7 @@ end
 
 function love.draw()
 	if update_timer > update_delta then print("timer is greater than delta!") end
-	tree:draw(update_timer/update_delta);
+	tree:draw(1)--update_timer/update_delta);
 	love.graphics.setColor(255, 0, 0);
 	love.graphics.print(("FPS: %.2f"):format(love.timer.getFPS()))
 	-- love.graphics.polygon("fill", 100,100, 400,200, 300,300)

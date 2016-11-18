@@ -8,7 +8,7 @@ return {
   height = 32,
   tilewidth = 32,
   tileheight = 32,
-  nextobjectid = 29,
+  nextobjectid = 30,
   backgroundcolor = { 53, 38, 67 },
   properties = {},
   tilesets = {
@@ -299,7 +299,7 @@ return {
       type = "objectgroup",
       name = "Spawners",
       visible = true,
-      opacity = 0.48,
+      opacity = 1,
       offsetx = 0,
       offsety = 0,
       draworder = "topdown",
@@ -312,7 +312,7 @@ return {
           shape = "rectangle",
           x = 608,
           y = 536,
-          width = 408,
+          width = 416,
           height = 328,
           rotation = 0,
           visible = true,
@@ -325,7 +325,7 @@ return {
           shape = "rectangle",
           x = 696,
           y = 192,
-          width = 320,
+          width = 328,
           height = 344,
           rotation = 0,
           visible = true,
@@ -435,16 +435,14 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 32,
-          y = 56,
+          x = 288,
+          y = 224,
           width = 32,
           height = 32,
-          rotation = -2.84217e-14,
+          rotation = -270,
           gid = 38,
           visible = true,
-          properties = {
-            ["script.speed"] = 400
-          }
+          properties = {}
         }
       }
     }

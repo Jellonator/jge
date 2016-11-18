@@ -440,7 +440,7 @@ function Map:setSpriteBatches(layer)
 
 			if tile then
 				local tileset = tile.tileset
-				local image   = self.tilesets[tile.tileset].image
+				local image   = tile.image or self.tilesets[tile.tileset].image
 
 				batches.data[tileset]                 = batches.data[tileset] or {}
 				batches.data[tileset][batchY]         = batches.data[tileset][batchY] or {}

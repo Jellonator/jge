@@ -363,51 +363,44 @@ function Map:on_init(fname)
 	self.map = lib.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
-		-- load objects from json files
-		for _,layer in ipairs(self.map.layers) do
-			if layer.type == "objectgroup" then
-				local i = 1;
-				while i <= #layer.objects do
-					local object = layer.objects[i];
-					local t = object.gid and self.map.tiles[object.gid];
-					local json = t and t.properties and t.properties.json
-						or object.properties and object.properties.json
-					if json then
-						-- load json
-						json = self.map._path .. json
-						local o = self.node:add_child();
-						o.properties = lib.table_union(
-							t.properties or {}, object.properties or {})
-						o:from_json(json, o.properties)
-
-						-- set position
-						local r = math.rad(object.rotation)
-						local x,y = object.x+object.width/2, object.y+object.height/2
-						y = y - math.cos(r)*object.height
-						o.transform:translate(x, y)
-						o.transform:rotate(r)
-
-						-- remove
-						table.remove(layer.objects, i)
-						object.batch:set(object.batchid, 0,0,0,0,1,1)
-					else
-						i = i + 1
-					end
-				end
-			end
-		end
-
 		-- create solid bodies
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
-			local c = self.node:add_child();
-			c:add_component("collisionbody", shape)
-			local cx, cy = shape:center();
-			c.transform:translate(cx, cy)
-			shape:move(-cx, -cy)
-			local script = shape.tiledproperties and shape.tiledproperties.script
-			if script then
-				c:add_component("script", self.map._path .. script)
+			local child = self.node:add_child();
+			local centerx, centery = shape:center();
+			local rot = shape.tiled_object and math.rad(shape.tiled_object.rotation) or 0
+			child.transform:translate(centerx, centery)
+			child.transform:rotate(rot)
+			shape:rotate(rot, centerx, centery)
+			shape:move(-centerx, -centery)
+
+			local tile = shape.tiled_gid and self.map.tiles[shape.tiled_gid];
+			local json = shape.object_properties  and shape.object_properties.json
+			          or shape.tile_properties    and shape.tile_properties.json
+			          or shape.tileset_properties and shape.tileset_properties.json
+			local script = shape.object_properties  and shape.object_properties.script
+			            or shape.tile_properties    and shape.tile_properties.script
+			            or shape.tileset_properties and shape.tileset_properties.script
+			if json then
+				print(json)
+				-- load json
+				json = self.map._path .. json
+				local properties = lib.table_union(
+					shape.tileset_properties or {},
+					shape.tile_properties or {},
+					shape.object_properties or {})
+				properties.shape = shape or properties.shape
+				child:from_json(json, properties)
+
+				-- remove
+				-- local object = shape.tiled_object;
+				if shape.tiled_batch then
+					shape.tiled_batch:set(shape.tiled_batchid, 0,0,0,0,1,1)
+				end
+			elseif script then
+				child:add_component("script", self.map._path .. script)
+			else
+				child:add_component("collisionbody", shape)
 			end
 		end
 	end

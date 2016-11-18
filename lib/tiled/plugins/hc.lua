@@ -36,7 +36,7 @@ local function generate_shape(hc, dat)
 	return shape
 end
 
-local function generate_object_shape(map, hc, object, collidables, ox, oy)
+local function generate_object_shape(map, hc, object, collidables, ox, oy, object_collidable)
 	ox = ox or 0
 	oy = oy or 0
 	local dat = {
@@ -75,8 +75,20 @@ local function generate_object_shape(map, hc, object, collidables, ox, oy)
 		y = 0
 	end
 	shape:move(ox+x, oy+y)
-	shape.tiledobject = object
-	shape.tiledproperties = object.properties
+	shape.tiled_object = object
+	shape.object_properties = object.properties
+	if object.gid then
+		local tile = map.tiles[object.gid]
+		local tileset = map.tilesets[tile.tileset]
+		shape.tileset_properties = tileset.properties;
+		shape.tile_properties = tile.properties
+		shape.tiled_gid = object.gid
+		shape.tiled_batch = object.batch
+		shape.tiled_batchid = object.batchid
+	end
+	if not object_collidable then
+		hc:remove(shape)
+	end
 end
 
 local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
@@ -84,19 +96,14 @@ local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
 	local layer_collidable = get_property(layer, "collidable", false)
 	for _, object in ipairs(layer.objects) do
 		local object_collidable = get_property(object, "collidable", false)
-		if object_collidable or layer_collidable or force_col then
-			generate_object_shape(map, hc, object, collidables, ox, oy)
-		end
+		object_collidable = object_collidable or layer_collidable or force_col
+		--then
+		generate_object_shape(map, hc, object, collidables, ox, oy, object_collidable)
+		--end
 	end
 end
 
 local function load_tilelayer(map, hc, layer, collidables)
-	-- local get_tile = function(x, y)
-	-- 	local t = layer.data[y];
-	-- 	if t then
-	-- 		return layer.data[y][x]
-	-- 	end
-	-- end
 	for gid, tiles in pairs(map.tileInstances) do
 		local tile = map.tiles[gid]
 		local tileset = map.tilesets[tile.tileset]
@@ -104,11 +111,8 @@ local function load_tilelayer(map, hc, layer, collidables)
 		for _, instance in ipairs(tiles) do
 			if instance.layer == layer then
 				if tile.objectGroup then
-					-- for _, object in pairs(tile.objectGroup) do
-						-- generate_object_shape(map, hc, object, instance.x, instance.y, collidables)
 					load_objectgroup(map, hc, tile.objectGroup, collidables,
 						instance.x, instance.y, true)
-					-- end
 				else
 					local object = {
 						shape  = "rectangle",
@@ -119,6 +123,11 @@ local function load_tilelayer(map, hc, layer, collidables)
 					}
 					local shape = generate_shape(hc, object)
 					collidables[shape] = shape
+					shape.tileset_properties = tileset.properties;
+					shape.tile_properties = tile.properties
+					shape.tiled_gid = gid
+					shape.tiled_batch = instance.batch
+					shape.tiled_batchid = instance.id
 				end
 			end
 		end
@@ -132,12 +141,12 @@ return {
 		for _, layer in ipairs(map.layers) do
 			-- Entire layer
 			local layer_collidable = get_property(layer, "collidable", false)
-			if layer_collidable then
-				if layer.type == "tilelayer" then
+			if layer.type == "tilelayer" then
+				if layer_collidable then
 					load_tilelayer(map, hc, layer, collidables)
-				elseif layer.type == "objectgroup" then
-					load_objectgroup(map, hc, layer, collidables)
 				end
+			elseif layer.type == "objectgroup" then
+				load_objectgroup(map, hc, layer, collidables)
 			end
 		end
 		map.hc_collidables = collidables

@@ -41,9 +41,20 @@ local newPolygonShape = Shapes.newPolygonShape
 local newCircleShape  = Shapes.newCircleShape
 local newPointShape   = Shapes.newPointShape
 
+local transform_func_names = {'move', 'rotate', 'scale', 'transform_mat'}
+
 local HC = {}
 function HC:init(cell_size)
 	self.hash = common_local.instance(Spatialhash, cell_size or 100)
+	self._funcs = self._funcs or {}
+	for _, f in ipairs(transform_func_names) do
+		self._funcs[f] = function(this, ...)
+			local x1,y1,x2,y2 = this:bbox()
+			this._oldf[f](this, ...)
+			self.hash:update(this, x1,y1,x2,y2, this:bbox())
+			return this
+		end
+	end
 end
 
 -- spatial hash management
@@ -60,14 +71,11 @@ function HC:register(shape)
 	self.hash:register(shape, shape:bbox())
 
 	-- keep track of where/how big the shape is
-	for _, f in ipairs({'move', 'rotate', 'scale', 'transform_mat'}) do
+	shape._oldf = shape._oldf or {}
+	for _, f in ipairs(transform_func_names) do
 		local old_function = shape[f]
-		shape[f] = function(this, ...)
-			local x1,y1,x2,y2 = this:bbox()
-			old_function(this, ...)
-			self.hash:update(this, x1,y1,x2,y2, this:bbox())
-			return this
-		end
+		shape[f] = self._funcs[f]
+		shape._oldf[f] = old_function
 	end
 
 	return shape
@@ -75,10 +83,8 @@ end
 
 function HC:remove(shape)
 	self.hash:remove(shape, shape:bbox())
-	for _, f in ipairs({'move', 'rotate', 'scale'}) do
-		shape[f] = function()
-			error(f.."() called on a removed shape")
-		end
+	for _, f in ipairs(transform_func_names) do
+		shape[f] = shape._oldf[f]
 	end
 	return self
 end
