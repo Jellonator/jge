@@ -116,12 +116,12 @@ local function load_tilelayer(map, hc, layer, collidables)
 			if instance.layer == layer then
 				if tile.objectGroup then
 					load_objectgroup(map, hc, tile.objectGroup, collidables,
-						instance.x, instance.y, true)
+						instance.x + layer.offsetx, instance.y + layer.offsety, true)
 				else
 					local object = {
 						shape  = "rectangle",
-						x      = instance.x,
-						y      = instance.y,
+						x      = instance.x + layer.offsetx,
+						y      = instance.y + layer.offsety,
 						width  = tileset.tilewidth,
 						height = tileset.tileheight,
 					}

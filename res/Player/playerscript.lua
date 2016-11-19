@@ -44,11 +44,16 @@ function player_script:on_update(dt)
 	end
 
 	-- movement
-	body:move_count((dx+self.velocx)*dt, self.velocy*dt, 8)
+	if self.prev_ground then
+		body:move_count(dx*dt, self.velocy*dt, 8);
+		self.velocx = dx
+	else
+		body:move_count(self.velocx*dt, self.velocy*dt, 8);
+	end
 	nx, ny = body:get_collision_normal();
 	local col_bottom = false
 	if nx ~= 0 or ny ~= 0 then
-		col_bottom = lib.vlt.dot(nx, ny, 0, -1) >= 0.4;
+		col_bottom = lib.vlt.dot(nx, ny, 0, -1) >= 0.49;
 		local vx,vy = self.velocx,self.velocy;
 		vx, vy = lib.vlt.project(vx, vy, lib.vlt.perpendicular(nx, ny));
 		self.velocy = vy
@@ -56,25 +61,28 @@ function player_script:on_update(dt)
 	end
 	if self.prev_ground and not col_bottom and self.velocy >= 0 then
 		local px, py = self.node.transform:get_translation();
-		if not body:move_step_binary_minlength(0, self.speed*dt*2.1, 5e-2) then
+		if not body:move_step_binary_minlength(0, self.speed*dt*4.1, 5e-2) then
 			local newx, newy = self.node.transform:get_translation()
 			local mx,my = px-newx, py-newy
 			body.shape:move(mx, my)
 			body:_move_node(mx, my)
 		else
-			col_bottom = true;
+			if lib.vlt.dot(0, -1, body:get_collision_normal()) >= 0.49 then
+				col_bottom = true
+			end
 		end
 	end
+	self.prev_ground = col_bottom;
 
 	self.velocy = self.velocy + self.gravity * dt;
-	self.velocx = lib.to(self.velocx, 0, dt*self.friction)
+	self.velocx = lib.to(self.velocx, dx, self.speed*dt*6)
+	-- self.velocx = lib.to(self.velocx, 0, dt*self.friction)
 	if math.abs(self.velocy) > self.terminal_velocity then
 		self.velocy = self.velocy * self.terminal_velocity / math.abs(self.velocy)
 	end
 	if col_bottom and self.velocy > 0 then
 		-- always stop on the ground
 		self.velocy = 0
-		self.velocx = 0
 	end
 	if col_bottom then
 		self.ground_timer = 0;
@@ -83,8 +91,6 @@ function player_script:on_update(dt)
 		self.velocy = -self.speed_jump
 		self.ground_timer = GROUND_TIME_MAX+1
 	end
-
-	self.prev_ground = col_bottom;
 
 	if inputmanager:get_event("rotl") then
 		self.node.transform:rotate(-dt*math.pi)

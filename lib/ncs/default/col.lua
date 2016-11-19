@@ -458,8 +458,8 @@ function Map:on_draw()
 	self.map:draw();
 
 	-- Draw Collision Map (useful for debugging)
-    -- love.graphics.setColor(255, 0, 0, 255)
-    -- self.map:hc_draw()
+	-- love.graphics.setColor(255, 0, 0, 255)
+	-- self.map:hc_draw()
 end
 
 register_component("tiledmaploader", Map)
