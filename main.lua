@@ -11,6 +11,7 @@ inputmanager:add_event("up",    lib.Input.IMatch(EVENTTYPE.keyboard, "w"))
 inputmanager:add_event("down",  lib.Input.IMatch(EVENTTYPE.keyboard, "s"))
 inputmanager:add_event("left",  lib.Input.IMatch(EVENTTYPE.keyboard, "a"))
 inputmanager:add_event("right", lib.Input.IMatch(EVENTTYPE.keyboard, "d"))
+inputmanager:add_event("jump",  lib.Input.IMatch(EVENTTYPE.keyboard, "space"))
 inputmanager:add_event("rotl",  lib.Input.IMatch(EVENTTYPE.keyboard, "q"))
 inputmanager:add_event("rotr",  lib.Input.IMatch(EVENTTYPE.keyboard, "e"))
 inputmanager:override_love();

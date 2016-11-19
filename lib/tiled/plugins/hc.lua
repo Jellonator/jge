@@ -36,7 +36,8 @@ local function generate_shape(hc, dat)
 	return shape
 end
 
-local function generate_object_shape(map, hc, object, collidables, ox, oy, object_collidable)
+local function generate_object_shape(map, hc, object,
+		collidables, ox, oy, object_collidable, layer, layer_index)
 	ox = ox or 0
 	oy = oy or 0
 	local dat = {
@@ -76,6 +77,8 @@ local function generate_object_shape(map, hc, object, collidables, ox, oy, objec
 	end
 	shape:move(ox+x, oy+y)
 	shape.tiled_object = object
+	shape.tiled_layer = layer
+	shape.tiled_layer_index = layer_index
 	shape.object_properties = object.properties
 	if object.gid then
 		local tile = map.tiles[object.gid]
@@ -94,11 +97,12 @@ end
 local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
 	force_col = force_col ~= nil and force_col or false
 	local layer_collidable = get_property(layer, "collidable", false)
-	for _, object in ipairs(layer.objects) do
+	for i, object in ipairs(layer.objects) do
 		local object_collidable = get_property(object, "collidable", false)
 		object_collidable = object_collidable or layer_collidable or force_col
 		--then
-		generate_object_shape(map, hc, object, collidables, ox, oy, object_collidable)
+		generate_object_shape(map, hc, object, collidables,
+			ox, oy, object_collidable, layer, i)
 		--end
 	end
 end

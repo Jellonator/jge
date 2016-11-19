@@ -77,6 +77,15 @@ function Lib.angle_to(a, b, dis)
 	return _mod(a, math.pi*2);
 end
 
+function Lib.to(a, b, speed)
+	local greater = a > b
+	a = a + (greater and -speed or speed)
+	if a > b ~= greater then
+		return b
+	end
+	return a
+end
+
 function Lib.infnorm(x, n)
 	-- 'n' is the point at which this function will yeild 1/2
 	n = n or 1

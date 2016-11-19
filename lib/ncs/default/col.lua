@@ -73,6 +73,35 @@ function Body:motion_world_to_local(x, y)
 	return self.node:get_mat_inv():transform_point(x, y, 0)
 end
 
+function Body:get_collision_normal(s)
+	s = s or 1.01
+	local rx, ry = 0, 0
+	self.shape:scale(s)
+	local col = self.world:collisions(self.shape);
+	self.shape:scale(1/s)
+
+	local count = 0;
+	for _,sep in pairs(col) do
+		rx, ry = rx+sep.x, ry+sep.y
+		count = count + 1
+	end
+
+	if count > 0 then
+		rx, ry = rx/count, ry/count
+		return lib.vlt.normalize(self:motion_world_to_local(rx, ry))
+	end
+
+	return 0, 0
+end
+
+function Body:is_colliding(s)
+	s = s or 1.01
+	self.shape:scale(s)
+	local _,ret = self.world:collisions(self.shape);
+	self.shape:scale(1/s)
+	return ret;
+end
+
 local function _get_correction(x, y, collisions)
 	local sx,sy,count,avglen = 0,0,0
 	for _, sep in pairs(collisions) do
@@ -207,6 +236,13 @@ function Body:move_step_binary(x, y, maxdiv, corrective)
 	self.shape:move(mx, my)
 	self:_move_node(mx, my);
 	return didcollide, lastcol
+end
+
+local _log2 = math.log(2)
+function Body:move_step_binary_minlength(x, y, min_length, corrective)
+	local len = lib.vlt.len(x, y)
+	local div = math.log(len/min_length)/_log2
+	return self:move_step_binary(x, y, math.ceil(div), corrective)
 end
 
 -- Autodetect number of steps
@@ -374,31 +410,39 @@ function Map:on_init(fname)
 			shape:rotate(rot, centerx, centery)
 			shape:move(-centerx, -centery)
 
+			local properties = lib.table_union(
+				shape.tileset_properties or {},
+				shape.tile_properties or {},
+				shape.object_properties or {})
+			properties.shape = shape or properties.shape
+
 			local tile = shape.tiled_gid and self.map.tiles[shape.tiled_gid];
-			local json = shape.object_properties  and shape.object_properties.json
-			          or shape.tile_properties    and shape.tile_properties.json
-			          or shape.tileset_properties and shape.tileset_properties.json
-			local script = shape.object_properties  and shape.object_properties.script
-			            or shape.tile_properties    and shape.tile_properties.script
-			            or shape.tileset_properties and shape.tileset_properties.script
+			local json = properties.json
+			local script = properties.script
 			if json then
-				print(json)
 				-- load json
 				json = self.map._path .. json
-				local properties = lib.table_union(
-					shape.tileset_properties or {},
-					shape.tile_properties or {},
-					shape.object_properties or {})
-				properties.shape = shape or properties.shape
 				child:from_json(json, properties)
 
 				-- remove
-				-- local object = shape.tiled_object;
+				if shape.tiled_layer then
+					table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
+				end
 				if shape.tiled_batch then
 					shape.tiled_batch:set(shape.tiled_batchid, 0,0,0,0,1,1)
 				end
 			elseif script then
-				child:add_component("script", self.map._path .. script)
+				local b = child:add_component("collisionbody", shape)
+				b.world:register(shape)
+				local script = child:add_component("script", self.map._path .. script)
+				for k,v in pairs(properties) do
+					if k ~= "script" then
+						script[k] = v
+					end
+				end
+				if shape.tiled_layer then
+					table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
+				end
 			else
 				child:add_component("collisionbody", shape)
 			end

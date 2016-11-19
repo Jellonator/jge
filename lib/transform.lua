@@ -17,6 +17,18 @@ function Transform.new(x, y)
 	}, Transform)
 end
 
+function Transform:get_translation()
+	return self.x, self.y
+end
+
+function Transform:get_rotation()
+	return self.rotation
+end
+
+function Transform:get_scale()
+	return self.scalex, self.scaley
+end
+
 function Transform:translate(x, y)
 	self.x = self.x + x;
 	self.y = self.y + y;
