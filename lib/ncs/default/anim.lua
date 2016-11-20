@@ -22,7 +22,7 @@ function Tween:on_init(values, meta, speed)
 			v.object = v.object.transform
 		end
 	end
-	self.tween = lib.anim.Tween(self.node, values, meta, speed)
+	self.tween = lib.Tween(self.node, values, meta, speed)
 end
 function Tween:on_update(dt)
 	self.tween:update(dt);
@@ -50,7 +50,7 @@ function Animation:on_init(tweens, meta, speed)
 		if v.i_am_a_tween then
 			self.tweens[k] = v
 		else
-			local tween = lib.anim.Tween(self.node, v, meta, speed);
+			local tween = lib.Tween(self.node, v, meta, speed);
 			self.tweens[k] = tween
 		end
 	end

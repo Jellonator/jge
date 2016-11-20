@@ -42,10 +42,10 @@ local Lib = {
 	hcam  = reqlocal("hump.camera"),
 	Transform = reqlocal("transform"),
 	Matrix3 = reqlocal("matrix3"),
+	Tween  = reqlocal("tween"),
 	Input = reqlocal("input"),
 	json  = reqlocal("dkjson"),
 	tiled = reqlocal("tiled"),
-	anim  = reqlocal("anim"),
 	ncs   = reqlocal("ncs"),
 	HC    = reqlocal("HC"),
 }
