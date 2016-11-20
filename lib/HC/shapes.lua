@@ -172,13 +172,13 @@ function ConcavePolygonShape:collidesWith(other)
 			if math.abs(sy) > math.abs(dy) then
 				dy = sy
 			end
-			maxlen = math.max(maxlen, lib.vlt.len(sx, sy))
+			maxlen = math.max(maxlen, vector.len(sx, sy))
 			table.insert(allsep, {x=sx,y=sy,obj=s})
 		end
 	end
 
-	maxlen = math.max(maxlen, lib.vlt.len(dx, dy))
-	dx,dy = lib.vlt.mul(maxlen, lib.vlt.normalize(dx,dy))
+	maxlen = math.max(maxlen, vector.len(dx, dy))
+	dx,dy = vector.mul(maxlen, vector.normalize(dx,dy))
 
 	self._allsep = allsep
 

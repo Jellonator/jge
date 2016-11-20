@@ -52,9 +52,9 @@ function player_script:on_update(dt)
 	nx, ny = body:get_collision_normal();
 	local col_bottom = false
 	if nx ~= 0 or ny ~= 0 then
-		col_bottom = lib.vlt.dot(nx, ny, 0, -1) >= 0.49;
+		col_bottom = jge.vlt.dot(nx, ny, 0, -1) >= 0.49;
 		local vx,vy = self.velocx,self.velocy;
-		vx, vy = lib.vlt.project(vx, vy, lib.vlt.perpendicular(nx, ny));
+		vx, vy = jge.vlt.project(vx, vy, jge.vlt.perpendicular(nx, ny));
 		self.velocy = vy
 		self.velocx = vx
 	end
@@ -66,7 +66,7 @@ function player_script:on_update(dt)
 			body.shape:move(mx, my)
 			body:_move_node(mx, my)
 		else
-			if lib.vlt.dot(0, -1, body:get_collision_normal()) >= 0.49 then
+			if jge.vlt.dot(0, -1, body:get_collision_normal()) >= 0.49 then
 				col_bottom = true
 			end
 		end
@@ -77,8 +77,8 @@ function player_script:on_update(dt)
 	self.prev_ground = col_bottom;
 
 	self.velocy = self.velocy + self.gravity * dt;
-	self.velocx = lib.to(self.velocx, dx, self.speed*dt*6)
-	-- self.velocx = lib.to(self.velocx, 0, dt*self.friction)
+	self.velocx = jge.to(self.velocx, dx, self.speed*dt*6)
+	-- self.velocx = jge.to(self.velocx, 0, dt*self.friction)
 	if math.abs(self.velocy) > self.terminal_velocity then
 		self.velocy = self.velocy * self.terminal_velocity / math.abs(self.velocy)
 	end
@@ -105,7 +105,7 @@ end
 function player_script:on_update_real(dt)
 	local camera = self.node:get_root():get_component("camera")
 	local cx, cy = self.node:getpos()
-	camera.camera:lockPosition(cx, cy, lib.hcam.smooth.none(5))
+	camera.camera:lockPosition(cx, cy, jge.hcam.smooth.none(5))
 	camera.camera:rotateTo(-self.node:getrot())
 end
 

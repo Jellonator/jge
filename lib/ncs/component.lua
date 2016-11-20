@@ -42,7 +42,6 @@ function Component.register_component(name, t)
 	-- you deserve the crash for not implementing it
 
 	-- modify some metadata
-	t._allow_multiple = try_or(t._allow_multiple, true);
 	t._name = name;
 	t._depends = t._depends or {}
 

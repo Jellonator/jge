@@ -36,7 +36,7 @@ end
 function Camera:on_init(width, height)
 	self.width = width or self.width
 	self.height = height or self.height
-	self.camera = lib.hcam(0, 0)
+	self.camera = jge.hcam(0, 0)
 end
 function Camera:pre_draw()
 	local window_width, window_height = love.graphics.getDimensions()

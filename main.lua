@@ -1,19 +1,19 @@
-lib = require("lib");
+require("lib");
 require("battle");
 do
 	local major, minor, patch, codename = love.getVersion()
-	printf("Love2d version %d.%d.%d %s, running on %s",
+	jge.printf("Love2d version %d.%d.%d %s, running on %s",
 		major, minor, patch, codename, _VERSION)
 end
 love.graphics.setDefaultFilter("nearest", "nearest")
-inputmanager = lib.Input.Manager();
-inputmanager:add_event("up",    lib.Input.IMatch(EVENTTYPE.keyboard, "w"))
-inputmanager:add_event("down",  lib.Input.IMatch(EVENTTYPE.keyboard, "s"))
-inputmanager:add_event("left",  lib.Input.IMatch(EVENTTYPE.keyboard, "a"))
-inputmanager:add_event("right", lib.Input.IMatch(EVENTTYPE.keyboard, "d"))
-inputmanager:add_event("jump",  lib.Input.IMatch(EVENTTYPE.keyboard, "space"))
-inputmanager:add_event("rotl",  lib.Input.IMatch(EVENTTYPE.keyboard, "q"))
-inputmanager:add_event("rotr",  lib.Input.IMatch(EVENTTYPE.keyboard, "e"))
+inputmanager = jge.Input.Manager();
+inputmanager:add_event("up",    jge.Input.IMatch(EVENTTYPE.keyboard, "w"))
+inputmanager:add_event("down",  jge.Input.IMatch(EVENTTYPE.keyboard, "s"))
+inputmanager:add_event("left",  jge.Input.IMatch(EVENTTYPE.keyboard, "a"))
+inputmanager:add_event("right", jge.Input.IMatch(EVENTTYPE.keyboard, "d"))
+inputmanager:add_event("jump",  jge.Input.IMatch(EVENTTYPE.keyboard, "space"))
+inputmanager:add_event("rotl",  jge.Input.IMatch(EVENTTYPE.keyboard, "q"))
+inputmanager:add_event("rotr",  jge.Input.IMatch(EVENTTYPE.keyboard, "e"))
 inputmanager:override_love();
 
 -- tree.transform:scale(6)
@@ -59,7 +59,7 @@ function get_tree()
 end
 
 function love.load(arg)
-	tree = lib.ncs.Node();
+	tree = jge.ncs.Node();
 	camera = tree:add_component("camera", 400*2, 224*2)
 	tree:add_component("collisionworld");
 	-- tree.transform:translate(400, 224)

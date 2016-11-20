@@ -57,7 +57,7 @@ local function _instance(def, x, y)
 	y = y or 0
 	if def.x then x = x + def.x end
 	if def.y then y = y + def.y end
-	local node = lib.ncs.Node(x, y);
+	local node = jge.ncs.Node(x, y);
 	node.transform:scale(def.scalex or 1, def.scaley or 1);
 	node.transform:rotate(def.rotation or 0);
 	if def.components then

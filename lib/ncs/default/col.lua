@@ -9,7 +9,7 @@ function Body:on_init(shape, ...)
 	self.pushable = false
 	self.shape = shape
 	self.shape.body = self
-	self.pmat = lib.Matrix3();
+	self.pmat = jge.Matrix3();
 end
 
 function Body:from_json(json)
@@ -90,7 +90,7 @@ function Body:get_collision_normal(s)
 
 	if count > 0 then
 		rx, ry = rx/count, ry/count
-		return lib.vlt.normalize(self:motion_world_to_local(rx, ry))
+		return jge.vlt.normalize(self:motion_world_to_local(rx, ry))
 	end
 
 	return 0, 0
@@ -122,8 +122,8 @@ local function _get_correction(x, y, collisions)
 	sx = sx / count
 	sy = sy / count
 	if sx ~= 0 or sy ~= 0 then
-		local cx, cy = lib.vlt.project(x,y, lib.vlt.perpendicular(sx,sy))
-		return lib.vlt.mul(lib.vlt.len(x,y),lib.vlt.normalize(cx,cy))
+		local cx, cy = jge.vlt.project(x,y, jge.vlt.perpendicular(sx,sy))
+		return jge.vlt.mul(jge.vlt.len(x,y),jge.vlt.normalize(cx,cy))
 	end
 	return x, y;
 end
@@ -141,7 +141,7 @@ end
 -- Move by (x,y) if that position is free; most basic form of movement
 function Body:move_try(x, y, can_resolve)
 	local mx, my = self:motion_local_to_world(x, y);
-	local can_resolve = try_or(can_resolve, false)
+	local can_resolve = jge.try_or(can_resolve, false)
 	self.shape:move(mx, my);
 	local col, ret = self.world:collisions(self.shape);
 	local cx, cy = mx, my
@@ -156,7 +156,7 @@ function Body:move_try(x, y, can_resolve)
 		sx = sx / count
 		sy = sy / count
 		if sx ~= 0 or sy ~= 0 then
-			cx, cy = lib.vlt.project(mx,my, lib.vlt.perpendicular(sx,sy))
+			cx, cy = jge.vlt.project(mx,my, jge.vlt.perpendicular(sx,sy))
 		end
 		if can_resolve then
 			-- move, then resolve
@@ -175,12 +175,12 @@ end
 
 function Body:_move_stepped(dx, dy, count, corrective)
 	-- local mx, my = self:motion_local_to_world(x, y);
-	local corrective = try_or(corrective, false)
+	local corrective = jge.try_or(corrective, false)
 	for i = 1, count do
 		local ret, col, cx, cy = self:move_try(dx, dy)
 		if ret then
 			if corrective and (cx ~= 0 or cy ~= 0) then
-				dx, dy = lib.vlt.mul(lib.vlt.len(dx,dy),lib.vlt.normalize(cx,cy))
+				dx, dy = jge.vlt.mul(jge.vlt.len(dx,dy),jge.vlt.normalize(cx,cy))
 			else
 				return true, col
 			end
@@ -210,7 +210,7 @@ end
 function Body:move_step_binary(x, y, maxdiv, corrective)
 	if (x == 0 and y == 0) or maxdiv == 0 then return false end
 	if not self:move_try(x, y, false) then return false end
-	local corrective = try_or(corrective, false);
+	local corrective = jge.try_or(corrective, false);
 	local mx, my = self:motion_local_to_world(x, y);
 	local pos = 0.5;
 	local step = 0.25;
@@ -250,7 +250,7 @@ end
 
 local _log2 = math.log(2)
 function Body:move_step_binary_minlength(x, y, min_length, corrective)
-	local len = lib.vlt.len(x, y)
+	local len = jge.vlt.len(x, y)
 	local div = math.log(len/min_length)/_log2
 	return self:move_step_binary(x, y, math.ceil(div), corrective)
 end
@@ -295,8 +295,8 @@ function Body:resolve(collisions)
 
 	local selfx, selfy = self.shape:center()
 	table.sort(collisions, function(aobj, bobj)
-		return lib.vlt.dist(selfx, selfy, aobj:center())
-		     < lib.vlt.dist(selfx, selfy, bobj:center())
+		return jge.vlt.dist(selfx, selfy, aobj:center())
+		     < jge.vlt.dist(selfx, selfy, bobj:center())
 	end)
 
 	for _, obj in ipairs(collisions) do
@@ -307,13 +307,13 @@ function Body:resolve(collisions)
 				for _, sep in pairs(seplist) do
 					local does, sx, sy, seplist = self.shape:collidesWith(sep.obj);
 					if does then
-						sx,sy = lib.vlt.mul(1.01, sx,sy)
+						sx,sy = jge.vlt.mul(1.01, sx,sy)
 						self.shape:move(sx, sy)
 						self:_move_node(sx, sy)
 					end
 				end
 			else
-				sx,sy = lib.vlt.mul(1.01, sx,sy)
+				sx,sy = jge.vlt.mul(1.01, sx,sy)
 				self.shape:move(sx, sy)
 				self:_move_node(sx, sy)
 			end
@@ -367,7 +367,7 @@ register_component("collisionbody", Body)
 local World = {}
 
 function World:on_init(cellsize)
-	self.world = lib.HC.new(cellsize)
+	self.world = jge.HC.new(cellsize)
 end
 
 function World:on_update(dt)
@@ -420,7 +420,7 @@ end
 
 function Map:on_init(fname)
 	-- self.draw = true
-	self.map = lib.tiled(fname, {"hc"})
+	self.map = jge.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
 		-- create solid bodies
@@ -434,7 +434,7 @@ function Map:on_init(fname)
 			shape:rotate(rot, centerx, centery)
 			shape:move(-centerx, -centery)
 
-			local properties = lib.table_union(
+			local properties = jge.table_union(
 				shape.tileset_properties or {},
 				shape.tile_properties or {},
 				shape.object_properties or {})

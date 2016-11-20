@@ -3,8 +3,8 @@ Event.__index = Event;
 
 function Event:set_keyboard(keycode, release, is_repeat)
 	self.keycode = keycode
-	self.release = try_or(release, false)
-	self.is_repeat = try_or(is_repeat, false)
+	self.release = jge.try_or(release, false)
+	self.is_repeat = jge.try_or(is_repeat, false)
 end
 
 function Event:set_directory(dir)

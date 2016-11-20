@@ -20,7 +20,7 @@ end
 function TurnController:on_turn_draw(lerp)
 	self.node:call_signal("script", "on_turn_draw", true, lerp)
 end
-lib.ncs.Component.register_component("turncontroller", TurnController);
+jge.ncs.Component.register_component("turncontroller", TurnController);
 
 -- Controls turn-based system of children
 local TurnSystem = {}
@@ -60,7 +60,7 @@ local function _sortturns(a, b)
 	return tostring(a) > tostring(b)
 end
 function TurnSystem:_recollect()
-	lib.table_clear(self.turnorder);
+	jge.table_clear(self.turnorder);
 
 	local children = self.node:get_children_recursive();
 	for _, child in pairs(children) do
@@ -73,4 +73,4 @@ function TurnSystem:_recollect()
 	table.sort(self.turnorder, _sortturns)
 	self.index = 1
 end
-lib.ncs.Component.register_component("turnsystem", TurnSystem);
+jge.ncs.Component.register_component("turnsystem", TurnSystem);

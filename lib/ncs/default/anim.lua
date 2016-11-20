@@ -1,4 +1,5 @@
 -- Tweens
+print(...)
 --[[
 Adds a few extra meta options:
 node - path to the node to modify
@@ -22,7 +23,7 @@ function Tween:on_init(values, meta, speed)
 			v.object = v.object.transform
 		end
 	end
-	self.tween = lib.Tween(self.node, values, meta, speed)
+	self.tween = jge.Tween(self.node, values, meta, speed)
 end
 function Tween:on_update(dt)
 	self.tween:update(dt);
@@ -50,7 +51,7 @@ function Animation:on_init(tweens, meta, speed)
 		if v.i_am_a_tween then
 			self.tweens[k] = v
 		else
-			local tween = lib.Tween(self.node, v, meta, speed);
+			local tween = jge.Tween(self.node, v, meta, speed);
 			self.tweens[k] = tween
 		end
 	end
@@ -65,7 +66,7 @@ function Animation:reset()
 end
 function Animation:play(name, doreset)
 	self.playing = true
-	local doreset = try_or(doreset, false)
+	local doreset = jge.try_or(doreset, false)
 	if name == self.current and doreset == false then
 		return
 	end

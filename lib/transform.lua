@@ -11,9 +11,9 @@ function Transform.new(x, y)
 		rotation = 0,
 		_id = 0,
 		_matid = -1,
-		_matcache = lib.Matrix3():const(),
+		_matcache = jge.Matrix3():const(),
 		_invid = -1,
-		_invcache = lib.Matrix3():const(),
+		_invcache = jge.Matrix3():const(),
 	}, Transform)
 end
 
@@ -139,20 +139,20 @@ end
 
 function Transform:get_mat()
 	if self._matid ~= self._id then
-		lib.Matrix3.identity(self._matcache)
-		lib.Matrix3.translate(self._matcache, self.x, self.y)
-		lib.Matrix3.rotate(self._matcache, self.rotation)
-		lib.Matrix3.scale(self._matcache, self.scalex, self.scaley)
+		jge.Matrix3.identity(self._matcache)
+		jge.Matrix3.translate(self._matcache, self.x, self.y)
+		jge.Matrix3.rotate(self._matcache, self.rotation)
+		jge.Matrix3.scale(self._matcache, self.scalex, self.scaley)
 	end
 	return self._matcache
 end
 
 function Transform:get_mat_inv()
 	if self._invid ~= self._id then
-		lib.Matrix3.identity(self._invcache)
-		lib.Matrix3.scale(self._invcache, 1/self.scalex, 1/self.scaley)
-		lib.Matrix3.rotate(self._invcache, -self.rotation)
-		lib.Matrix3.translate(self._invcache, -self.x, -self.y)
+		jge.Matrix3.identity(self._invcache)
+		jge.Matrix3.scale(self._invcache, 1/self.scalex, 1/self.scaley)
+		jge.Matrix3.rotate(self._invcache, -self.rotation)
+		jge.Matrix3.translate(self._invcache, -self.x, -self.y)
 	end
 	return self._invcache
 end

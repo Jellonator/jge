@@ -3,7 +3,7 @@ Node.__index = Node;
 
 function Node.new(x, y)
 	return setmetatable({
-		transform = lib.Transform(x, y),
+		transform = jge.Transform(x, y),
 		components = {},
 		components_named = {},
 		children = {},
@@ -146,11 +146,11 @@ function Node:draw(lerp)
 	local scaley = self.transform.scaley
 	local rot = self.transform.rotation
 
-	self.transform.x = lib.lerp(lerp, self._prev_x, x)
-	self.transform.y = lib.lerp(lerp, self._prev_y, y)
-	self.transform.scalex = lib.lerp(lerp, self._prev_scalex, scalex)
-	self.transform.scaley = lib.lerp(lerp, self._prev_scaley, scaley)
-	self.transform.rotation = lib.lerp(lerp, self._prev_rot, rot)
+	self.transform.x = jge.lerp(lerp, self._prev_x, x)
+	self.transform.y = jge.lerp(lerp, self._prev_y, y)
+	self.transform.scalex = jge.lerp(lerp, self._prev_scalex, scalex)
+	self.transform.scaley = jge.lerp(lerp, self._prev_scaley, scaley)
+	self.transform.rotation = jge.lerp(lerp, self._prev_rot, rot)
 
 	for i, c in pairs(self.components) do
 		c:pre_draw(lerp);
@@ -239,7 +239,7 @@ end
 
 -- Component functions
 function Node:call_signal(cname, fname, recursive, ...)
-	local recursive = try_or(recursive, false)
+	local recursive = jge.try_or(recursive, false)
 	for _,c in pairs(self.components) do
 		if (cname == nil or c._name == cname) and c[fname] then
 			c[fname](c, ...)
@@ -270,7 +270,7 @@ function Node:get_components_all(name)
 end
 
 function Node:add_component(name, ...)
-	local c = lib.ncs.Component.instance(name);
+	local c = jge.ncs.Component.instance(name);
 	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
@@ -279,7 +279,7 @@ function Node:add_component(name, ...)
 end
 
 function Node:_add_component_json(name, jsondata)
-	local c = lib.ncs.Component.instance(name);
+	local c = jge.ncs.Component.instance(name);
 	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
@@ -296,7 +296,7 @@ function Node:from_json(json, override)
 	-- load json
 	if type(json) == "string" then
 		local contents = love.filesystem.read(json)
-		json,pos,err = lib.json.decode(contents)
+		json,pos,err = jge.json.decode(contents)
 		if err then error(err) end
 	end
 	local override_t = {}

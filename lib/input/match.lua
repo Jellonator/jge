@@ -11,8 +11,8 @@ local WHEELDIR = {
 function IMatch:set_keyboard(keycode, release, allow_repeat)
 	self.event_type = EVENTTYPE.keyboard;
 	self.keycode = keycode;
-	self.release = try_or(release, false);
-	self.allow_repeat = try_or(allow_repeat, false);
+	self.release = jge.try_or(release, false);
+	self.allow_repeat = jge.try_or(allow_repeat, false);
 	return self
 end
 
@@ -24,7 +24,7 @@ function IMatch:set_mousebutton(button, release, x1, y1, x2, y2)
 	end
 	self.event_type = EVENTTYPE.mousebutton;
 	self.button = button
-	self.release = try_or(release, false);
+	self.release = jge.try_or(release, false);
 	return self
 end
 

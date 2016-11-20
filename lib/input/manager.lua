@@ -44,27 +44,27 @@ end
 
 function Manager:override_love()
 	function love.keypressed(keycode, _, isrepeat)
-		self:poll(lib.Input.Event(EVENTTYPE.keyboard, keycode, false, isrepeat))
+		self:poll(jge.Input.Event(EVENTTYPE.keyboard, keycode, false, isrepeat))
 	end
 
 	function love.keyreleased(keycode)
-		self:poll(lib.Input.Event(EVENTTYPE.keyboard, keycode, true, false))
+		self:poll(jge.Input.Event(EVENTTYPE.keyboard, keycode, true, false))
 	end
 
 	function love.mousepressed(x, y, button, isTouch)
-		self:poll(lib.Input.Event(EVENTTYPE.mousebutton, x, y, button, false))
+		self:poll(jge.Input.Event(EVENTTYPE.mousebutton, x, y, button, false))
 	end
 
 	function love.mousereleased(x, y, button, isTouch)
-		self:poll(lib.Input.Event(EVENTTYPE.mousebutton, x, y, button, true))
+		self:poll(jge.Input.Event(EVENTTYPE.mousebutton, x, y, button, true))
 	end
 
 	function love.mousemoved(x, y, dx, dy)
-		self:poll(lib.Input.Event(EVENTTYPE.mousemove, x, y, dx, dy))
+		self:poll(jge.Input.Event(EVENTTYPE.mousemove, x, y, dx, dy))
 	end
 
 	function love.wheelmoved(x, y)
-		self:poll(lib.Input.Event(EVENTTYPE.mousewheel, x, y))
+		self:poll(jge.Input.Event(EVENTTYPE.mousewheel, x, y))
 	end
 end
 

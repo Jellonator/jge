@@ -1,4 +1,4 @@
-## Jellygame
+## Jellygame engine
 A node-based game engine.
 
 *more coming soon*

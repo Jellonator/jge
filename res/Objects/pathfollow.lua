@@ -33,7 +33,7 @@ function pathfollow:on_init()
 	table.sort(self.stops, rev_sort)
 	if #self.path >= 1 then
 		local p = self.path[1]
-		body.shape:move(lib.vlt.add(-p.x, -p.y, self.node.transform:get_translation()))
+		body.shape:move(jge.vlt.add(-p.x, -p.y, self.node.transform:get_translation()))
 	end
 	if #self.path >= 2 then
 		local points = {}
@@ -41,7 +41,7 @@ function pathfollow:on_init()
 			local nexti = i + 1
 			if nexti > #self.path then nexti = self.loop and 1 or i - 1 end
 			local next = self.path[nexti]
-			local dis = lib.vlt.dist(v.x, v.y, next.x, next.y)
+			local dis = jge.vlt.dist(v.x, v.y, next.x, next.y)
 			table.insert(points, {dis, v})
 			prev = v
 		end
@@ -50,7 +50,7 @@ function pathfollow:on_init()
 				local nexti = i - 1
 				local next = self.path[nexti]
 				local v = points[i][2]
-				local dis = lib.vlt.dist(v.x, v.y, next.x, next.y)
+				local dis = jge.vlt.dist(v.x, v.y, next.x, next.y)
 				table.insert(points, {dis, v})
 			end
 		end
