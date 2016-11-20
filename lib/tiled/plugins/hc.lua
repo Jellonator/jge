@@ -92,6 +92,7 @@ local function generate_object_shape(map, hc, object,
 	if not object_collidable then
 		hc:remove(shape)
 	end
+	map.hc_collidables_named[object.name] = shape
 end
 
 local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
@@ -141,6 +142,7 @@ end
 return {
 	hc_init = function(map, hc)
 		local collidables = {}
+		map.hc_collidables_named = {}
 
 		for _, layer in ipairs(map.layers) do
 			-- Entire layer

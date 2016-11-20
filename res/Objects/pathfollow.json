@@ -1,0 +1,26 @@
+{
+	"override": {
+		"path": "script.path",
+		"shape": "collisionbody.shape",
+		"stops": "script.stops",
+		"speed": "script.speed",
+		"loop": "script.loop",
+		"interpolation": "script.interpolation",
+		"length": "script.length"
+	},
+	"components": [
+		{
+			"component": "script",
+			"script": "res/Objects/pathfollow.lua",
+			"depends": ["collisionbody"]
+		},
+		{
+			"component": "collisionbody",
+			"shape": "rectangle",
+			"x": -16,
+			"y": 0,
+			"width": 32,
+			"height": 8
+		}
+	]
+}

@@ -59,14 +59,14 @@ function Node:get_mat_inv()
 end
 
 -- Transform functions
-function Node:transform_point(x, y) -- local -> global
+function Node:transform_point(x, y, w) -- local -> global
 	local mat = self:get_mat()
-	return mat:transform_point(x, y)
+	return mat:transform_point(x, y, w)
 end
 
-function Node:transform_point_inv(x, y) -- global -> local
+function Node:transform_point_inv(x, y, w) -- global -> local
 	local mat = self:get_mat_inv();
-	return mat:transform_point(x, y)
+	return mat:transform_point(x, y, w)
 end
 
 function Node:_transformed()

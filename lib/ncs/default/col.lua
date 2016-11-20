@@ -14,7 +14,9 @@ end
 
 function Body:from_json(json)
 	local shape = json.shape;
-	if shape == "rectangle" then
+	if type(shape) ~= "string" then
+		self:on_init(shape);
+	elseif shape == "rectangle" then
 		self:on_init(shape, json.x, json.y, json.w or json.width, json.h or json.height)
 	elseif shape == "point" then
 		self:on_init(shape, json.x, json.y)
@@ -98,6 +100,14 @@ function Body:is_colliding(s)
 	s = s or 1.01
 	self.shape:scale(s)
 	local _,ret = self.world:collisions(self.shape);
+	self.shape:scale(1/s)
+	return ret;
+end
+
+function Body:get_collisions(s)
+	s = s or 1.01
+	self.shape:scale(s)
+	local ret = self.world:collisions(self.shape);
 	self.shape:scale(1/s)
 	return ret;
 end
@@ -395,7 +405,21 @@ register_component("collisionworld", World)
 
 local Map = {}
 
+local function clear_shape_from_layer(shape)
+	if shape.tiled_layer then
+		table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
+		shape.tiled_layer = nil;
+		shape.tiled_layer_index = nil;
+	end
+	if shape.tiled_batch then
+		shape.tiled_batch:set(shape.tiled_batchid, 0,0,0,0,1,1)
+		shape.tiled_batch = nil;
+		shape.tiled_batchid = nil
+	end
+end
+
 function Map:on_init(fname)
+	-- self.draw = true
 	self.map = lib.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
@@ -415,22 +439,24 @@ function Map:on_init(fname)
 				shape.tile_properties or {},
 				shape.object_properties or {})
 			properties.shape = shape or properties.shape
+			for k,v in pairs(properties) do
+				if type(v) == "string" then
+					local begins, val = v:begins_with("@object:")
+					if begins then
+						local other_shape = self.map.hc_collidables_named[val]
+						properties[k] = other_shape and other_shape.tiled_object
+					end
+				end
+			end
 
 			local tile = shape.tiled_gid and self.map.tiles[shape.tiled_gid];
 			local json = properties.json
 			local script = properties.script
 			if json then
-				-- load json
+				world.world:register(shape)
 				json = self.map._path .. json
 				child:from_json(json, properties)
-
-				-- remove
-				if shape.tiled_layer then
-					table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
-				end
-				if shape.tiled_batch then
-					shape.tiled_batch:set(shape.tiled_batchid, 0,0,0,0,1,1)
-				end
+				clear_shape_from_layer(shape)
 			elseif script then
 				local b = child:add_component("collisionbody", shape)
 				b.world:register(shape)
@@ -440,9 +466,7 @@ function Map:on_init(fname)
 						script[k] = v
 					end
 				end
-				if shape.tiled_layer then
-					table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
-				end
+				clear_shape_from_layer(shape)
 			else
 				child:add_component("collisionbody", shape)
 			end
@@ -456,10 +480,10 @@ end
 
 function Map:on_draw()
 	self.map:draw();
-
+	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)
-	-- love.graphics.setColor(255, 0, 0, 255)
-	-- self.map:hc_draw()
+	love.graphics.setColor(255, 0, 0, 255)
+	self.map:hc_draw()
 end
 
 register_component("tiledmaploader", Map)

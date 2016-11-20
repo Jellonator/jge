@@ -46,7 +46,6 @@ function player_script:on_update(dt)
 	-- movement
 	if self.prev_ground then
 		body:move_count(dx*dt, self.velocy*dt, 8);
-		self.velocx = dx
 	else
 		body:move_count(self.velocx*dt, self.velocy*dt, 8);
 	end
@@ -71,6 +70,9 @@ function player_script:on_update(dt)
 				col_bottom = true
 			end
 		end
+	end
+	if self.prev_ground and not col_bottom then
+		self.velocx = dx
 	end
 	self.prev_ground = col_bottom;
 

@@ -49,6 +49,7 @@ local function areCollinear(p, q, r, eps)
 end
 -- remove vertices that lie on a line
 local function removeCollinear(vertices)
+	if #vertices < 3 then return vertices end
 	local ret = {}
 	local i,k = #vertices - 1, #vertices
 	for l=1,#vertices do
@@ -143,7 +144,30 @@ local Polygon = {}
 
 function Polygon:init(...)
 	local vertices = removeCollinear( toVertexList({}, ...) )
-	assert(#vertices >= 3, "Need at least 3 non collinear points to build polygon (got "..#vertices..")")
+	-- assert(#vertices >= 3, "Need at least 3 non collinear points to build polygon (got "..#vertices..")")
+	if #vertices < 3 then
+		self.vertices = vertices
+		self.centroid = {}
+		if #vertices == 2 then
+			self.centroid.x = (vertices[1].x + vertices[2].x)/2
+			self.centroid.y = (vertices[1].y + vertices[2].y)/2
+			self._radius = math.sqrt(
+				(vertices[1].x-self.centroid.x)^2 +
+				(vertices[1].y-self.centroid.y)^2)
+			self.area = 1e-5
+		elseif #vertices == 1 then
+			self.centroid.x = vertices[1].x
+			self.centroid.y = vertices[1].y
+			self._radius = 1e-5
+			self.area = 1e-5
+		else
+			self.centroid.x = 0
+			self.centroid.y = 0
+			self._radius = 1e-5
+			self.area = 1e-5
+		end
+		return
+	end
 
 	-- assert polygon is oriented counter clockwise
 	local r = getIndexOfleftmost(vertices)
@@ -160,14 +184,14 @@ function Polygon:init(...)
 	-- assert polygon is not self-intersecting
 	-- outer: only need to check segments #vert;1, 1;2, ..., #vert-3;#vert-2
 	-- inner: only need to check unconnected segments
-	local q,p = vertices[#vertices]
-	for i = 1,#vertices-2 do
-		p, q = q, vertices[i]
-		for k = i+1,#vertices-1 do
-			local a,b = vertices[k], vertices[k+1]
-			assert(not segmentsInterset(p,q, a,b), 'Polygon may not intersect itself')
-		end
-	end
+	-- local q,p = vertices[#vertices]
+	-- for i = 1,#vertices-2 do
+	-- 	p, q = q, vertices[i]
+	-- 	for k = i+1,#vertices-1 do
+	-- 		local a,b = vertices[k], vertices[k+1]
+	-- 		assert(not segmentsInterset(p,q, a,b), 'Polygon may not intersect itself')
+	-- 	end
+	-- end
 
 	self.vertices = vertices
 	-- make vertices immutable
@@ -239,7 +263,7 @@ end
 function Polygon:isConvex()
 	local function isConvex()
 		local v = self.vertices
-		if #v == 3 then return true end
+		if #v <= 3 then return true end
 
 		if not ccw(v[#v], v[1], v[2]) then
 			return false

@@ -22,6 +22,10 @@ function string.split(s)
 	return s:gmatch("[^%s]")
 end
 
+function string.begins_with(self, other)
+	return self:sub(1,#other) == other, self:sub(#other+1)
+end
+
 function math.sign(x)
 	if x == 0 then return 0
 	elseif x > 0 then return 1
