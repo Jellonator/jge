@@ -479,6 +479,8 @@ function Map:on_update(dt)
 end
 
 function Map:on_draw()
+	-- local x, y = self.node:transform_point_inv(0,0)
+	-- self.map:setDrawRange(x,y,1,1)
 	self.map:draw();
 	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)

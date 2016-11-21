@@ -85,6 +85,10 @@ function Matrix3:skewy(kx)
 	return Matrix3.mul(self, 1,0,0, ky,1,0, 0,0,1)
 end
 
+function Matrix3:skew(kx, ky)
+	return Matrix3.mul(self, 1,kx,0, ky,1,0, 0,0,1)
+end
+
 function Matrix3:rotate(rot)
 	if rot == 0 then return self end
 	return Matrix3.mul(self,
@@ -132,7 +136,7 @@ end
 
 -- mat3 operations on a mat3const creates a new mat3
 for _,name in pairs({"mul", "__mul", "rotate",
-"translate", "scale", "skewx", "skewy", "inverse", "identity"}) do
+"translate", "scale", "skewx", "skewy", "skew", "inverse", "identity"}) do
 	Matrix3Const[name] = function(self, ...)
 		local obj = Matrix3(unpack(self))
 		return obj[name](obj, ...)

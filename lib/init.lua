@@ -1,6 +1,15 @@
 local lpath = ... .. '.';
 module('jge', package.seeall)
 
+local lg = love.graphics
+local lg_push = love.graphics.push
+local lg_pop = love.graphics.pop
+local lg_origin = love.graphics.origin
+local lg_scale = love.graphics.scale
+local lg_rotate = love.graphics.rotate
+local lg_shear = love.graphics.shear
+local lg_translate = love.graphics.translate
+
 local function reqlocal(path)
 	return require(lpath .. path)
 end
@@ -113,3 +122,41 @@ json  = reqlocal("dkjson")
 tiled = reqlocal("tiled")
 ncs   = reqlocal("ncs")
 HC    = reqlocal("HC")
+
+local matrices = {Matrix3()}
+local mindex = 1;
+local stop = {1}
+
+function love.graphics.push(...)
+	lg_push(...)
+	table.insert(matrices, Matrix3())
+	table.insert(stop, stop[mindex])
+	mindex = mindex + 1
+end
+function love.graphics.pop()
+	lg_pop()
+	table.remove(stop)
+	table.remove(matrices)
+	mindex = mindex - 1
+end
+function love.graphics.origin()
+	lg_origin()
+	stop[mindex] = mindex
+end
+function love.graphics.scale(sx, sy)
+	lg_scale(sx, sy)
+	sy = sy or sx
+	matrices[mindex]:scale(sx, sy)
+end
+function love.graphics.rotate(angle)
+	lg_rotate(angle)
+	matrices[mindex]:rotate(angle)
+end
+function love.graphics.shear(kx, ky)
+	lg_shear(kx, ky)
+	matrices[mindex]:skew(kx, ky)
+end
+function love.graphics.translate(x, y)
+	lg_translate(x, y)
+	matrices[mindex]:translate(x, y)
+end
