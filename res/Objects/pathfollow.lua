@@ -78,7 +78,7 @@ function pathfollow:on_init()
 			y = {component="script", func="path_sety", interpolation=self.interpolation},
 		}, self.speed)
 	end
-	body.draw = true
+	body:generate_bodydraw();
 end
 
 function pathfollow:path_setx(x)

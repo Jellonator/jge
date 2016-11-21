@@ -47,16 +47,16 @@ function Body:set_pushable(value)
 end
 
 --
-function Body:post_draw()
-	if not self.draw then return end
-	love.graphics.setColor(0,255,255)
-	self.shape:transform_mat(self.pmat);
-	-- love.graphics.push()
-	-- love.graphics.origin()
-	self.shape:draw('line')
-	-- love.graphics.pop()
-	self.shape:transform_mat(self.pmat:clone():inverse());
-end
+-- function Body:post_draw()
+-- 	if not self.draw then return end
+-- 	love.graphics.setColor(0,255,255)
+-- 	self.shape:transform_mat(self.pmat);
+-- 	-- love.graphics.push()
+-- 	-- love.graphics.origin()
+-- 	self.shape:draw('line')
+-- 	-- love.graphics.pop()
+-- 	self.shape:transform_mat(self.pmat:clone():inverse());
+-- end
 
 function Body:_move_node(x, y)
 	-- shape needs to be transformed back by world coordinates
@@ -362,7 +362,32 @@ function Body:on_transform()
 	self.pmat:inverse();
 end
 
+function Body:generate_bodydraw()
+	self.node:add_component("collisionbodydraw", self.shape)
+end
+
 register_component("collisionbody", Body)
+
+local BodyDraw = {}
+function BodyDraw:on_init(shape, color)
+	self.shape = shape
+	self.color = color and {unpack(color)} or {0,255,255}
+end
+
+function BodyDraw:post_draw()
+	love.graphics.setColor(self.color)
+	if self.shape.body then
+		self.shape:transform_mat(self.shape.body.pmat);
+	end
+
+	self.shape:draw('line')
+
+	if self.shape.body then
+		self.shape:transform_mat(self.shape.body.pmat:clone():inverse());
+	end
+end
+
+register_component("collisionbodydraw", BodyDraw)
 
 local World = {}
 
@@ -373,12 +398,12 @@ end
 function World:on_update(dt)
 end
 
-function World:on_draw()
-	-- love.graphics.setColor(0, 255, 0, 140)
-	-- for s in pairs(self.world.hash:shapes()) do
-	-- 	s:draw('line')
-	-- end
-end
+-- function World:on_draw()
+-- 	-- love.graphics.setColor(0, 255, 0, 140)
+-- 	-- for s in pairs(self.world.hash:shapes()) do
+-- 	-- 	s:draw('line')
+-- 	-- end
+-- end
 
 function World:get_neighbors(shape)
 	if type(shape) == "string" then
@@ -419,21 +444,12 @@ local function clear_shape_from_layer(shape)
 end
 
 function Map:on_init(fname)
-	-- self.draw = true
 	self.map = jge.tiled(fname, {"hc"})
 	local parent, world = self.node:get_parent_with_component("collisionworld", true);
 	if parent and world then
 		-- create solid bodies
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
-			local child = self.node:add_child();
-			local centerx, centery = shape:center();
-			local rot = shape.tiled_object and math.rad(shape.tiled_object.rotation) or 0
-			child.transform:translate(centerx, centery)
-			child.transform:rotate(rot)
-			shape:rotate(rot, centerx, centery)
-			shape:move(-centerx, -centery)
-
 			local properties = jge.table_union(
 				shape.tileset_properties or {},
 				shape.tile_properties or {},
@@ -452,6 +468,16 @@ function Map:on_init(fname)
 			local tile = shape.tiled_gid and self.map.tiles[shape.tiled_gid];
 			local json = properties.json
 			local script = properties.script
+			local child;
+			if json or script then
+				child = self.node:add_child();
+				local centerx, centery = shape:center();
+				local rot = shape.tiled_object and math.rad(shape.tiled_object.rotation) or 0
+				child.transform:translate(centerx, centery)
+				child.transform:rotate(rot)
+				shape:rotate(rot, centerx, centery)
+				shape:move(-centerx, -centery)
+			end
 			if json then
 				world.world:register(shape)
 				json = self.map._path .. json
@@ -468,7 +494,7 @@ function Map:on_init(fname)
 				end
 				clear_shape_from_layer(shape)
 			else
-				child:add_component("collisionbody", shape)
+				self.node:add_component("collisionbody", shape)
 			end
 		end
 	end

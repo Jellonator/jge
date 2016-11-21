@@ -6,10 +6,17 @@ function Node.new(x, y)
 		transform = jge.Transform(x, y),
 		components = {},
 		components_named = {},
+		components_draw = {},
+		components_update = {},
 		children = {},
+		children_draw = {},
+		children_update = {},
+		need_reset_updates = false,
+		need_reset_draws = false,
 		_i_am_a_node = true,
 		_parent = nil,
 		_paused = false,
+		_visible = true,
 		_timescale = 1,
 		-- A system of caches so that positions can
 		-- be lazily evaluated for efficiency
@@ -34,6 +41,14 @@ end
 
 function Node:unpause()
 	self._paused = false
+end
+
+function Node:hide()
+	self._visible = false
+end
+
+function Node:show()
+	self._visible = true
 end
 
 function Node:set_timescale(scale)
@@ -110,20 +125,28 @@ function Node:update_real(dt)
 	if self._paused then return end
 	dt = dt * self._timescale;
 	self:_recalculate();
-	for i, c in pairs(self.components) do
-		c:on_update_real(dt);
+	for i, c in pairs(self.components_update) do
+		if c.on_update_real then c:on_update_real(dt); end
 	end
-	for i, node in pairs(self.children) do
+	for i, node in pairs(self.children_update) do
 		node:update_real(dt)
 	end
 end
 
+function Node:_reset_draws()
+	self.need_reset_draws = true;
+	if self._parent then self._parent:_reset_draws() end
+end
+
+function Node:_reset_updates()
+	self.need_reset_updates = true;
+	if self._parent then self._parent:_reset_updates() end
+end
+
 function Node:update(dt)
 	if self._paused then return end
+
 	dt = dt * self._timescale;
-	-- val = val * math.pi * 0.01
-	-- print(("%.70f"):format(val))
-	-- val = val / math.pi * 100
 	self._prev_x = self.transform.x
 	self._prev_y = self.transform.y
 	self._prev_scalex = self.transform.scalex
@@ -131,15 +154,33 @@ function Node:update(dt)
 	self._prev_rot = self.transform.rotation
 
 	self:_recalculate();
-	for i, c in pairs(self.components) do
-		c:on_update(dt);
+	for i, c in pairs(self.components_update) do
+		if c.on_update then c:on_update(dt); end
 	end
-	for i, node in pairs(self.children) do
+	local children = self.need_reset_updates and self.children or self.children_update
+	for i, node in pairs(children) do
 		node:update(dt)
+	end
+
+	if self.need_reset_updates then
+		self.components_update = {}
+		self.children_update = {}
+		for _,v in pairs(self.components) do
+			if v.on_update or v.on_update_real then
+				table.insert(self.components_update, v)
+			end
+		end
+		for _,v in pairs(self.children) do
+			if #v.components_update > 0 then
+				table.insert(self.children_update, v)
+			end
+		end
+		self.need_reset_updates = false
 	end
 end
 
 function Node:draw(lerp)
+	if not self._visible then return end
 	local x = self.transform.x
 	local y = self.transform.y
 	local scalex = self.transform.scalex
@@ -152,18 +193,19 @@ function Node:draw(lerp)
 	self.transform.scaley = jge.lerp(lerp, self._prev_scaley, scaley)
 	self.transform.rotation = jge.lerp(lerp, self._prev_rot, rot)
 
-	for i, c in pairs(self.components) do
-		c:pre_draw(lerp);
+	for i, c in pairs(self.components_draw) do
+		if c.pre_draw then c:pre_draw(lerp); end
 	end
 	self.transform:draw_push();
-	for i, c in pairs(self.components) do
-		c:on_draw(lerp);
+	for i, c in pairs(self.components_draw) do
+		if c.on_draw then c:on_draw(lerp); end
 	end
-	for i, node in pairs(self.children) do
+	local children = self.need_reset_draws and self.children or self.children_draw
+	for i, node in pairs(children) do
 		node:draw(lerp);
 	end
-	for i, c in pairs(self.components) do
-		c:post_draw(lerp);
+	for i, c in pairs(self.components_draw) do
+		if c.post_draw then c:post_draw(lerp); end
 	end
 	self.transform:draw_pop();
 
@@ -172,6 +214,22 @@ function Node:draw(lerp)
 	self.transform.scalex = scalex
 	self.transform.scaley = scaley
 	self.transform.rotation = rot
+
+	if self.need_reset_draws then
+		self.components_draw = {}
+		self.children_draw = {}
+		for _,v in pairs(self.components) do
+			if v.pre_draw or v.on_draw or v.post_draw then
+				table.insert(self.components_draw, v)
+			end
+		end
+		for _,v in pairs(self.children) do
+			if #v.components_draw > 0 then
+				table.insert(self.children_draw, v)
+			end
+		end
+		self.need_reset_draws = false;
+	end
 end
 
 -- Children/parent functions
@@ -185,7 +243,7 @@ end
 
 function Node:get_parent_with_component(cname, canretself)
 	local c = self:get_component(cname);
-	if canretself == true and c then
+	if canretself ~= false and c then
 		return self, c
 	elseif self._parent then
 		return self._parent:get_parent_with_component(cname, true);
@@ -204,6 +262,8 @@ function Node:add_child(name, child)
 	end
 	self.children[name] = child
 	child._parent = self
+	self:_reset_updates();
+	self:_reset_draws();
 	return child
 end
 
@@ -213,6 +273,8 @@ function Node:remove_child(child)
 			self.children[k] = nil
 		end
 	end
+	self:_reset_updates();
+	self:_reset_draws();
 end
 
 function Node:get_node(name)
@@ -275,6 +337,8 @@ function Node:add_component(name, ...)
 	self.components_named[name] = c;
 	c.node = self;
 	c:on_init(...);
+	self:_reset_updates();
+	self:_reset_draws();
 	return c
 end
 
@@ -283,6 +347,8 @@ function Node:_add_component_json(name, jsondata)
 	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
+	self:_reset_updates();
+	self:_reset_draws();
 	return c
 end
 
