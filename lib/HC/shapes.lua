@@ -456,7 +456,13 @@ end
 
 function ConvexPolygonShape:draw(mode)
 	mode = mode or 'line'
-	love.graphics.polygon(mode, self._polygon:unpack())
+	if #self._polygon.vertices >= 3 then
+		love.graphics.polygon(mode, self._polygon:unpack())
+	elseif #self._polygon.vertices == 2 then
+		love.graphics.line(self._polygon:unpack())
+	elseif #self._polygon.vertices == 1 then
+		love.graphics.points(self._polygon:unpack())
+	end
 	-- love.graphics.points(self._polygon.centroid.x, self._polygon.centroid.y)
 	-- love.graphics.circle(mode, self._polygon.centroid.x, self._polygon.centroid.y, self._polygon._radius)
 end

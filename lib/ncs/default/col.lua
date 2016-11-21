@@ -432,7 +432,9 @@ local Map = {}
 
 local function clear_shape_from_layer(shape)
 	if shape.tiled_layer then
-		table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
+		shape.tiled_layer.rm_indexes = shape.tiled_layer.rm_indexes or {}
+		table.insert(shape.tiled_layer.rm_indexes, shape.tiled_layer_index);
+		-- table.remove(shape.tiled_layer.objects, shape.tiled_layer_index);
 		shape.tiled_layer = nil;
 		shape.tiled_layer_index = nil;
 	end
@@ -440,6 +442,17 @@ local function clear_shape_from_layer(shape)
 		shape.tiled_batch:set(shape.tiled_batchid, 0,0,0,0,1,1)
 		shape.tiled_batch = nil;
 		shape.tiled_batchid = nil
+	end
+end
+
+local function finalize_removals(map)
+	for _,layer in pairs(map.layers) do
+		if layer.rm_indexes and layer.objects then
+			table.sort(layer.rm_indexes);
+			for i = #layer.rm_indexes, 1, -1 do
+				table.remove(layer.objects, layer.rm_indexes[i])
+			end
+		end
 	end
 end
 
@@ -461,6 +474,7 @@ function Map:on_init(fname)
 					if begins then
 						local other_shape = self.map.hc_collidables_named[val]
 						properties[k] = other_shape and other_shape.tiled_object
+						clear_shape_from_layer(other_shape)
 					end
 				end
 			end
@@ -477,12 +491,12 @@ function Map:on_init(fname)
 				child.transform:rotate(rot)
 				shape:rotate(rot, centerx, centery)
 				shape:move(-centerx, -centery)
+				clear_shape_from_layer(shape)
 			end
 			if json then
 				world.world:register(shape)
 				json = self.map._path .. json
 				child:from_json(json, properties)
-				clear_shape_from_layer(shape)
 			elseif script then
 				local b = child:add_component("collisionbody", shape)
 				b.world:register(shape)
@@ -492,11 +506,12 @@ function Map:on_init(fname)
 						script[k] = v
 					end
 				end
-				clear_shape_from_layer(shape)
 			else
 				self.node:add_component("collisionbody", shape)
 			end
 		end
+
+		finalize_removals(self.map)
 	end
 end
 
@@ -517,7 +532,7 @@ function Map:on_draw()
 	-- print(x, y)
 	self.map:setDrawRange(ax,ay,bx-ax,by-ay)
 	self.map:draw();
-	if not self.draw then return end
+	-- if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)
 	love.graphics.setColor(255, 0, 0, 255)
 	self.map:hc_draw()

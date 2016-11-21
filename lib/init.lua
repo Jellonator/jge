@@ -59,7 +59,7 @@ function lerp(val, a, b)
 end
 
 function angle_diff(a, b)
-	local ret = a - b;
+	local ret = b - a;
 	ret = _mod(ret + math.pi, math.pi*2) - math.pi
 	return ret;
 end
@@ -70,10 +70,10 @@ function angle_lerp(lerp, a, b)
 	return _mod(a, math.pi*2)
 end
 
-function angle_to(a, b, dis)
+function angle_to(a, b, speed)
 	local diff = angle_diff(a, b);
-	if math.abs(diff) < dis then return b end
-	diff = diff * dis / math.abs(diff);
+	if math.abs(diff) < speed*2 then return b end
+	diff = diff * speed / math.abs(diff);
 	a = a + diff;
 	return _mod(a, math.pi*2);
 end

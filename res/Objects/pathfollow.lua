@@ -24,6 +24,9 @@ function pathfollow:on_init()
 	if self.loop == nil then
 		self.loop = polygon and true or false
 	end
+	if self.path.ellipse then
+		table.remove(self.path.ellipse, 1)
+	end
 	self.path = polygon or self.path.polyline or self.path
 
 	self.speed = self.speed or 80;
@@ -77,6 +80,15 @@ function pathfollow:on_init()
 			x = {component="script", func="path_setx", interpolation=self.interpolation},
 			y = {component="script", func="path_sety", interpolation=self.interpolation},
 		}, self.speed)
+
+		self.polydraw = {}
+		for i,v in ipairs(points) do
+			table.insert(self.polydraw, v[2].x)
+			table.insert(self.polydraw, v[2].y)
+		end
+		print("PDRAW", #self.polydraw)
+		-- table.insert(self.polydraw, self.path[#self.path].x)
+		-- table.insert(self.polydraw, self.path[#self.path].y)
 	end
 	body:generate_bodydraw();
 end
@@ -105,6 +117,16 @@ function pathfollow:on_update(dt)
 		end
 	end
 	self.px, self.py = newx, newy
+end
+
+function pathfollow:post_draw(lerp)
+	self.node.transform:draw_pop();
+	-- if #self.polydraw >= 6 then
+		-- print(1)
+		love.graphics.setColor(0, 255, 0);
+		love.graphics.line(self.polydraw)
+	-- end
+	self.node.transform:draw_push();
 end
 
 return pathfollow;

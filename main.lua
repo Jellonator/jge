@@ -20,7 +20,7 @@ inputmanager:override_love();
 local tree, camera
 local update_delta = 1/60;
 local update_timer = 0;
-local MAX_UPDATE_FRAMES = 2;
+local MAX_UPDATE_FRAMES = 7;
 local is_in_update = false;
 local old_get_delta = love.timer.getDelta;
 love.timer.getDelta = function()
