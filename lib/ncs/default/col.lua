@@ -505,8 +505,17 @@ function Map:on_update(dt)
 end
 
 function Map:on_draw()
-	-- local x, y = self.node:transform_point_inv(0,0)
-	-- self.map:setDrawRange(x,y,1,1)
+	local w, h = love.graphics.getDimensions();
+	local x1, y1 = love.graphics.getWorldPos(0,0)
+	local x2, y2 = love.graphics.getWorldPos(w,h)
+	local x3, y3 = love.graphics.getWorldPos(0,h)
+	local x4, y4 = love.graphics.getWorldPos(w,0)
+	local ax = math.min(x1, x2, x3, x4)
+	local ay = math.min(y1, y2, y3, y4)
+	local bx = math.max(x1, x2, x3, x4)
+	local by = math.max(y1, y2, y3, y4)
+	-- print(x, y)
+	self.map:setDrawRange(ax,ay,bx-ax,by-ay)
 	self.map:draw();
 	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)

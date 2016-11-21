@@ -91,13 +91,14 @@ end
 
 function pathfollow:on_update(dt)
 	if not self.x or not self.y then return end
+	local body = self.node:get_component("collisionbody")
+	local col = body:get_collisions()
 	self.node.transform:set_translation(self.x, self.y)
 	self.node:_recalculate()
 	local newx, newy = self.node:getpos()
 	if self.px and self.py then
 		local mx, my = newx - self.px, newy - self.py
-		local body = self.node:get_component("collisionbody")
-		for shape, sep in pairs(body:get_collisions()) do
+		for shape in pairs(col) do
 			if shape.body and shape.body.pushable then
 				shape:move(mx, my)
 				shape.body:_move_node(mx, my)
