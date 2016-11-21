@@ -94,7 +94,6 @@ function pathfollow:on_update(dt)
 	local body = self.node:get_component("collisionbody")
 	local col = body:get_collisions()
 	self.node.transform:set_translation(self.x, self.y)
-	self.node:_recalculate()
 	local newx, newy = self.node:getpos()
 	if self.px and self.py then
 		local mx, my = newx - self.px, newy - self.py
@@ -104,7 +103,6 @@ function pathfollow:on_update(dt)
 				shape.body:_move_node(mx, my)
 			end
 		end
-		body:resolve_neighbors()
 	end
 	self.px, self.py = newx, newy
 end
