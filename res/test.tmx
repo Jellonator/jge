@@ -1,62 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="32" tileheight="32" backgroundcolor="#352643" nextobjectid="56">
- <tileset firstgid="1" name="Foreground" tilewidth="32" tileheight="32" tilecount="36" columns="6">
-  <image source="Foreground.png" width="192" height="192"/>
-  <terraintypes>
-   <terrain name="solid" tile="-1"/>
-  </terraintypes>
-  <tile id="0" terrain=",,,0"/>
-  <tile id="1" terrain=",,0,0"/>
-  <tile id="3" terrain=",,0,0"/>
-  <tile id="4" terrain=",,0,"/>
-  <tile id="5" terrain="0,,0,0"/>
-  <tile id="6" terrain=",0,,0"/>
-  <tile id="7" terrain="0,0,0,0" probability="0"/>
-  <tile id="8" terrain="0,0,0,0" probability="0"/>
-  <tile id="9" terrain="0,0,0,0" probability="0"/>
-  <tile id="10" terrain="0,,0,"/>
-  <tile id="11" terrain="0,0,0,"/>
-  <tile id="13" terrain="0,0,0,0" probability="0"/>
-  <tile id="14" terrain="0,0,0,0"/>
-  <tile id="15" terrain="0,0,0,0" probability="0"/>
-  <tile id="17" terrain=",0,0,0"/>
-  <tile id="18" terrain=",0,,0"/>
-  <tile id="19" terrain="0,0,0,0" probability="0"/>
-  <tile id="20" terrain="0,0,0,0" probability="0"/>
-  <tile id="21" terrain="0,0,0,0" probability="0"/>
-  <tile id="22" terrain="0,,0,"/>
-  <tile id="23" terrain="0,0,,0"/>
-  <tile id="24" terrain=",0,,"/>
-  <tile id="25" terrain="0,0,,"/>
-  <tile id="27" terrain="0,0,,"/>
-  <tile id="28" terrain="0,,,"/>
-  <tile id="29">
-   <objectgroup draworder="index">
-    <object id="3" x="0" y="0">
-     <polygon points="0,0 24,0 0,24"/>
-    </object>
-   </objectgroup>
-  </tile>
-  <tile id="30" terrain="0,0,0,0" probability="0.3"/>
-  <tile id="35">
-   <objectgroup draworder="index">
-    <object id="1" x="8" y="0">
-     <polygon points="0,0 24,0 24,24"/>
-    </object>
-   </objectgroup>
-  </tile>
- </tileset>
- <tileset firstgid="37" name="Objects" tilewidth="32" tileheight="32" tilecount="1" columns="0">
-  <tile id="1">
-   <properties>
-    <property name="json" type="file" value="Player/player.json"/>
-   </properties>
-   <image width="32" height="32" source="Player/playericon.png"/>
-  </tile>
- </tileset>
- <tileset firstgid="39" name="Background" tilewidth="32" tileheight="32" tilecount="36" columns="6">
-  <image source="Background.png" width="192" height="192"/>
- </tileset>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="128" height="128" tilewidth="32" tileheight="32" backgroundcolor="#352643" nextobjectid="57">
+ <tileset firstgid="1" source="WorldA/Foreground.tsx"/>
+ <tileset firstgid="37" source="WorldA/Objects.tsx"/>
+ <tileset firstgid="39" source="WorldA/Background.tsx"/>
  <layer name="Background" width="128" height="128">
   <data encoding="csv">
 39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,39,40,
@@ -525,9 +471,9 @@
    <properties>
     <property name="json" type="file" value="Objects/pathfollow.json"/>
     <property name="path" value="@object:path_tunnel"/>
-    <property name="speed" type="float" value="1600"/>
+    <property name="speed" type="float" value="640"/>
    </properties>
-   <polygon points="0,0 192,0 192,64 160,96 32,96 0,64"/>
+   <polygon points="0,0 192,0 192,96 0,96"/>
   </object>
   <object id="54" x="1632" y="1344">
    <properties>

@@ -40,9 +40,6 @@ local function generate_object_shape(map, hc, object,
 		collidables, ox, oy, object_collidable, layer, layer_index)
 	ox = ox or 0
 	oy = oy or 0
-	local dat = {
-		shape = object.shape
-	}
 	local x       = object.dx or object.x
 	local y       = object.dy or object.y
 	local w       = object.width
@@ -108,7 +105,62 @@ local function load_objectgroup(map, hc, layer, collidables, ox, oy, force_col)
 	end
 end
 
+local function tilemap_test_range(tilemap, x1, y1, x2, y2)
+	for ix = x1, x2 do
+		if ix < 1 or ix > #tilemap then return false end
+		for iy = y1, y2 do
+			if iy < 1 or iy > #tilemap[ix] then return false end
+			if tilemap[ix][iy] == 0 then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+local function tilemap_take_range(tilemap, x1, y1, x2, y2)
+	for ix = x1, x2 do
+		for iy = y1, y2 do
+			tilemap[ix][iy] = 0
+		end
+	end
+end
+
+local function tilemap_take_horizontal(tilemap, x1, y1, x2, y2)
+	-- try to the left
+	while tilemap_test_range(tilemap, x1-1, y1, x1-1, y2) do
+		x1 = x1 - 1
+	end
+	-- try to the right
+	while tilemap_test_range(tilemap, x2+1, y1, x2+1, y2) do
+		x2 = x2 + 1
+	end
+	return x1, y1, x2, y2
+end
+
+local function tilemap_take_vertical(tilemap, x1, y1, x2, y2)
+	-- try to the top
+	while tilemap_test_range(tilemap, x1, y1-1, x2, y1-1) do
+		y1 = y1 - 1
+	end
+	-- try to the bottom
+	while tilemap_test_range(tilemap, x1, y2+1, x2, y2+1) do
+		y2 = y2 + 1
+	end
+	return x1, y1, x2, y2
+end
+
 local function load_tilelayer(map, hc, layer, collidables)
+	local tilemap = {}
+	for ix = 1, layer.width do
+		tilemap[ix] = {}
+		for iy = 1, layer.height do
+			tilemap[ix][iy] = 0
+		end
+	end
+
+	local indexes_x = {}
+	local indexes_y = {}
 	for gid, tiles in pairs(map.tileInstances) do
 		local tile = map.tiles[gid]
 		local tileset = map.tilesets[tile.tileset]
@@ -119,22 +171,37 @@ local function load_tilelayer(map, hc, layer, collidables)
 					load_objectgroup(map, hc, tile.objectGroup, collidables,
 						instance.x + layer.offsetx, instance.y + layer.offsety, true)
 				else
-					local object = {
-						shape  = "rectangle",
-						x      = instance.x + layer.offsetx,
-						y      = instance.y + layer.offsety,
-						width  = tileset.tilewidth,
-						height = tileset.tileheight,
-					}
-					local shape = generate_shape(hc, object)
-					collidables[shape] = shape
-					shape.tileset_properties = tileset.properties;
-					shape.tile_properties = tile.properties
-					shape.tiled_gid = gid
-					shape.tiled_batch = instance.batch
-					shape.tiled_batchid = instance.id
+					local ix, iy = map:convertPixelToTile(instance.x, instance.y)
+					ix = ix + 1
+					iy = iy + 1
+					tilemap[ix][iy] = 1
+					table.insert(indexes_x, ix)
+					table.insert(indexes_y, iy)
 				end
 			end
+		end
+	end
+	local count = 1
+	for i = 1, #indexes_x do
+		local ix = indexes_x[i]
+		local iy = indexes_y[i]
+		if tilemap[ix][iy] == 1 then
+			local x1, y1, x2, y2 = ix, iy, ix, iy
+			x1, y1, x2, y2 = tilemap_take_vertical(tilemap, x1, y1, x2, y2)
+			x1, y1, x2, y2 = tilemap_take_horizontal(tilemap, x1, y1, x2, y2)
+			tilemap_take_range(tilemap, x1, y1, x2, y2)
+			x1, y1 = map:convertTileToPixel(x1-1, y1-1)
+			x2, y2 = map:convertTileToPixel(x2, y2)
+			local object = {
+				shape  = "rectangle",
+				x      = x1 + layer.offsetx,
+				y      = y1 + layer.offsety,
+				width  = x2-x1,
+				height = y2-y1,
+			}
+			local shape = generate_shape(hc, object)
+			collidables[shape] = shape
+			count = count + 1
 		end
 	end
 end

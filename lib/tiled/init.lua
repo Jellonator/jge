@@ -495,22 +495,6 @@ function Map:setSpriteBatches(layer)
 						tileX = (x - 1) * colW + tile.offset.x
 					end
 				end
-				local sx = tile.sx
-				local sy = tile.sy
-				if sx > 0 then
-					sx = sx + THETA * 2
-					tileX = tileX - THETA
-				elseif sx < 0 then
-					sx = sx - THETA * 2
-					tileX = tileX + THETA
-				end
-				if sy > 0 then
-					sy = sy + THETA * 2
-					tileY = tileY - THETA
-				elseif sy < 0 then
-					sy = sy - THETA * 2
-					tileY = tileY + THETA
-				end
 				local id = batch:add(tile.quad, tileX-THETA, tileY-THETA, tile.r, tile.sx+THETA*2, tile.sy+THETA*2)
 				self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
 				table.insert(self.tileInstances[tile.gid], {

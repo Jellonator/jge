@@ -8,13 +8,14 @@ return {
   height = 128,
   tilewidth = 32,
   tileheight = 32,
-  nextobjectid = 56,
+  nextobjectid = 57,
   backgroundcolor = { 53, 38, 67 },
   properties = {},
   tilesets = {
     {
       name = "Foreground",
       firstgid = 1,
+      filename = "WorldA/Foreground.tsx",
       tilewidth = 32,
       tileheight = 32,
       spacing = 0,
@@ -220,6 +221,7 @@ return {
     {
       name = "Objects",
       firstgid = 37,
+      filename = "WorldA/Objects.tsx",
       tilewidth = 32,
       tileheight = 32,
       spacing = 0,
@@ -246,6 +248,7 @@ return {
     {
       name = "Background",
       firstgid = 39,
+      filename = "WorldA/Background.tsx",
       tilewidth = 32,
       tileheight = 32,
       spacing = 0,
@@ -950,15 +953,13 @@ return {
           polygon = {
             { x = 0, y = 0 },
             { x = 192, y = 0 },
-            { x = 192, y = 64 },
-            { x = 160, y = 96 },
-            { x = 32, y = 96 },
-            { x = 0, y = 64 }
+            { x = 192, y = 96 },
+            { x = 0, y = 96 }
           },
           properties = {
             ["json"] = "Objects/pathfollow.json",
             ["path"] = "@object:path_tunnel",
-            ["speed"] = 1600
+            ["speed"] = 640
           }
         },
         {

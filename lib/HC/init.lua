@@ -68,7 +68,13 @@ function HC:resetHash(cell_size)
 end
 
 function HC:register(shape)
+	if shape._world == self then
+		return shape
+	elseif shape._world then
+		error("Attempt to register shape that belongs to a different world!")
+	end
 	self.hash:register(shape, shape:bbox())
+	shape._world = self;
 
 	-- keep track of where/how big the shape is
 	shape._oldf = shape._oldf or {}
@@ -82,6 +88,7 @@ function HC:register(shape)
 end
 
 function HC:remove(shape)
+	shape._world = nil;
 	self.hash:remove(shape, shape:bbox())
 	for _, f in ipairs(transform_func_names) do
 		shape[f] = shape._oldf[f]

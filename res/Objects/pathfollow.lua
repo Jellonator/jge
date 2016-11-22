@@ -48,6 +48,11 @@ function pathfollow:on_init()
 			table.insert(points, {dis, v})
 			prev = v
 		end
+		self.polydraw = {}
+		for i, next in ipairs(points) do
+			table.insert(self.polydraw, next[2].x)
+			table.insert(self.polydraw, next[2].y);
+		end
 		if not self.loop then
 			for i = #points-1, 2, -1 do
 				local nexti = i - 1
@@ -80,15 +85,6 @@ function pathfollow:on_init()
 			x = {component="script", func="path_setx", interpolation=self.interpolation},
 			y = {component="script", func="path_sety", interpolation=self.interpolation},
 		}, self.speed)
-
-		self.polydraw = {}
-		for i,v in ipairs(points) do
-			table.insert(self.polydraw, v[2].x)
-			table.insert(self.polydraw, v[2].y)
-		end
-		print("PDRAW", #self.polydraw)
-		-- table.insert(self.polydraw, self.path[#self.path].x)
-		-- table.insert(self.polydraw, self.path[#self.path].y)
 	end
 	body:generate_bodydraw();
 end
@@ -121,11 +117,8 @@ end
 
 function pathfollow:post_draw(lerp)
 	self.node.transform:draw_pop();
-	-- if #self.polydraw >= 6 then
-		-- print(1)
-		love.graphics.setColor(0, 255, 0);
-		love.graphics.line(self.polydraw)
-	-- end
+	love.graphics.setColor(0, 255, 0);
+	love.graphics.line(self.polydraw)
 	self.node.transform:draw_push();
 end
 

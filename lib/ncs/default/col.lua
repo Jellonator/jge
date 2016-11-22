@@ -6,6 +6,7 @@ function Body:on_init(shape, ...)
 	if type(shape) == "string" then
 		shape = self.world:create(shape, ...)
 	end
+	self.world:register(shape)
 	self.pushable = false
 	self.shape = shape
 	self.shape.body = self
@@ -494,19 +495,17 @@ function Map:on_init(fname)
 				clear_shape_from_layer(shape)
 			end
 			if json then
-				world.world:register(shape)
 				json = self.map._path .. json
 				child:from_json(json, properties)
 			elseif script then
 				local b = child:add_component("collisionbody", shape)
-				b.world:register(shape)
 				local script = child:add_component("script", self.map._path .. script)
 				for k,v in pairs(properties) do
 					if k ~= "script" then
 						script[k] = v
 					end
 				end
-			else
+			elseif properties.collidable then
 				self.node:add_component("collisionbody", shape)
 			end
 		end
@@ -532,7 +531,7 @@ function Map:on_draw()
 	-- print(x, y)
 	self.map:setDrawRange(ax,ay,bx-ax,by-ay)
 	self.map:draw();
-	-- if not self.draw then return end
+	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)
 	love.graphics.setColor(255, 0, 0, 255)
 	self.map:hc_draw()
