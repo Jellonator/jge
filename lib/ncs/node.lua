@@ -143,6 +143,10 @@ end
 function Node:_recalculate()
 	if self._self_id ~= self.transform._id or force then
 		self:_transformed();
+	else
+		for _, child in pairs(self.children) do
+			child:_recalculate()
+		end
 	end
 end
 
@@ -268,7 +272,7 @@ function Node:draw(lerp)
 	if self.need_reset_draws then
 		self:_finalize_reset_draws();
 	end
-	
+
 	self.transform:draw_push();
 	for i, c in pairs(self.components_draw) do
 		if c.pre_draw then c:pre_draw(lerp); end
@@ -349,11 +353,14 @@ function Node:get_node(name)
 	local pos_s, pos_e = name:find('/');
 	if pos_s then
 		local pre, post = name:sub(1,pos_s-1), name:sub(pos_e+1);
-		local c = pre == "" and self:get_root() or self:get_child(pre);
-		return c:get_child(post)
+		local c = pre == "" and self:get_root() or self:get_node(pre);
+		return c:get_node(post)
 	else
 		return self.children[name]
 	end
+end
+function Node:get_child(name)
+	return self.children[name]
 end
 
 function Node:get_children_recursive(t)

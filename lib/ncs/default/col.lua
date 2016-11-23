@@ -536,14 +536,18 @@ function Map:on_init(fname)
 	end
 end
 
-function Map:on_update(dt)
-	self.map:update(dt)
+function Map:bind_camera()
 	local _, camera = self.node:get_parent_with_component("camera");
 	if camera then
 		camera.camera:setBounds(0, 0,
 			self.map.width*self.map.tilewidth,
 			self.map.height*self.map.tileheight)
 	end
+end
+
+function Map:on_update(dt)
+	self.map:update(dt)
+	self:bind_camera();
 end
 
 function Map:on_remove()
@@ -563,7 +567,7 @@ function Map:on_draw()
 	local bx = math.max(x1, x2, x3, x4)
 	local by = math.max(y1, y2, y3, y4)
 	-- print(x, y)
-	self.map:setDrawRange(ax,ay,bx-ax,by-ay)
+	-- self.map:setDrawRange(ax,ay,bx-ax,by-ay)
 	self.map:draw();
 	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)

@@ -36,50 +36,81 @@ function loadzone:on_init()
 	self.level = tilemap.map._path .. self.level
 end
 
+function loadzone:load_zone(shape)
+	local body = self.node:get_component("collisionbody");
+	local player = shape.body.node
+	local old_level_node, old_level = self.node:get_parent_with_component("tiledmaploader");
+	local _, levelmanager = self.node:get_parent_with_component("levelmanager");
+	assert(levelmanager, "There is no level manager mang!")
+
+	local   self_x1,   self_y1,   self_x2,   self_y2 = body.shape:bbox();
+	local player_x1, player_y1, player_x2, player_y2 = shape:bbox();
+	local player_width, player_height = player_x2-player_x1, player_y2-player_y1
+	local player_x, player_y = shape:center()
+
+	local _,camera = self.node:get_root():get_component("camera");
+
+	local to_x, to_y = 0, 0;
+	local _, tilemap = levelmanager:set_level(self.level, function(new_level_node, new_level)
+		local target_x1, target_y1, target_x2, target_y2 =
+			loadzone_bboxes[self.target].node
+			:get_component("collisionbody").shape:bbox()
+
+		local cameraw, camerah = get_camera_size();
+
+		local camx, camy, offx, offy = 0, 0;
+		if self.edge == "left" then
+			to_x = target_x1 - player_width - 1
+			to_y = player_y - self_y2 + target_y2
+			camx = -cameraw
+			camy = 0
+			offx = self_x2 - target_x1
+			offy = self_y2 - target_y2
+		elseif self.edge == "right" then
+			to_x = target_x2 + player_width + 1
+			to_y = player_y - self_y2 + target_y2
+			camx = cameraw
+			camy = 0
+			offx = self_x1 - target_x2
+			offy = self_y2 - target_y2
+		elseif self.edge == "top" then
+			to_y = target_y1 - player_height - 1
+			to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
+			camx = 0
+			camy = -camerah
+			offy = self_y2 - target_y1
+			offx = (self_x2 + self._x1)/2 - (target_x2 + target_x1)/2
+		elseif self.edge == "bottom" then
+			to_y = target_y2 + player_height + 1
+			to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
+			camx = 0
+			camy = camerah
+			offy = self_y1 - target_y2
+			offx = (self_x2 + self._x1)/2 - (target_x2 + target_x1)/2
+		end
+
+		return camx, camy, offx, offy
+	end, 800, {player})
+
+	player:get_root():_recalculate();
+	player_x, player_y = shape:center()
+	local mx, my = to_x - player_x, to_y - player_y
+	shape:move(mx, my);
+	shape.body:_move_node(mx, my);
+	player:get_root():_transformed();
+	player:get_root():add_child(player)
+	if tilemap then
+		tilemap:bind_camera()
+	end
+end
+
 function loadzone:on_update(dt)
 	local body = self.node:get_component("collisionbody");
 	local col = body:get_collisions();
 	for shape in pairs(col) do
 		local player = shape.body and shape.body.node
 		if player and player:is_in_group("player") then
-			local old_level_node, old_level = self.node:get_parent_with_component("tiledmaploader");
-			local _, levelmanager = self.node:get_parent_with_component("levelmanager");
-			assert(levelmanager, "There is no level manager mang!")
-
-			local   self_x1,   self_y1,   self_x2,   self_y2 = body.shape:bbox();
-			local player_x1, player_y1, player_x2, player_y2 = shape:bbox();
-			local player_width, player_height = player_x2-player_x1, player_y2-player_y1
-			local player_x, player_y = player:getpos();
-
-			local new_level_node, new_level = levelmanager:set_level(self.level)
-
-			local target_x1, target_y1, target_x2, target_y2 =
-				loadzone_bboxes[self.target].node
-				:get_component("collisionbody").shape:bbox()
-			local to_x, to_y = 0, 0;
-
-			if self.edge == "left" then
-				to_x = target_x1 - player_width - 1
-				to_y = player_y - self_y2 + target_y2
-			elseif self.edge == "right" then
-				to_x = target_x2 + player_width + 1
-				to_y = player_y - self_y2 + target_y2
-			elseif self.edge == "top" then
-				to_y = target_y1 - player_height - 1
-				to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
-			elseif self.edge == "bottom" then
-				to_y = target_y2 + player_height + 1
-				to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
-			end
-
-			local mx, my = to_x - player_x, to_y - player_y
-
-			print("MOVE", mx, my)
-
-			shape:move(mx, my);
-			shape.body:_move_node(mx, my);
-
-			player:get_root():add_child(player)
+			self:load_zone(shape);
 		end
 	end
 end

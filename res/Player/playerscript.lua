@@ -102,7 +102,7 @@ function player_script:on_update(dt)
 	end
 	local camera = self.node:get_root():get_component("camera")
 	local cx, cy = self.node:getpos();
-	camera.camera:lockPosition(cx, cy, jge.hcam.smooth.damped(10))
+	camera.camera:lockPosition(cx, cy)--, jge.hcam.smooth.damped(10))
 	camera.camera:rotateTo(-self.node:getrot())
 end
 

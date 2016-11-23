@@ -47,10 +47,14 @@ function generate_json(jfile, x, y)
 	n.transform:translate(x or 0, y or 0)
 end
 
+function get_camera_size()
+	return 400*2, 224*2
+end
+
 function set_tree(newtree)
 	tree = newtree
 	if not tree:has_component("camera") then
-		tree:add_component("camera", 400*2, 224*2)
+		tree:add_component("camera", get_camera_size)
 	end
 	camera = tree:get_component("camera")
 end
@@ -71,7 +75,7 @@ end
 -- make sure that calls to love.timer.getDelta are update_delta inside of
 -- update function. This is important for camera locking functionality!
 function love.update(dt)
-	if inputmanager:get_event("slow") then dt = dt / 15 end
+	if inputmanager:get_event("slow") then dt = dt / 10 end
 	update_timer = update_timer + dt;
 	local i = 0;
 	is_in_update = true;
@@ -86,12 +90,67 @@ function love.update(dt)
 	tree:update_real(dt);
 end
 
+local do_discard_frame = false;
+function main_discard_frame()
+	do_discard_frame = true
+end
+
 function love.draw()
+	if do_discard_frame then
+		print("DISCARDED FRAME")
+		love.update(update_delta)
+		do_discard_frame = false;
+		tree:draw(0)
+		love.graphics.clear(love.graphics.getBackgroundColor())
+		love.graphics.origin()
+	end
 	if update_timer > update_delta then print("timer is greater than delta!") end
-	tree:draw(1)--update_timer/update_delta);
+	tree:draw(0)--update_timer/update_delta);
 	love.graphics.setColor(255, 0, 0);
 	love.graphics.print(("FPS: %.2f"):format(love.timer.getFPS()))
 	-- love.graphics.polygon("fill", 100,100, 400,200, 300,300)
+end
+
+function override_main_loop(f)
+	local old_is_in_update = is_in_update
+	is_in_update = false
+	love.timer.step()
+	local dt = 0
+
+	-- Main loop time.
+	while true do
+		-- Process events.
+		if love.event then
+			love.event.pump()
+			for name, a,b,c,d,e,f in love.event.poll() do
+				-- if name == "quit" then
+				-- 	if not love.quit or not love.quit() then
+				-- 		return a
+				-- 	end
+				-- end
+				love.handlers[name](a,b,c,d,e,f)
+			end
+		end
+
+		-- Update dt, as we'll be passing it to update
+		if love.timer then
+			love.timer.step()
+			dt = love.timer.getDelta()
+		end
+
+		-- Call update and draw
+		if love.graphics and love.graphics.isActive() then
+			love.graphics.clear(love.graphics.getBackgroundColor())
+			love.graphics.origin()
+		end
+		if f(dt) then return end
+		if love.graphics and love.graphics.isActive() then
+			love.graphics.present()
+		end
+
+		if love.timer then love.timer.sleep(0.001) end
+	end
+	is_in_update = old_is_in_update
 end
 
 function love.quit()
