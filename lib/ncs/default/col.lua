@@ -13,8 +13,19 @@ function Body:on_init(shape, ...)
 	self.pmat = jge.Matrix3();
 end
 
+function Body:disable()
+	self.world:remove(self.shape)
+end
+
+function Body:enable()
+	self.world:register(self.shape)
+end
+
 function Body:from_json(json)
 	local shape = json.shape;
+	if shape == nil then
+		error("No shape given!")
+	end
 	if type(shape) ~= "string" then
 		self:on_init(shape);
 	elseif shape == "rectangle" then
@@ -516,6 +527,12 @@ end
 
 function Map:on_update(dt)
 	self.map:update(dt)
+	local _, camera = self.node:get_parent_with_component("camera");
+	if camera then
+		camera.camera:setBounds(0, 0,
+			self.map.width*self.map.tilewidth,
+			self.map.height*self.map.tileheight)
+	end
 end
 
 function Map:on_draw()

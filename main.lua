@@ -60,13 +60,16 @@ end
 
 function love.load(arg)
 	tree = jge.ncs.Node();
-	camera = tree:add_component("camera", 400*2, 224*2)
+	camera = tree:add_component("camera", 400*2, 240*2)
 	tree:add_component("collisionworld");
 	-- tree.transform:translate(400, 224)
 	-- camera:set_position(4*400, 4*224)
 
 	-- tree = root:add_child("tree");
-	tree:add_component("tiledmaploader", "res/testlevel.lua")
+	-- local f = io.open("res/../res/rotateme.lua")
+	-- print("FILE: " .. f:read("*a"))
+	-- f:close()
+	tree:add_component("tiledmaploader", "res/WorldA/enterance.lua")
 end
 
 -- make sure that calls to love.timer.getDelta are update_delta inside of

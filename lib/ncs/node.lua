@@ -9,6 +9,7 @@ function Node.new(x, y)
 		components_draw = {},
 		components_update = {},
 		children = {},
+		-- child caches so that we know what needs drawn/updated and what doesn't
 		children_draw = {},
 		children_update = {},
 		need_reset_updates = false,
@@ -27,11 +28,14 @@ function Node.new(x, y)
 		-- If IDs are different, then caches need to be recalculated
 		_self_id = -1,
 		-- Draw data for previous frame
-		_prev_x = 0,
-		_prev_y = 0,
-		_prev_rot = 0,
-		_prev_scalex = 1,
-		_prev_scaley = 1,
+		-- _prev_x = 0,
+		-- _prev_y = 0,
+		-- _prev_rot = 0,
+		-- _prev_scalex = 1,
+		-- _prev_scaley = 1,
+		--
+		-- _lerp_x = x or 0,
+		-- _lerp_y = y or 0,
 	}, Node);
 end
 
@@ -118,6 +122,10 @@ function Node:getrot()
 	self:_recalculate();
 	return self._cache_rotation;
 end
+--
+-- function Node:getdrawpos()
+-- 	return self._lerp_x, self._lerp_y;
+-- end
 
 -- Regular functions
 -- local val = 100 / math.pi
@@ -147,11 +155,11 @@ function Node:update(dt)
 	if self._paused then return end
 
 	dt = dt * self._timescale;
-	self._prev_x = self.transform.x
-	self._prev_y = self.transform.y
-	self._prev_scalex = self.transform.scalex
-	self._prev_scaley = self.transform.scaley
-	self._prev_rot = self.transform.rotation
+	-- self._prev_x = self.transform.x
+	-- self._prev_y = self.transform.y
+	-- self._prev_scalex = self.transform.scalex
+	-- self._prev_scaley = self.transform.scaley
+	-- self._prev_rot = self.transform.rotation
 
 	self:_recalculate();
 	for i, c in pairs(self.components_update) do
@@ -181,17 +189,21 @@ end
 
 function Node:draw(lerp)
 	if not self._visible then return end
-	local x = self.transform.x
-	local y = self.transform.y
-	local scalex = self.transform.scalex
-	local scaley = self.transform.scaley
-	local rot = self.transform.rotation
-
-	self.transform.x = jge.lerp(lerp, self._prev_x, x)
-	self.transform.y = jge.lerp(lerp, self._prev_y, y)
-	self.transform.scalex = jge.lerp(lerp, self._prev_scalex, scalex)
-	self.transform.scaley = jge.lerp(lerp, self._prev_scaley, scaley)
-	self.transform.rotation = jge.lerp(lerp, self._prev_rot, rot)
+	-- local x = self.transform.x
+	-- local y = self.transform.y
+	-- local scalex = self.transform.scalex
+	-- local scaley = self.transform.scaley
+	-- local rot = self.transform.rotation
+	--
+	-- assert(0 <= lerp and lerp <= 1, "Lerp is not between 0 and 1")
+	--
+	-- self.transform.x = jge.lerp(lerp, self._prev_x, x)
+	-- self.transform.y = jge.lerp(lerp, self._prev_y, y)
+	-- self.transform.scalex = jge.lerp(lerp, self._prev_scalex, scalex)
+	-- self.transform.scaley = jge.lerp(lerp, self._prev_scaley, scaley)
+	-- self.transform.rotation = jge.lerp(lerp, self._prev_rot, rot)
+	--
+	-- self._lerp_x, self._lerp_y = self.transform:get_translation();
 
 	for i, c in pairs(self.components_draw) do
 		if c.pre_draw then c:pre_draw(lerp); end
@@ -209,11 +221,11 @@ function Node:draw(lerp)
 	end
 	self.transform:draw_pop();
 
-	self.transform.x = x
-	self.transform.y = y
-	self.transform.scalex = scalex
-	self.transform.scaley = scaley
-	self.transform.rotation = rot
+	-- self.transform.x = x
+	-- self.transform.y = y
+	-- self.transform.scalex = scalex
+	-- self.transform.scaley = scaley
+	-- self.transform.rotation = rot
 
 	if self.need_reset_draws then
 		self.components_draw = {}
@@ -299,6 +311,32 @@ function Node:get_children_recursive(t)
 	return t
 end
 
+function Node:find_node(name, plain)
+	plain = jge.try_or(plain, true)
+	for child_name, child_node in pairs(self.children) do
+		if child_name:find(name, 1, plain) then return child_node end
+		local ret = child_node:find_node(name, plain)
+		if ret then return ret end
+	end
+	return nil;
+end
+
+function Node:find_nodes(name, plain, t)
+	t = t or {}
+	plain = jge.try_or(plain, true)
+	for child_name, child_node in pairs(self.children) do
+		if child_name:find(name, 1, plain) then
+			table.insert(t, child_node)
+		end
+		child_node:find_nodes(name, plain, t)
+	end
+	return t
+end
+
+function Node:destroy()
+if self._parent then self._parent:remove(self) end
+end
+
 -- Component functions
 function Node:call_signal(cname, fname, recursive, ...)
 	local recursive = jge.try_or(recursive, false)
@@ -361,6 +399,8 @@ end
 function Node:from_json(json, override)
 	-- load json
 	if type(json) == "string" then
+		json = json:gsub("/[^/%.]+/%.%.", "")
+		print("LOADING NODE FROM JSON: " .. tostring(json))
 		local contents = love.filesystem.read(json)
 		json,pos,err = jge.json.decode(contents)
 		if err then error(err) end
@@ -370,15 +410,9 @@ function Node:from_json(json, override)
 		for ok, ov in pairs(override) do
 			local target_key = json.override and json.override[ok] or ok
 			local a, b = target_key:match("([^,]+)%.(.*)")
-			-- print(ok, target_key, a, b)
 			if a and b then
 				override_t[a] = override_t[a] or {}
 				override_t[a][b] = ov
-				-- local c = json.components and json.components[a]
-				-- print(c, json.components)
-				-- if c then
-				-- 	c[b] = ov
-				-- end
 			end
 		end
 	end

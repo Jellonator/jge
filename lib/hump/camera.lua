@@ -65,7 +65,19 @@ local function new(x,y, zoom, rot, smoother)
 	zoom = zoom or 1
 	rot  = rot or 0
 	smoother = smoother or camera.smooth.none() -- for locking, see below
-	return setmetatable({x = x, y = y, scale = zoom, rot = rot, smoother = smoother}, camera)
+	return setmetatable({
+		x = x,
+		y = y,
+		scale = zoom,
+		rot = rot,
+		smoother = smoother,
+		bounds = {
+			x1 = -math.huge,
+			y1 = -math.huge,
+			x2 =  math.huge,
+			y2 =  math.huge,
+		}
+	}, camera)
 end
 
 function camera:lookAt(x,y)
@@ -111,13 +123,27 @@ function camera:attach(x,y,w,h, noclip)
 		love.graphics.setScissor(x,y,w,h)
 	end
 
+	local selfx, selfy = self.x, self.y
+	if selfx < self.bounds.x1 + w/(2*self.scale) then
+		selfx = self.bounds.x1 + w/(2*self.scale)
+	end
+	if selfx > self.bounds.x2 - w/(2*self.scale) then
+		selfx = self.bounds.x2 - w/(2*self.scale)
+	end
+	if selfy < self.bounds.y1 + h/(2*self.scale) then
+		selfy = self.bounds.y1 + h/(2*self.scale)
+	end
+	if selfy > self.bounds.y2 - h/(2*self.scale) then
+		selfy = self.bounds.y2 - h/(2*self.scale)
+	end
+
 	local cx,cy = x+w/2, y+h/2
 	love.graphics.push()
 	-- love.graphics.origin()
 	love.graphics.translate(cx, cy)
 	love.graphics.scale(self.scale)
 	love.graphics.rotate(self.rot)
-	love.graphics.translate(-self.x, -self.y)
+	love.graphics.translate(-selfx, -selfy)
 end
 
 function camera:detach()
@@ -160,11 +186,27 @@ function camera:worldCoords(x,y, ox,oy,w,h)
 	ox, oy = ox or 0, oy or 0
 	w,h = w or love.graphics.getWidth(), h or love.graphics.getHeight()
 
+	local selfx, selfy = self.x, self.y
+	if selfx < self.bounds.x1 + w/(2*self.scale) then
+		selfx = self.bounds.x1 + w/(2*self.scale)
+	end
+	if selfx > self.bounds.x2 - w/(2*self.scale) then
+		selfx = self.bounds.x2 - w/(2*self.scale)
+	end
+	if selfy < self.bounds.y1 + h/(2*self.scale) then
+		selfy = self.bounds.y1 + h/(2*self.scale)
+	end
+	if selfy > self.bounds.y2 - h/(2*self.scale) then
+		selfy = self.bounds.y2 - h/(2*self.scale)
+	end
 	-- x,y = (((x,y) - center) / self.scale):rotated(-self.rot) + (self.x,self.y)
 	local c,s = cos(-self.rot), sin(-self.rot)
 	x,y = (x - w/2 - ox) / self.scale, (y - h/2 - oy) / self.scale
 	x,y = c*x - s*y, s*x + c*y
-	return x+self.x, y+self.y
+	x, y = x+selfx, y+selfy
+
+
+	return x, y
 end
 
 function camera:mousePosition(ox,oy,w,h)
@@ -189,27 +231,11 @@ function camera:lockPosition(x,y, smoother, ...)
 	return self:move((smoother or self.smoother)(x - self.x, y - self.y, ...))
 end
 
-function camera:lockWindow(x, y, x_min, x_max, y_min, y_max, smoother, ...)
-	-- figure out displacement in camera coordinates
-	x,y = self:cameraCoords(x,y)
-	local dx, dy = 0,0
-	if x < x_min then
-		dx = x - x_min
-	elseif x > x_max then
-		dx = x - x_max
-	end
-	if y < y_min then
-		dy = y - y_min
-	elseif y > y_max then
-		dy = y - y_max
-	end
-
-	-- transform displacement to movement in world coordinates
-	local c,s = cos(-self.rot), sin(-self.rot)
-	dx,dy = (c*dx - s*dy) / self.scale, (s*dx + c*dy) / self.scale
-
-	-- move
-	self:move((smoother or self.smoother)(dx,dy,...))
+function camera:setBounds(x1, y1, x2, y2)
+	self.bounds.x1 = x1
+	self.bounds.y1 = y1
+	self.bounds.x2 = x2
+	self.bounds.y2 = y2
 end
 
 -- the module

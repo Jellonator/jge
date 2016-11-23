@@ -88,6 +88,7 @@ function HC:register(shape)
 end
 
 function HC:remove(shape)
+	if shape._world == nil then return end
 	shape._world = nil;
 	self.hash:remove(shape, shape:bbox())
 	for _, f in ipairs(transform_func_names) do

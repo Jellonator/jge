@@ -1,0 +1,14 @@
+{
+	"override": {
+		"shape": "collisionbody.shape"
+	},
+	"components": [
+		{
+			"component": "collisionbody"
+		},
+		{
+			"component": "script",
+			"script": "res/Objects/loadzone/loadzone.lua"
+		}
+	]
+}
