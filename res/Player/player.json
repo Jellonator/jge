@@ -3,6 +3,10 @@
 		"speed": "script.speed"
 	},
 	"scale": 2,
+	"layer": 100,
+	"groups": [
+		"player"
+	],
 	"components": [
 		{
 			"component": "spritemap",

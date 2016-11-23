@@ -39,6 +39,7 @@ local function new(map, plugins, ox, oy)
 	end
 
 	-- Load map
+	print("Loading tiled map:", map)
 	map = setmetatable(love.filesystem.load(map)(), Map)
 	map:init(path, plugins, ox, oy)
 

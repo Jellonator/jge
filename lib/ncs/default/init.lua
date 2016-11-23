@@ -6,14 +6,18 @@ require(NAME .. ".anim")
 require(NAME .. ".draw")
 require(NAME .. ".col")
 
+local _file_cache = {}
+local function require_file(file)
+	_file_cache[file] = _file_cache[file] or loadfile(file)()
+	return _file_cache[file];
+end
+
 -- Script, intended to override basic functions such as on_update and on_draw
 local Script = {}
 function Script:on_init(t, ...)
 	-- if not t then return end
 	if type(t) == "string" then
-		local newt, err = loadfile(t)();
-		t = newt
-		if err then error(err) end
+		t = require_file(t);
 	end
 	for k,v in pairs(t) do
 		self[k] = v

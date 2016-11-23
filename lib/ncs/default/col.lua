@@ -10,14 +10,25 @@ function Body:on_init(shape, ...)
 	self.pushable = false
 	self.shape = shape
 	self.shape.body = self
+	self.enabled = true;
 	self.pmat = jge.Matrix3();
 end
 
+function Body:on_remove()
+	self.world:remove(self.shape)
+end
+
+function Body:on_add()
+	if self.enabled then self.world:register(self.shape) end
+end
+
 function Body:disable()
+	self.enabled = false;
 	self.world:remove(self.shape)
 end
 
 function Body:enable()
+	self.enabled = true;
 	self.world:register(self.shape)
 end
 
@@ -535,6 +546,12 @@ function Map:on_update(dt)
 	end
 end
 
+function Map:on_remove()
+	for shape in pairs(self.map.hc_collidables) do
+		if shape._world then shape._world:remove(shape) end
+	end
+end
+
 function Map:on_draw()
 	local w, h = love.graphics.getDimensions();
 	local x1, y1 = love.graphics.getWorldPos(0,0)
@@ -552,6 +569,14 @@ function Map:on_draw()
 	-- Draw Collision Map (useful for debugging)
 	love.graphics.setColor(255, 0, 0, 255)
 	self.map:hc_draw()
+end
+
+function Map:bbox()
+	local x1,y1, x2,y2 = 0, 0,
+		self.map.width*self.map.tilewidth, self.map.height*self.map.tileheight;
+	-- x1, y1 = self.node:transform_point(x1, y1)
+	-- x2, y2 = self.node:transform_point(x2, y2)
+	return x1, y1, x2, y2
 end
 
 register_component("tiledmaploader", Map)

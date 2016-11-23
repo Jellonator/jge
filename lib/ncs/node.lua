@@ -9,6 +9,8 @@ function Node.new(x, y)
 		components_draw = {},
 		components_update = {},
 		children = {},
+		groups = {},
+		layer = 0,
 		-- child caches so that we know what needs drawn/updated and what doesn't
 		children_draw = {},
 		children_update = {},
@@ -58,6 +60,37 @@ end
 function Node:set_timescale(scale)
 	scale = scale or 1
 	self._timescale = scale
+end
+
+function Node:on_remove()
+	for _, c in pairs(self.components) do
+		if c.on_remove then c:on_remove() end
+	end
+	for _, node in pairs(self.children) do
+		node:on_remove()
+	end
+end
+
+function Node:on_add()
+	for _, c in pairs(self.components) do
+		if c.on_add then c:on_add() end
+	end
+	for _, node in pairs(self.children) do
+		node:on_add()
+	end
+end
+
+-- Group functions
+function Node:add_to_group(name)
+	self.groups[name] = name
+end
+
+function Node:remove_from_group(name)
+	self.groups[name] = nil
+end
+
+function Node:is_in_group(name)
+	return self.groups[name]
 end
 
 -- Matrix functions
@@ -151,6 +184,24 @@ function Node:_reset_updates()
 	if self._parent then self._parent:_reset_updates() end
 end
 
+function Node:_finalize_reset_updates()
+	self.components_update = {}
+	self.children_update = {}
+
+	for _,v in pairs(self.components) do
+		if v.on_update or v.on_update_real then
+			table.insert(self.components_update, v)
+		end
+	end
+	for _,v in pairs(self.children) do
+		v:_finalize_reset_updates();
+		if #v.components_update > 0 then
+			table.insert(self.children_update, v)
+		end
+	end
+	self.need_reset_updates = false
+end
+
 function Node:update(dt)
 	if self._paused then return end
 
@@ -161,6 +212,10 @@ function Node:update(dt)
 	-- self._prev_scaley = self.transform.scaley
 	-- self._prev_rot = self.transform.rotation
 
+	if self.need_reset_updates then
+		self:_finalize_reset_updates()
+	end
+
 	self:_recalculate();
 	for i, c in pairs(self.components_update) do
 		if c.on_update then c:on_update(dt); end
@@ -169,22 +224,28 @@ function Node:update(dt)
 	for i, node in pairs(children) do
 		node:update(dt)
 	end
+end
 
-	if self.need_reset_updates then
-		self.components_update = {}
-		self.children_update = {}
-		for _,v in pairs(self.components) do
-			if v.on_update or v.on_update_real then
-				table.insert(self.components_update, v)
-			end
+local function _sort_layers(a, b)
+	if a.layer ~= b.layer then return a.layer < b.layer end
+	return tostring(a) < tostring(b)
+end
+function Node:_finalize_reset_draws()
+	self.components_draw = {}
+	self.children_draw = {}
+	for _,v in pairs(self.components) do
+		if v.pre_draw or v.on_draw or v.post_draw then
+			table.insert(self.components_draw, v)
 		end
-		for _,v in pairs(self.children) do
-			if #v.components_update > 0 then
-				table.insert(self.children_update, v)
-			end
-		end
-		self.need_reset_updates = false
 	end
+	for _,v in pairs(self.children) do
+		v:_finalize_reset_draws();
+		if #v.components_draw > 0 then
+			table.insert(self.children_draw, v)
+		end
+	end
+	table.sort(self.children_draw, _sort_layers)
+	self.need_reset_draws = false;
 end
 
 function Node:draw(lerp)
@@ -204,11 +265,14 @@ function Node:draw(lerp)
 	-- self.transform.rotation = jge.lerp(lerp, self._prev_rot, rot)
 	--
 	-- self._lerp_x, self._lerp_y = self.transform:get_translation();
-
+	if self.need_reset_draws then
+		self:_finalize_reset_draws();
+	end
+	
+	self.transform:draw_push();
 	for i, c in pairs(self.components_draw) do
 		if c.pre_draw then c:pre_draw(lerp); end
 	end
-	self.transform:draw_push();
 	for i, c in pairs(self.components_draw) do
 		if c.on_draw then c:on_draw(lerp); end
 	end
@@ -226,22 +290,6 @@ function Node:draw(lerp)
 	-- self.transform.scalex = scalex
 	-- self.transform.scaley = scaley
 	-- self.transform.rotation = rot
-
-	if self.need_reset_draws then
-		self.components_draw = {}
-		self.children_draw = {}
-		for _,v in pairs(self.components) do
-			if v.pre_draw or v.on_draw or v.post_draw then
-				table.insert(self.components_draw, v)
-			end
-		end
-		for _,v in pairs(self.children) do
-			if #v.components_draw > 0 then
-				table.insert(self.children_draw, v)
-			end
-		end
-		self.need_reset_draws = false;
-	end
 end
 
 -- Children/parent functions
@@ -274,14 +322,20 @@ function Node:add_child(name, child)
 	end
 	self.children[name] = child
 	child._parent = self
+	child:on_add();
 	self:_reset_updates();
 	self:_reset_draws();
 	return child
 end
 
+function Node:has_child(name)
+	return self.children[name]
+end
+
 function Node:remove_child(child)
 	for k,v in pairs(self.children) do
-		if v == child then
+		if v == child or k == child then
+			self.children[k]:on_remove();
 			self.children[k] = nil
 		end
 	end
@@ -333,8 +387,21 @@ function Node:find_nodes(name, plain, t)
 	return t
 end
 
+function Node:find_node_group(group)
+	for _, child in pairs(self.children) do
+		if child:is_in_group(group) then return child end
+		local ret = child:find_node_group(group)
+		if ret then return ret end
+	end
+	return nil;
+end
+
 function Node:destroy()
-if self._parent then self._parent:remove(self) end
+	if self._parent then self._parent:remove(self) end
+end
+
+function Node:get_parent()
+	return self._parent
 end
 
 -- Component functions
@@ -375,6 +442,7 @@ function Node:add_component(name, ...)
 	self.components_named[name] = c;
 	c.node = self;
 	c:on_init(...);
+	if c.on_add then c:on_add() end
 	self:_reset_updates();
 	self:_reset_draws();
 	return c
@@ -414,6 +482,15 @@ function Node:from_json(json, override)
 				override_t[a] = override_t[a] or {}
 				override_t[a][b] = ov
 			end
+		end
+	end
+	-- load groups
+	if json.layer then
+		self.layer = json.layer
+	end
+	if json.groups then
+		for _, name in pairs(json.groups) do
+			self:add_to_group(name)
 		end
 	end
 	-- load components
@@ -462,6 +539,7 @@ function Node:from_json(json, override)
 		for k,v in pairs(json.children) do
 			local c = self:add_child(k);
 			c:from_json(v)
+			if c.on_add then c:on_add() end
 		end
 	end
 end

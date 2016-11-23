@@ -1,5 +1,5 @@
 require("lib");
-require("battle");
+require("levelmanager");
 do
 	local major, minor, patch, codename = love.getVersion()
 	jge.printf("Love2d version %d.%d.%d %s, running on %s",
@@ -14,6 +14,7 @@ inputmanager:add_event("right", jge.Input.IMatch(EVENTTYPE.keyboard, "d"))
 inputmanager:add_event("jump",  jge.Input.IMatch(EVENTTYPE.keyboard, "space"))
 inputmanager:add_event("rotl",  jge.Input.IMatch(EVENTTYPE.keyboard, "q"))
 inputmanager:add_event("rotr",  jge.Input.IMatch(EVENTTYPE.keyboard, "e"))
+inputmanager:add_event("slow",  jge.Input.IMatch(EVENTTYPE.keyboard, "r"))
 inputmanager:override_love();
 
 -- tree.transform:scale(6)
@@ -62,19 +63,15 @@ function love.load(arg)
 	tree = jge.ncs.Node();
 	camera = tree:add_component("camera", 400*2, 240*2)
 	tree:add_component("collisionworld");
-	-- tree.transform:translate(400, 224)
-	-- camera:set_position(4*400, 4*224)
 
-	-- tree = root:add_child("tree");
-	-- local f = io.open("res/../res/rotateme.lua")
-	-- print("FILE: " .. f:read("*a"))
-	-- f:close()
-	tree:add_component("tiledmaploader", "res/WorldA/enterance.lua")
+	local the_manager_is_here = tree:add_component("levelmanager");
+	the_manager_is_here:load_level("res/WorldA/enterance.lua")
 end
 
 -- make sure that calls to love.timer.getDelta are update_delta inside of
 -- update function. This is important for camera locking functionality!
 function love.update(dt)
+	if inputmanager:get_event("slow") then dt = dt / 15 end
 	update_timer = update_timer + dt;
 	local i = 0;
 	is_in_update = true;

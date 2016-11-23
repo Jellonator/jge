@@ -100,13 +100,14 @@ function player_script:on_update(dt)
 	if inputmanager:get_event("rotr") then
 		self.node.transform:rotate(dt*math.pi)
 	end
-end
-
-function player_script:on_update_real(dt)
 	local camera = self.node:get_root():get_component("camera")
 	local cx, cy = self.node:getpos();
 	camera.camera:lockPosition(cx, cy, jge.hcam.smooth.damped(10))
 	camera.camera:rotateTo(-self.node:getrot())
+end
+
+function player_script:on_update_real(dt)
+	local camera = self.node:get_root():get_component("camera")
 
 	-- mouse dot detection
 	local body = self.node:get_component("collisionbody")
@@ -114,6 +115,13 @@ function player_script:on_update_real(dt)
 	local pt = self.node:get_component("drawable_circle")
 	pt.color[1] = body:contains_point(x, y) and 255 or 0
 	pt.x, pt.y = self.node:transform_point_inv(x, y)
+end
+
+function player_script:on_add()
+	local camera = self.node:get_root():get_component("camera")
+	local cx, cy = self.node:getpos();
+	camera.camera:lockPosition(cx, cy)
+	camera.camera:rotateTo(-self.node:getrot())
 end
 
 return player_script

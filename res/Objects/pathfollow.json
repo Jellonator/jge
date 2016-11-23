@@ -6,7 +6,8 @@
 		"speed": "script.speed",
 		"loop": "script.loop",
 		"interpolation": "script.interpolation",
-		"length": "script.length"
+		"length": "script.length",
+		"wait": "script.wait"
 	},
 	"components": [
 		{
