@@ -112,6 +112,7 @@ function love.draw()
 end
 
 function override_main_loop(f)
+	love.graphics.push()
 	local old_is_in_update = is_in_update
 	is_in_update = false
 	love.timer.step()
@@ -151,6 +152,7 @@ function override_main_loop(f)
 		if love.timer then love.timer.sleep(0.001) end
 	end
 	is_in_update = old_is_in_update
+	love.graphics.pop()
 end
 
 function love.quit()

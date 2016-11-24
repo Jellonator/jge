@@ -539,9 +539,17 @@ end
 function Map:bind_camera()
 	local _, camera = self.node:get_parent_with_component("camera");
 	if camera then
-		camera.camera:setBounds(0, 0,
-			self.map.width*self.map.tilewidth,
-			self.map.height*self.map.tileheight)
+		local w, h = self.map.width*self.map.tilewidth,
+			self.map.height*self.map.tileheight;
+		local x1, y1 = self.node:transform_point(0,0)
+		local x2, y2 = self.node:transform_point(w,h)
+		local x3, y3 = self.node:transform_point(0,h)
+		local x4, y4 = self.node:transform_point(w,0)
+		local ax = math.min(x1, x2, x3, x4)
+		local ay = math.min(y1, y2, y3, y4)
+		local bx = math.max(x1, x2, x3, x4)
+		local by = math.max(y1, y2, y3, y4)
+		camera.camera:setBounds(ax, ay, bx-ax, by-ay)
 	end
 end
 
@@ -557,15 +565,15 @@ function Map:on_remove()
 end
 
 function Map:on_draw()
-	local w, h = love.graphics.getDimensions();
-	local x1, y1 = love.graphics.getWorldPos(0,0)
-	local x2, y2 = love.graphics.getWorldPos(w,h)
-	local x3, y3 = love.graphics.getWorldPos(0,h)
-	local x4, y4 = love.graphics.getWorldPos(w,0)
-	local ax = math.min(x1, x2, x3, x4)
-	local ay = math.min(y1, y2, y3, y4)
-	local bx = math.max(x1, x2, x3, x4)
-	local by = math.max(y1, y2, y3, y4)
+	-- local w, h = love.graphics.getDimensions();
+	-- local x1, y1 = love.graphics.getWorldPos(0,0)
+	-- local x2, y2 = love.graphics.getWorldPos(w,h)
+	-- local x3, y3 = love.graphics.getWorldPos(0,h)
+	-- local x4, y4 = love.graphics.getWorldPos(w,0)
+	-- local ax = math.min(x1, x2, x3, x4)
+	-- local ay = math.min(y1, y2, y3, y4)
+	-- local bx = math.max(x1, x2, x3, x4)
+	-- local by = math.max(y1, y2, y3, y4)
 	-- print(x, y)
 	-- self.map:setDrawRange(ax,ay,bx-ax,by-ay)
 	self.map:draw();

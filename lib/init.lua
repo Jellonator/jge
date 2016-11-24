@@ -111,6 +111,10 @@ function table_union(...)
 	return _union({}, ...)
 end
 
+function minmax(...)
+	return math.min(...), math.max(...)
+end
+
 vlt   = reqlocal("hump.vector-light")
 vec   = reqlocal("hump.vector")
 hcam  = reqlocal("hump.camera")
@@ -148,6 +152,7 @@ end
 function love.graphics.origin()
 	lg_origin()
 	stop[mindex] = mindex
+	matrices[mindex]:identity();
 end
 function love.graphics.scale(sx, sy)
 	lg_scale(sx, sy)

@@ -267,7 +267,7 @@
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
     <property name="path" value="@object:path"/>
-    <property name="speed" type="float" value="1200"/>
+    <property name="speed" type="float" value="600"/>
     <property name="wait" type="float" value="4"/>
    </properties>
   </object>

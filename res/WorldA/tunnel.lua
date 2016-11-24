@@ -582,7 +582,7 @@ return {
           properties = {
             ["json"] = "../Objects/pathfollow.json",
             ["path"] = "@object:path",
-            ["speed"] = 1200,
+            ["speed"] = 600,
             ["wait"] = 4
           }
         },

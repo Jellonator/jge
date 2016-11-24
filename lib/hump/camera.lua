@@ -123,19 +123,7 @@ function camera:attach(x,y,w,h, noclip)
 		love.graphics.setScissor(x,y,w,h)
 	end
 
-	local selfx, selfy = self.x, self.y
-	if selfx < self.bounds.x1 + w/(2*self.scale) then
-		selfx = self.bounds.x1 + w/(2*self.scale)
-	end
-	if selfx > self.bounds.x2 - w/(2*self.scale) then
-		selfx = self.bounds.x2 - w/(2*self.scale)
-	end
-	if selfy < self.bounds.y1 + h/(2*self.scale) then
-		selfy = self.bounds.y1 + h/(2*self.scale)
-	end
-	if selfy > self.bounds.y2 - h/(2*self.scale) then
-		selfy = self.bounds.y2 - h/(2*self.scale)
-	end
+	local selfx, selfy = self:_getBoundedPosition(x, y, w, h)
 
 	local cx,cy = x+w/2, y+h/2
 	love.graphics.push()
@@ -181,30 +169,61 @@ function camera:cameraCoords(x,y, ox,oy,w,h)
 	return x*self.scale + w/2 + ox, y*self.scale + h/2 + oy
 end
 
+function camera:_getBoundedPosition(ox, oy, w, h)
+	local selfx, selfy = self.x, self.y
+	local x1,y1, x2,y2 = selfx - w/2, selfy - h/2, selfx + w/2, selfy + h/2
+	local ax, ay = self:_worldCoordsRaw(x1, y1, ox, oy, w, h)
+	local bx, by = self:_worldCoordsRaw(x2, y2, ox, oy, w, h)
+	local cx, cy = self:_worldCoordsRaw(x1, y2, ox, oy, w, h)
+	local dx, dy = self:_worldCoordsRaw(x2, y1, ox, oy, w, h)
+	x1, x2 = jge.minmax(ax, bx, cx, dx)
+	y1, y2 = jge.minmax(ay, by, cy, dy)
+	local bw, bh = x2 - x1, y2 - y1
+	local bx1 = self.bounds.x1+bw/2
+	local bx2 = self.bounds.x2-bw/2
+	local by1 = self.bounds.y1+bh/2
+	local by2 = self.bounds.y2-bh/2
+	if selfx < bx1 then
+		selfx = bx1
+	end
+	if selfx > bx2 then
+		selfx = bx2
+	end
+	if selfy < by1 then
+		selfy = by1
+	end
+	if selfy > by2 then
+		selfy = by2
+	end
+	if bx2-bx1 < 0 then selfx = (bx2 + bx1)/2 end
+	if by2-by1 < 0 then selfy = (by2 + by1)/2 end
+	return selfx, selfy
+end
+
 -- camera coordinates to world coordinates
+function camera:_worldCoordsRaw(x,y, ox,oy,w,h)
+	ox, oy = ox or 0, oy or 0
+	w,h = w or love.graphics.getWidth(), h or love.graphics.getHeight()
+
+	-- x,y = (((x,y) - center) / self.scale):rotated(-self.rot) + (self.x,self.y)
+	local c,s = cos(-self.rot), sin(-self.rot)
+	x,y = (x - w/2 - ox) / self.scale, (y - h/2 - oy) / self.scale
+	x,y = c*x - s*y, s*x + c*y
+	x, y = x+self.x, y+self.y
+
+	return x, y
+end
+
 function camera:worldCoords(x,y, ox,oy,w,h)
 	ox, oy = ox or 0, oy or 0
 	w,h = w or love.graphics.getWidth(), h or love.graphics.getHeight()
 
-	local selfx, selfy = self.x, self.y
-	if selfx < self.bounds.x1 + w/(2*self.scale) then
-		selfx = self.bounds.x1 + w/(2*self.scale)
-	end
-	if selfx > self.bounds.x2 - w/(2*self.scale) then
-		selfx = self.bounds.x2 - w/(2*self.scale)
-	end
-	if selfy < self.bounds.y1 + h/(2*self.scale) then
-		selfy = self.bounds.y1 + h/(2*self.scale)
-	end
-	if selfy > self.bounds.y2 - h/(2*self.scale) then
-		selfy = self.bounds.y2 - h/(2*self.scale)
-	end
+	local selfx, selfy = self:_getBoundedPosition(ox,oy,w,h)
 	-- x,y = (((x,y) - center) / self.scale):rotated(-self.rot) + (self.x,self.y)
 	local c,s = cos(-self.rot), sin(-self.rot)
 	x,y = (x - w/2 - ox) / self.scale, (y - h/2 - oy) / self.scale
 	x,y = c*x - s*y, s*x + c*y
 	x, y = x+selfx, y+selfy
-
 
 	return x, y
 end
