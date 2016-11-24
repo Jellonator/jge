@@ -202,6 +202,11 @@ function camera:_getBoundedPosition(ox, oy, w, h)
 		local targetcx, targetcy = self:cameraCoords(self.x, self.y, ox, oy, w, h)
 		local rx, ry = self.bounds.range, self.bounds.range
 		rx, ry = rx * self.scale, ry * self.scale
+		local pi = math.pi
+		local hpi = math.pi/2
+		local qpi = math.pi/4
+		local rscale = math.sin(self.rot*2)
+		rx, ry = rx*rscale, ry*rscale
 		rx, ry = math.abs(rx), math.abs(ry)
 		local tx1, ty1 = targetcx - w/2 + rx, targetcy - h/2 + ry
 		local tx2, ty2 = targetcx + w/2 - rx, targetcy + h/2 - ry
@@ -308,7 +313,7 @@ function camera:setBounds(x1, y1, x2, y2, correct, range)
 	self.bounds.x2 = x2 or math.huge
 	self.bounds.y2 = y2 or math.huge
 	self.bounds.correct = correct ~= nil and correct or false
-	self.bounds.range = self.bounds.range or 64
+	self.bounds.range = range or 50
 end
 
 function camera:bbox(ox, oy, w, h)
