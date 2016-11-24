@@ -201,14 +201,29 @@ function camera:_getBoundedPosition(ox, oy, w, h)
 		if by2-by1 < 0 then selfy = (by2 + by1)/2 end
 		return selfx, selfy
 	else
-		self.bounds.correct = true
-		local prot = self.rot
-		self.rot = 0
-		local c = math.abs(math.cos(prot))
-		local s = -math.abs(math.sin(prot))
-		local selfx, selfy = self:_getBoundedPosition(ox, oy, w*c+h*s, h*c+w*s)
-		self.rot = prot
-		self.bounds.correct = false;
+		local selfx, selfy = self.x, self.y
+		local c = math.abs(math.cos(self.rot))
+		local s = math.abs(math.sin(self.rot))
+		local bw = (w*c + h*(1-c))/self.scale
+		local bh = (h*(1-s) + w*s)/self.scale
+		local bx1 = self.bounds.x1+bw/2
+		local bx2 = self.bounds.x2-bw/2
+		local by1 = self.bounds.y1+bh/2
+		local by2 = self.bounds.y2-bh/2
+		if selfx < bx1 then
+			selfx = bx1
+		end
+		if selfx > bx2 then
+			selfx = bx2
+		end
+		if selfy < by1 then
+			selfy = by1
+		end
+		if selfy > by2 then
+			selfy = by2
+		end
+		if bx2-bx1 < 0 then selfx = (bx2 + bx1)/2 end
+		if by2-by1 < 0 then selfy = (by2 + by1)/2 end
 		return selfx, selfy
 	end
 end
