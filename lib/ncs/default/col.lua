@@ -565,17 +565,11 @@ function Map:on_remove()
 end
 
 function Map:on_draw()
-	-- local w, h = love.graphics.getDimensions();
-	-- local x1, y1 = love.graphics.getWorldPos(0,0)
-	-- local x2, y2 = love.graphics.getWorldPos(w,h)
-	-- local x3, y3 = love.graphics.getWorldPos(0,h)
-	-- local x4, y4 = love.graphics.getWorldPos(w,0)
-	-- local ax = math.min(x1, x2, x3, x4)
-	-- local ay = math.min(y1, y2, y3, y4)
-	-- local bx = math.max(x1, x2, x3, x4)
-	-- local by = math.max(y1, y2, y3, y4)
-	-- print(x, y)
-	-- self.map:setDrawRange(ax,ay,bx-ax,by-ay)
+	local _,camera = self.node:get_parent_with_component("camera");
+	local x1,y1,x2,y2 = camera:bbox();
+	x1,y1 = self.node:transform_point_inv(x1,y1)
+	x2,y2 = self.node:transform_point_inv(x2,y2)
+	self.map:setDrawRange(x1,y1,x2-x1,y2-y1)
 	self.map:draw();
 	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)

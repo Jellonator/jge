@@ -292,6 +292,20 @@ function camera:setBounds(x1, y1, x2, y2, correct)
 	self.bounds.correct = correct ~= nil and correct or false
 end
 
+function camera:bbox(ox, oy, w, h)
+	local x1 = ox
+	local y1 = oy
+	local x2 = ox + w
+	local y2 = oy + h
+	local ax, ay = self:worldCoords(x1, y1)
+	local bx, by = self:worldCoords(x1, y2)
+	local cx, cy = self:worldCoords(x2, y1)
+	local dx, dy = self:worldCoords(x2, y2)
+	x1, x2 = jge.minmax(ax, bx, cx, dx)
+	y1, y2 = jge.minmax(ay, by, cy, dy)
+	return x1, y1, x2, y2
+end
+
 -- the module
 return setmetatable({new = new, smooth = camera.smooth},
 	{__call = function(_, ...) return new(...) end})

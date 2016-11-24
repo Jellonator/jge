@@ -92,6 +92,11 @@ function Camera:get_bounded_position()
 
 	return x, y
 end
+function Camera:bbox()
+	local x1,y1,x2,y2 = self.camera:bbox(self:_push())
+	self:_pop()
+	return x1,y1,x2,y2
+end
 function Camera:post_draw()
 	self.camera:detach();
 	love.graphics.setScissor();

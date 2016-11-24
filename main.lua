@@ -48,7 +48,7 @@ function generate_json(jfile, x, y)
 end
 
 function get_camera_size()
-	return 400*2, 224*2
+	return 400*2, 240*2
 end
 
 function set_tree(newtree)
@@ -65,7 +65,7 @@ end
 
 function love.load(arg)
 	tree = jge.ncs.Node();
-	camera = tree:add_component("camera", 400*2, 240*2)
+	camera = tree:add_component("camera", get_camera_size())
 	tree:add_component("collisionworld");
 
 	local the_manager_is_here = tree:add_component("levelmanager");
