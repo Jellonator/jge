@@ -2,7 +2,6 @@
 	"override": {
 		"speed": "script.speed"
 	},
-	"scale": 2,
 	"layer": 100,
 	"groups": [
 		"player"
@@ -13,6 +12,8 @@
 			"image": "res/Player/Girl.png",
 			"ox": 8,
 			"oy": 8,
+			"sx": 2,
+			"sy": 2,
 			"frames": [
 				[ 0,  0, 16, 16], [16,  0, 16, 16], [32,  0, 16, 16],
 				[ 0, 16, 16, 16], [16, 16, 16, 16], [32, 16, 16, 16],
@@ -50,9 +51,9 @@
 			"mask": "player",
 			"layers": ["solid"],
 			"shape": "circle",
-			"radius": 4,
+			"radius": 8,
 			"x": 0,
-			"y": 4,
+			"y": 8,
 			"pushable": true
 		}
 	]
