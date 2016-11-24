@@ -144,12 +144,13 @@ function override_main_loop(f)
 			love.graphics.clear(love.graphics.getBackgroundColor())
 			love.graphics.origin()
 		end
-		if f(dt) then return end
+		local ret = f(dt)
 		if love.graphics and love.graphics.isActive() then
 			love.graphics.present()
 		end
 
 		if love.timer then love.timer.sleep(0.001) end
+		if ret then return ret end
 	end
 	is_in_update = old_is_in_update
 	love.graphics.pop()

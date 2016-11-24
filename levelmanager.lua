@@ -25,40 +25,38 @@ function LevelManager:set_level(levelname, mfunc, speed, translate_nodes)
 	local rm_levels = self.levels;
 	self.levels = {}
 
-	local mx, my, x, y = 0,0,0,0;
 	local level_node, level = self:load_level(levelname)
+	local _, camera = self.node:get_parent_with_component("camera");
+	local start_x, start_y = camera:get_bounded_position()
 	if mfunc then
-		mx, my, x, y = mfunc(level_node, level);
-		level_node.transform:set_translation(x, y)
-		table.insert(translate_nodes, level_node)
+		local x, y, player = mfunc(level_node, level);
+		level:bind_camera();
+		player:get_root():add_child(player)
+		local end_x, end_y = camera:get_bounded_position()
+		start_x, start_y = start_x - x, start_y - y
+
+		camera.camera:setBounds();
+
+		camera.camera.x = start_x
+		camera.camera.y = start_y
+
 		for _, node in pairs(rm_levels) do
 			table.insert(translate_nodes, node)
 		end
-		local _, camera = self.node:get_parent_with_component("camera");
-		mx, my = jge.vlt.mul(-2, camera:world_coords_diff(mx, my))
-		local len = jge.vlt.len(mx, my)
-		local normx, normy = jge.vlt.normalize(mx, my);
-		-- level_node:_update_children();
+		for _,node in pairs(translate_nodes) do
+			node.transform:translate(-x, -y)
+		end
+
 		level_node:get_root():_finalize_reset_draws();
 		level_node:get_root():_finalize_reset_updates();
 		level_node:get_root():_transformed();
 
+		local len = jge.vlt.dist(start_x, start_y, end_x, end_y)
+		local total_len = len;
+
 		local is_first_iteration = true
 		local do_sleep = false;
 		override_main_loop(function(dt)
-			local dx, dy = 0, 0
-			if math.abs(mx) > 0 then
-				local new_mx = jge.to(mx, 0, dt*speed)
-				dx = new_mx - mx
-				mx = new_mx
-			elseif math.abs(my) > 0 then
-				local new_my = jge.to(my, 0, dt*speed)
-				dy = new_my - my
-				my = new_my
-			else
-				return true
-			end
-
 			if do_sleep then
 				love.timer.sleep(0.4)
 				do_sleep = false;
@@ -70,8 +68,14 @@ function LevelManager:set_level(levelname, mfunc, speed, translate_nodes)
 			end
 			self.node:get_root():draw(0)
 
-			for _,node in pairs(translate_nodes) do
-				node.transform:translate(dx, dy)
+			local dx, dy = 0, 0
+			if len > 0 then
+				local lerp = len / total_len
+				camera.camera.x = jge.lerp(1-lerp, start_x, end_x)
+				camera.camera.y = jge.lerp(1-lerp, start_y, end_y)
+				len = jge.to(len, 0, dt*speed)
+			else
+				return true;
 			end
 		end)
 		if do_sleep then

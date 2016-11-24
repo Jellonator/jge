@@ -56,48 +56,37 @@ function loadzone:load_zone(shape)
 			loadzone_bboxes[self.target].node
 			:get_component("collisionbody").shape:bbox()
 
-		local cameraw, camerah = get_camera_size();
-
-		local camx, camy, offx, offy = 0, 0;
+		local offx, offy = 0, 0;
 		if self.edge == "left" then
 			to_x = target_x1 - player_width - 1
 			to_y = player_y - self_y2 + target_y2
-			camx = -cameraw
-			camy = 0
 			offx = self_x2 - target_x1
 			offy = self_y2 - target_y2
 		elseif self.edge == "right" then
 			to_x = target_x2 + player_width + 1
 			to_y = player_y - self_y2 + target_y2
-			camx = cameraw
-			camy = 0
 			offx = self_x1 - target_x2
 			offy = self_y2 - target_y2
 		elseif self.edge == "top" then
 			to_y = target_y1 - player_height - 1
 			to_x = player_x - (self_x2 + self_x1)/2 + (target_x2 + target_x1)/2
-			camx = 0
-			camy = -camerah
 			offy = self_y2 - target_y1
 			offx = (self_x2 + self_x1)/2 - (target_x2 + target_x1)/2
 		elseif self.edge == "bottom" then
 			to_y = target_y2 + player_height + 1
 			to_x = player_x - (self_x2 + self_x1)/2 + (target_x2 + target_x1)/2
-			camx = 0
-			camy = camerah
 			offy = self_y1 - target_y2
 			offx = (self_x2 + self_x1)/2 - (target_x2 + target_x1)/2
 		end
 
-		return camx, camy, offx, offy
-	end, 640, {player})
+		local mx, my = to_x - player_x, to_y - player_y
+		shape:move(mx, my);
+		shape.body:_move_node(mx, my);
+		player:get_root():_recalculate();
+		return offx, offy, player
+	end, 640, {})
 
 	player:get_root():_recalculate();
-	player_x, player_y = shape:center()
-	local mx, my = to_x - player_x, to_y - player_y
-	shape:move(mx, my);
-	shape.body:_move_node(mx, my);
-	player:get_root():_transformed();
 	player:get_root():add_child(player)
 	if tilemap then
 		tilemap:bind_camera()

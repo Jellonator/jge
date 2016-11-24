@@ -203,13 +203,10 @@ function camera:_getBoundedPosition(ox, oy, w, h)
 	else
 		self.bounds.correct = true
 		local prot = self.rot
-		local c = math.cos(prot)
-		local s = math.sin(prot)
 		self.rot = 0
-		local selfx1, selfy1 = self:_getBoundedPosition(ox, oy, w, h)
-		self.rot = math.pi/2
-		local selfx2, selfy2 = self:_getBoundedPosition(ox, oy, w, h)
-		local selfx, selfy = selfx1*c+selfx2*(1-c), selfy1*c+selfy2*(1-c)
+		local c = math.abs(math.cos(prot))
+		local s = -math.abs(math.sin(prot))
+		local selfx, selfy = self:_getBoundedPosition(ox, oy, w*c+h*s, h*c+w*s)
 		self.rot = prot
 		self.bounds.correct = false;
 		return selfx, selfy
@@ -273,10 +270,10 @@ function camera:lockPosition(x,y, smoother, ...)
 end
 
 function camera:setBounds(x1, y1, x2, y2, correct)
-	self.bounds.x1 = x1
-	self.bounds.y1 = y1
-	self.bounds.x2 = x2
-	self.bounds.y2 = y2
+	self.bounds.x1 = x1 or -math.huge
+	self.bounds.y1 = y1 or -math.huge
+	self.bounds.x2 = x2 or math.huge
+	self.bounds.y2 = y2 or math.huge
 	self.bounds.correct = correct ~= nil and correct or false
 end
 

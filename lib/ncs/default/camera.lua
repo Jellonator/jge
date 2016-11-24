@@ -86,6 +86,12 @@ function Camera:world_coords_diff(mx, my)
 
 	return x, y
 end
+function Camera:get_bounded_position()
+	local x, y = self.camera:_getBoundedPosition(self:_push())
+	self:_pop()
+
+	return x, y
+end
 function Camera:post_draw()
 	self.camera:detach();
 	love.graphics.setScissor();
