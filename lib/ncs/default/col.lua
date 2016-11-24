@@ -549,7 +549,7 @@ function Map:bind_camera()
 		local ay = math.min(y1, y2, y3, y4)
 		local bx = math.max(x1, x2, x3, x4)
 		local by = math.max(y1, y2, y3, y4)
-		camera.camera:setBounds(ax, ay, bx-ax, by-ay)
+		camera.camera:setBounds(ax, ay, bx-ax, by-ay, true)
 	end
 end
 

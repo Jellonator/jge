@@ -58,6 +58,12 @@ function lerp(val, a, b)
 	return val*b + (1-val)*a
 end
 
+function clamp(val, ...)
+	local lowest = math.min(...)
+	local highest = math.max(...)
+	return math.max(math.min(val, highest), lowest)
+end
+
 function angle_diff(a, b)
 	local ret = b - a;
 	ret = _mod(ret + math.pi, math.pi*2) - math.pi

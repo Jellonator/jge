@@ -170,10 +170,17 @@ function camera:cameraCoords(x,y, ox,oy,w,h)
 	return x*self.scale + w/2 + ox, y*self.scale + h/2 + oy
 end
 
+function camera:cameraTransformation(x, y)
+	local c,s = cos(self.rot), sin(self.rot)
+	x,y = c*x - s*y, s*x + c*y
+	return x*self.scale, y*self.scale
+end
+
 function camera:_getBoundedPosition(ox, oy, w, h)
 	if self.bounds.correct then
 		local selfx, selfy = self.x, self.y
-		local x1,y1, x2,y2 = selfx - w/2, selfy - h/2, selfx + w/2, selfy + h/2
+		local selfcx, selfcy = self:cameraCoords(selfx, selfy)
+		local x1,y1, x2,y2 = selfcx - w/2, selfcy - h/2, selfcx + w/2, selfcy + h/2
 		local ax, ay = self:_worldCoordsRaw(x1, y1, ox, oy, w, h)
 		local bx, by = self:_worldCoordsRaw(x2, y2, ox, oy, w, h)
 		local cx, cy = self:_worldCoordsRaw(x1, y2, ox, oy, w, h)
@@ -185,20 +192,23 @@ function camera:_getBoundedPosition(ox, oy, w, h)
 		local bx2 = self.bounds.x2-bw/2
 		local by1 = self.bounds.y1+bh/2
 		local by2 = self.bounds.y2-bh/2
-		if selfx < bx1 then
-			selfx = bx1
-		end
-		if selfx > bx2 then
-			selfx = bx2
-		end
-		if selfy < by1 then
-			selfy = by1
-		end
-		if selfy > by2 then
-			selfy = by2
-		end
+		selfx = jge.clamp(selfx, bx1, bx2)
+		selfy = jge.clamp(selfy, by1, by2)
 		if bx2-bx1 < 0 then selfx = (bx2 + bx1)/2 end
 		if by2-by1 < 0 then selfy = (by2 + by1)/2 end
+
+		-- make sure self.x, self.y is on screen!
+		selfcx, selfcy = self:cameraCoords(selfx, selfy, ox, oy, w, h)
+		local targetcx, targetcy = self:cameraCoords(self.x, self.y, ox, oy, w, h)
+		local rx, ry = self.bounds.range, self.bounds.range
+		rx, ry = rx * self.scale, ry * self.scale
+		rx, ry = math.abs(rx), math.abs(ry)
+		local tx1, ty1 = targetcx - w/2 + rx, targetcy - h/2 + ry
+		local tx2, ty2 = targetcx + w/2 - rx, targetcy + h/2 - ry
+		selfcx = jge.clamp(selfcx, tx1, tx2)
+		selfcy = jge.clamp(selfcy, ty1, ty2)
+		selfx, selfy = self:_worldCoordsRaw(selfcx, selfcy, ox, oy, w, h)
+
 		return selfx, selfy
 	else
 		local selfx, selfy = self.x, self.y
@@ -262,6 +272,14 @@ function camera:worldCoords(x,y, ox,oy,w,h)
 	return x, y
 end
 
+function camera:worldTransformation(x, y)
+	local c,s = cos(-self.rot), sin(-self.rot)
+	x,y = x / self.scale, y / self.scale
+	x,y = c*x - s*y, s*x + c*y
+
+	return x, y
+end
+
 function camera:mousePosition(ox,oy,w,h)
 	local mx,my = love.mouse.getPosition()
 	return self:worldCoords(mx,my, ox,oy,w,h)
@@ -284,12 +302,13 @@ function camera:lockPosition(x,y, smoother, ...)
 	return self:move((smoother or self.smoother)(x - self.x, y - self.y, ...))
 end
 
-function camera:setBounds(x1, y1, x2, y2, correct)
+function camera:setBounds(x1, y1, x2, y2, correct, range)
 	self.bounds.x1 = x1 or -math.huge
 	self.bounds.y1 = y1 or -math.huge
 	self.bounds.x2 = x2 or math.huge
 	self.bounds.y2 = y2 or math.huge
 	self.bounds.correct = correct ~= nil and correct or false
+	self.bounds.range = self.bounds.range or 64
 end
 
 function camera:bbox(ox, oy, w, h)

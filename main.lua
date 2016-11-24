@@ -86,8 +86,8 @@ function love.update(dt)
 	end
 	is_in_update = false;
 	update_timer = update_timer % update_delta;
-
 	tree:update_real(dt);
+	collectgarbage("step")
 end
 
 local do_discard_frame = false;
