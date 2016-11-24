@@ -80,6 +80,12 @@ function Camera:mouse_position()
 
 	return x, y
 end
+function Camera:world_coords_diff(mx, my)
+	local x, y = self.camera:worldCoordDiff(mx, my, self:_push())
+	self:_pop()
+
+	return x, y
+end
 function Camera:post_draw()
 	self.camera:detach();
 	love.graphics.setScissor();

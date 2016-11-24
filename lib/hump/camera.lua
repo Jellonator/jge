@@ -76,6 +76,7 @@ local function new(x,y, zoom, rot, smoother)
 			y1 = -math.huge,
 			x2 =  math.huge,
 			y2 =  math.huge,
+			correct = false,
 		}
 	}, camera)
 end
@@ -170,34 +171,49 @@ function camera:cameraCoords(x,y, ox,oy,w,h)
 end
 
 function camera:_getBoundedPosition(ox, oy, w, h)
-	local selfx, selfy = self.x, self.y
-	local x1,y1, x2,y2 = selfx - w/2, selfy - h/2, selfx + w/2, selfy + h/2
-	local ax, ay = self:_worldCoordsRaw(x1, y1, ox, oy, w, h)
-	local bx, by = self:_worldCoordsRaw(x2, y2, ox, oy, w, h)
-	local cx, cy = self:_worldCoordsRaw(x1, y2, ox, oy, w, h)
-	local dx, dy = self:_worldCoordsRaw(x2, y1, ox, oy, w, h)
-	x1, x2 = jge.minmax(ax, bx, cx, dx)
-	y1, y2 = jge.minmax(ay, by, cy, dy)
-	local bw, bh = x2 - x1, y2 - y1
-	local bx1 = self.bounds.x1+bw/2
-	local bx2 = self.bounds.x2-bw/2
-	local by1 = self.bounds.y1+bh/2
-	local by2 = self.bounds.y2-bh/2
-	if selfx < bx1 then
-		selfx = bx1
+	if self.bounds.correct then
+		local selfx, selfy = self.x, self.y
+		local x1,y1, x2,y2 = selfx - w/2, selfy - h/2, selfx + w/2, selfy + h/2
+		local ax, ay = self:_worldCoordsRaw(x1, y1, ox, oy, w, h)
+		local bx, by = self:_worldCoordsRaw(x2, y2, ox, oy, w, h)
+		local cx, cy = self:_worldCoordsRaw(x1, y2, ox, oy, w, h)
+		local dx, dy = self:_worldCoordsRaw(x2, y1, ox, oy, w, h)
+		x1, x2 = jge.minmax(ax, bx, cx, dx)
+		y1, y2 = jge.minmax(ay, by, cy, dy)
+		local bw, bh = x2 - x1, y2 - y1
+		local bx1 = self.bounds.x1+bw/2
+		local bx2 = self.bounds.x2-bw/2
+		local by1 = self.bounds.y1+bh/2
+		local by2 = self.bounds.y2-bh/2
+		if selfx < bx1 then
+			selfx = bx1
+		end
+		if selfx > bx2 then
+			selfx = bx2
+		end
+		if selfy < by1 then
+			selfy = by1
+		end
+		if selfy > by2 then
+			selfy = by2
+		end
+		if bx2-bx1 < 0 then selfx = (bx2 + bx1)/2 end
+		if by2-by1 < 0 then selfy = (by2 + by1)/2 end
+		return selfx, selfy
+	else
+		self.bounds.correct = true
+		local prot = self.rot
+		local c = math.cos(prot)
+		local s = math.sin(prot)
+		self.rot = 0
+		local selfx1, selfy1 = self:_getBoundedPosition(ox, oy, w, h)
+		self.rot = math.pi/2
+		local selfx2, selfy2 = self:_getBoundedPosition(ox, oy, w, h)
+		local selfx, selfy = selfx1*c+selfx2*(1-c), selfy1*c+selfy2*(1-c)
+		self.rot = prot
+		self.bounds.correct = false;
+		return selfx, selfy
 	end
-	if selfx > bx2 then
-		selfx = bx2
-	end
-	if selfy < by1 then
-		selfy = by1
-	end
-	if selfy > by2 then
-		selfy = by2
-	end
-	if bx2-bx1 < 0 then selfx = (bx2 + bx1)/2 end
-	if by2-by1 < 0 then selfy = (by2 + by1)/2 end
-	return selfx, selfy
 end
 
 -- camera coordinates to world coordinates
@@ -212,6 +228,12 @@ function camera:_worldCoordsRaw(x,y, ox,oy,w,h)
 	x, y = x+self.x, y+self.y
 
 	return x, y
+end
+
+function camera:worldCoordDiff(x, y, ox,oy,w,h)
+	local x1, y1 = self:worldCoords(x, y, ox, oy, w, h)
+	local x2, y2 = self:_worldCoordsRaw(x, y, ox, oy, w, h)
+	return x1-x2, y1-y2
 end
 
 function camera:worldCoords(x,y, ox,oy,w,h)
@@ -250,11 +272,12 @@ function camera:lockPosition(x,y, smoother, ...)
 	return self:move((smoother or self.smoother)(x - self.x, y - self.y, ...))
 end
 
-function camera:setBounds(x1, y1, x2, y2)
+function camera:setBounds(x1, y1, x2, y2, correct)
 	self.bounds.x1 = x1
 	self.bounds.y1 = y1
 	self.bounds.x2 = x2
 	self.bounds.y2 = y2
+	self.bounds.correct = correct ~= nil and correct or false
 end
 
 -- the module

@@ -75,22 +75,22 @@ function loadzone:load_zone(shape)
 			offy = self_y2 - target_y2
 		elseif self.edge == "top" then
 			to_y = target_y1 - player_height - 1
-			to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
+			to_x = player_x - (self_x2 + self_x1)/2 + (target_x2 + target_x1)/2
 			camx = 0
 			camy = -camerah
 			offy = self_y2 - target_y1
-			offx = (self_x2 + self._x1)/2 - (target_x2 + target_x1)/2
+			offx = (self_x2 + self_x1)/2 - (target_x2 + target_x1)/2
 		elseif self.edge == "bottom" then
 			to_y = target_y2 + player_height + 1
-			to_x = player_x - (self_x2 + self._x1)/2 + (target_x2 + target_x1)/2
+			to_x = player_x - (self_x2 + self_x1)/2 + (target_x2 + target_x1)/2
 			camx = 0
 			camy = camerah
 			offy = self_y1 - target_y2
-			offx = (self_x2 + self._x1)/2 - (target_x2 + target_x1)/2
+			offx = (self_x2 + self_x1)/2 - (target_x2 + target_x1)/2
 		end
 
 		return camx, camy, offx, offy
-	end, 800, {player})
+	end, 640, {player})
 
 	player:get_root():_recalculate();
 	player_x, player_y = shape:center()
