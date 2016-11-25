@@ -64,6 +64,16 @@ function clamp(val, ...)
 	return math.max(math.min(val, highest), lowest)
 end
 
+function normalize(value, min, max, to_min, to_max, clamp)
+	if to_min == to_max then return to_min end
+	if clamp == nil then clamp = true end
+	local a = (to_max - to_min) / (max - min);
+	local b = to_max - a * max;
+	value = a * value + b;
+	if clamp then return jge.clamp(value, to_min, to_max) end
+	return value;
+end
+
 function angle_diff(a, b)
 	local ret = b - a;
 	ret = _mod(ret + math.pi, math.pi*2) - math.pi

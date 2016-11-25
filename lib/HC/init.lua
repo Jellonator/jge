@@ -136,9 +136,11 @@ function HC:collisions(shape)
 	for other in pairs(candidates) do
 		if shape:can_mask_collide(other) then
 			local collides, dx, dy = shape:collidesWith(other)
+			dx = dx or 0
+			dy = dy or 0
+			-- local t1 = shape:check_oneway(other, collides, dx, dy)
+			-- local t2 = other:check_oneway(shape, collides, -dx, -dy)
 			if collides then
-				dx = dx or 0
-				dy = dy or 0
 				does_collide = true
 				rawset(candidates, other, {dx,dy, x=dx, y=dy})
 			else

@@ -486,6 +486,7 @@ function Map:on_init(fname)
 		-- create solid bodies
 		self.map:hc_init(world.world)
 		for shape in pairs(self.map.hc_collidables) do
+			world.world:remove(shape)
 			local properties = jge.table_union(
 				shape.tileset_properties or {},
 				shape.tile_properties or {},
@@ -541,15 +542,15 @@ function Map:bind_camera()
 	if camera then
 		local w, h = self.map.width*self.map.tilewidth,
 			self.map.height*self.map.tileheight;
-		local x1, y1 = self.node:transform_point(0,0)
-		local x2, y2 = self.node:transform_point(w,h)
-		local x3, y3 = self.node:transform_point(0,h)
-		local x4, y4 = self.node:transform_point(w,0)
+		local x1, y1 = self.node.transform:transform(0,0)
+		local x2, y2 = self.node.transform:transform(w,h)
+		local x3, y3 = self.node.transform:transform(0,h)
+		local x4, y4 = self.node.transform:transform(w,0)
 		local ax = math.min(x1, x2, x3, x4)
 		local ay = math.min(y1, y2, y3, y4)
 		local bx = math.max(x1, x2, x3, x4)
 		local by = math.max(y1, y2, y3, y4)
-		camera.camera:setBounds(ax, ay, bx-ax, by-ay, true, 80)
+		camera.camera:setBounds(ax, ay, bx-ax, by-ay)--, true, 80)
 	end
 end
 

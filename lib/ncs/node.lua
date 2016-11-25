@@ -273,10 +273,10 @@ function Node:draw(lerp)
 		self:_finalize_reset_draws();
 	end
 
-	self.transform:draw_push();
 	for i, c in pairs(self.components_draw) do
 		if c.pre_draw then c:pre_draw(lerp); end
 	end
+	self.transform:draw_push();
 	for i, c in pairs(self.components_draw) do
 		if c.on_draw then c:on_draw(lerp); end
 	end

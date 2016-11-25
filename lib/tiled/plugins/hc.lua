@@ -171,12 +171,16 @@ local function load_tilelayer(map, hc, layer, collidables)
 					load_objectgroup(map, hc, tile.objectGroup, collidables,
 						instance.x + layer.offsetx, instance.y + layer.offsety, true)
 				else
-					local ix, iy = map:convertPixelToTile(instance.x, instance.y)
-					ix = ix + 1
-					iy = iy + 1
-					tilemap[ix][iy] = 1
-					table.insert(indexes_x, ix)
-					table.insert(indexes_y, iy)
+					if tile.properties.collidable
+					or tileset.properties.collidable
+					or layer.properties.collidable then
+						local ix, iy = map:convertPixelToTile(instance.x, instance.y)
+						ix = ix + 1
+						iy = iy + 1
+						tilemap[ix][iy] = 1
+						table.insert(indexes_x, ix)
+						table.insert(indexes_y, iy)
+					end
 				end
 			end
 		end
@@ -201,6 +205,7 @@ local function load_tilelayer(map, hc, layer, collidables)
 			}
 			local shape = generate_shape(hc, object)
 			collidables[shape] = shape
+			shape.tile_properties = {collidable=true}
 			count = count + 1
 		end
 	end

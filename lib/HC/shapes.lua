@@ -67,6 +67,47 @@ function Shape:can_mask_collide(other)
 	return self._layer[other._mask] or other._layer[self._mask]
 end
 
+function Shape:check_oneway(other, collides, sx, sy)
+	if not sx or not sy then
+		collides, sx, sy = self:collidesWith(other);
+	end
+	if not collides then
+		return collides, sx, sy;
+	end
+	if not self._oneway then
+		return collides, sx, sy
+	end
+	if sx == 0 and sy == 0 then
+		return collides, sx, sy
+	end
+	-- local angle = VL.angleTo(sx, sy);
+	-- local diff = JLLE.Math.angle_diff(angle, self._oneway.dir);
+	-- return diff <= self._oneway.angle, sx, sy;
+	-- print("Oneway check!")
+	local dot = jge.vlt.dot(self._oneway.dx, self._oneway.dy, jge.vlt.normalize(sx, sy))
+	return dot >= self._oneway.dot, sx, sy
+end
+
+function Shape:disable_oneway()
+	self._oneway = nil
+end
+
+function Shape:set_oneway(dx, dy, dot)
+	if dx == nil and dy == nil then
+		return self:disable_oneway();
+	end
+	local dot = dot or 0;
+	dot = dot - 1e-5;
+	if self._oneway == nil then
+		self._oneway = {};
+	end
+	dx, dy = jge.vlt.normalize(dx, dy)
+	self._oneway.dx = dx;
+	self._oneway.dy = dy;
+	-- self._oneway.dir = VL.angleTo(dx, dy);
+	self._oneway.dot = dot
+end
+
 function Shape:moveTo(x,y)
 	local cx,cy = self:center()
 	self:move(x - cx, y - cy)
