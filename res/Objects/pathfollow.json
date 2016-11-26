@@ -13,7 +13,7 @@
 		{
 			"component": "script",
 			"script": "res/Objects/pathfollow.lua",
-			"depends": ["collisionbody", "animation"]
+			"depends": ["collisionbody", "animation", "spritemap"]
 		},
 		{
 			"component": "animation",
