@@ -125,6 +125,7 @@ function Transform:draw_push()
 end
 
 function Transform:draw_pop()
+	love.graphics.setColor(0, 0, 0)
 	love.graphics.pop()
 end
 

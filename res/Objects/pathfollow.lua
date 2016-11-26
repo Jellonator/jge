@@ -18,7 +18,13 @@ end
 
 function pathfollow:on_init()
 	local body = self.node:get_component("collisionbody")
+	local spritemap = self.node:get_component("spritemap")
 	body.shape:set_oneway(0, 1, 0.01)--, 5)
+	local x1,_,x2,_ = body.shape:bbox();
+	local width = x2 - x1;
+	local graphics_scale = width/48
+	spritemap.sx = graphics_scale
+	spritemap.sy = graphics_scale
 
 	self.path = self.path or {}
 	local polygon = self.path.polygon or self.path.rectangle or self.path.ellipse
@@ -38,6 +44,9 @@ function pathfollow:on_init()
 	if #self.path >= 1 then
 		local p = self.path[1]
 		body.shape:move(jge.vlt.add(-p.x, -p.y, self.node.transform:get_translation()))
+		local center_x = (x2 + x1)/2
+		local diff_x = center_x - p.x;
+		spritemap.x = diff_x
 	end
 	if #self.path >= 2 then
 		local points = {}
@@ -46,14 +55,15 @@ function pathfollow:on_init()
 			if nexti > #self.path then nexti = self.loop and 1 or i - 1 end
 			local next = self.path[nexti]
 			local dis = jge.vlt.dist(v.x, v.y, next.x, next.y)
+			v.anim = "play"
 			table.insert(points, {dis, v})
 			prev = v
 		end
-		self.polydraw = {}
-		for i, next in ipairs(points) do
-			table.insert(self.polydraw, next[2].x)
-			table.insert(self.polydraw, next[2].y);
-		end
+		-- self.polydraw = {}
+		-- for i, next in ipairs(points) do
+		-- 	table.insert(self.polydraw, next[2].x)
+		-- 	table.insert(self.polydraw, next[2].y);
+		-- end
 		if not self.loop then
 			for i = #points-1, 2, -1 do
 				local nexti = i - 1
@@ -77,17 +87,20 @@ function pathfollow:on_init()
 		end
 		if self.wait > 0 then
 			for _, i in ipairs(self.stops) do
-				local v = points[i]
+				local v = points[i][2]
+				v = {x=v.x,y=v.y,anim="pause"}
 				local wait = self.wait
-				table.insert(points, i, {wait, v[2]})
+				table.insert(points, i, {wait, v})
 			end
 		end
-		self.node:add_component("tween", points, {
+		local tween = self.node:add_component("tween", points, {
 			x = {component="script", func="path_setx", interpolation=self.interpolation},
 			y = {component="script", func="path_sety", interpolation=self.interpolation},
+			anim = {component="animation", func="play"}
 		}, self.speed)
+		tween:on_update(0)
+		self:on_update(0)
 	end
-	body:generate_bodydraw();
 end
 
 function pathfollow:path_setx(x)
@@ -117,10 +130,10 @@ function pathfollow:on_update(dt)
 end
 
 function pathfollow:post_draw(lerp)
-	self.node.transform:draw_pop();
-	love.graphics.setColor(0, 255, 0);
-	love.graphics.line(self.polydraw)
-	self.node.transform:draw_push();
+	-- self.node.transform:draw_pop();
+	-- love.graphics.setColor(0, 255, 0);
+	-- love.graphics.line(self.polydraw)
+	-- self.node.transform:draw_push();
 end
 
 return pathfollow;

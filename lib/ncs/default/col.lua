@@ -13,6 +13,7 @@ function Body:on_init(shape, ...)
 	self.enabled = true;
 	self.prot = 0;
 	self.pmat = jge.Matrix3();
+	self.node:_transformed()
 end
 
 function Body:on_remove()

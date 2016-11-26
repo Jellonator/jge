@@ -58,6 +58,7 @@ function Animation:on_init(tweens, meta, speed)
 end
 function Animation:from_json(json)
 	self:on_init(json.animations, json.metadata, json.speed)
+	if json.default then self:play(json.default) end
 end
 function Animation:reset()
 	if self.tweens[self.current] then

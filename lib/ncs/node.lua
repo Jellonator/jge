@@ -549,6 +549,7 @@ function Node:from_json(json, override)
 			if c.on_add then c:on_add() end
 		end
 	end
+	self:_transformed();
 end
 
 return setmetatable(Node, {
