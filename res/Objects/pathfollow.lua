@@ -18,7 +18,7 @@ end
 
 function pathfollow:on_init()
 	local body = self.node:get_component("collisionbody")
-	body.shape:set_oneway(0, 1, 0.5)
+	body.shape:set_oneway(0, 1, 0.01)--, 5)
 
 	self.path = self.path or {}
 	local polygon = self.path.polygon or self.path.rectangle or self.path.ellipse

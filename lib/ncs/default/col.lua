@@ -11,6 +11,7 @@ function Body:on_init(shape, ...)
 	self.shape = shape
 	self.shape.body = self
 	self.enabled = true;
+	self.prot = 0;
 	self.pmat = jge.Matrix3();
 end
 
@@ -378,8 +379,11 @@ function Body:center()
 end
 
 function Body:on_transform()
+	self.shape._rotation = self.shape._rotation - self.prot;
 	self.shape:transform_mat(self.pmat);
 	local mat = self.node:get_mat()
+	self.prot = self.node:getrot();
+	self.shape._rotation = self.shape._rotation + self.prot;
 	self.shape:transform_mat(mat)
 	self.pmat:copy(mat)
 	self.pmat:inverse();
@@ -419,6 +423,7 @@ function World:on_init(cellsize)
 end
 
 function World:on_update(dt)
+	self.world:update()
 end
 
 -- function World:on_draw()

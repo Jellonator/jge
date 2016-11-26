@@ -8,15 +8,13 @@ function player_script:on_init()
 	-- properties
 	self.speed = self.speed or 320
 	self.gravity = self.gravity or 3200
-	self.terminal_velocity = self.terminal_velocity or 600
+	self.terminal_velocity = self.terminal_velocity or 500
 	self.friction = self.friction or 400
 
 	self.speed_jump = self.speed_jump or 400;
 	self.speed_jump_release = self.speed_jump_release or 140;
-	self.jump_time_start = self.jump_time_start or 0.25
+	self.jump_time_start = self.jump_time_start or 0.28
 	self.jump_time_min = self.jump_time_min or 0.1
-
-	-- self.jump_time_max = self.jump_time_max or 0.08
 
 	-- variables
 	self.velocy = 0

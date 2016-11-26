@@ -74,16 +74,30 @@ function Shape:check_oneway(other, collides, sx, sy)
 	if not collides then
 		return collides, sx, sy;
 	end
+	if other._prev_x and other._prev_y and self._prev_x and self._prev_y
+	and (self._hollow or self._oneway) then
+		local opx, opy = other:center();
+		local spx, spy = self:center();
+		other:moveTo(other._prev_x, other._prev_y);
+		self:moveTo(self._prev_x, self._prev_y)
+		local pcollide, nsx, nsy = self:collidesWith(other);
+		other:moveTo(opx, opy);
+		self:moveTo(spx, spy);
+		if pcollide and sx and sy and jge.vlt.len(nsx, nsy) >= 1 then
+			return false, sx, sy
+		end
+	end
 	if not self._oneway then
 		return collides, sx, sy
 	end
 	if sx == 0 and sy == 0 then
 		return collides, sx, sy
 	end
-	-- local angle = VL.angleTo(sx, sy);
-	-- local diff = JLLE.Math.angle_diff(angle, self._oneway.dir);
-	-- return diff <= self._oneway.angle, sx, sy;
-	-- print("Oneway check!")
+	sx, sy = jge.vlt.rotate(self._rotation, sx, sy)
+	if self._oneway.rotate then
+		sx, sy = jge.vlt.rotate(-other._rotation, sx, sy)
+	end
+
 	local dot = jge.vlt.dot(self._oneway.dx, self._oneway.dy, jge.vlt.normalize(sx, sy))
 	return dot >= self._oneway.dot, sx, sy
 end
@@ -92,18 +106,24 @@ function Shape:disable_oneway()
 	self._oneway = nil
 end
 
-function Shape:set_oneway(dx, dy, dot)
+function Shape:set_hollow(value)
+	local value = value or true;
+	self._hollow = value;
+end
+
+function Shape:set_oneway(dx, dy, dot, rotate)
 	if dx == nil and dy == nil then
 		return self:disable_oneway();
 	end
 	local dot = dot or 0;
-	dot = dot - 1e-5;
+	if dot == 0 then dot = -1e-5 end
 	if self._oneway == nil then
 		self._oneway = {};
 	end
 	dx, dy = jge.vlt.normalize(dx, dy)
 	self._oneway.dx = dx;
 	self._oneway.dy = dy;
+	self._oneway.rotate = rotate ~= nil and rotate or false
 	-- self._oneway.dir = VL.angleTo(dx, dy);
 	self._oneway.dot = dot
 end

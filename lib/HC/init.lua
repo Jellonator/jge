@@ -46,6 +46,7 @@ local transform_func_names = {'move', 'rotate', 'scale', 'transform_mat'}
 local HC = {}
 function HC:init(cell_size)
 	self.hash = common_local.instance(Spatialhash, cell_size or 100)
+	self.shapes = {}
 	self._funcs = self._funcs or {}
 	for _, f in ipairs(transform_func_names) do
 		self._funcs[f] = function(this, ...)
@@ -68,6 +69,7 @@ function HC:resetHash(cell_size)
 end
 
 function HC:register(shape)
+	self.shapes[shape] = shape;
 	if shape._world == self then
 		return shape
 	elseif shape._world then
@@ -88,6 +90,7 @@ function HC:register(shape)
 end
 
 function HC:remove(shape)
+	self.shapes[shape] = nil
 	if shape._world == nil then return end
 	shape._world = nil;
 	self.hash:remove(shape, shape:bbox())
@@ -138,9 +141,9 @@ function HC:collisions(shape)
 			local collides, dx, dy = shape:collidesWith(other)
 			dx = dx or 0
 			dy = dy or 0
-			-- local t1 = shape:check_oneway(other, collides, dx, dy)
-			-- local t2 = other:check_oneway(shape, collides, -dx, -dy)
-			if collides then
+			local t1 = shape:check_oneway(other, collides, dx, dy)
+			local t2 = other:check_oneway(shape, collides, -dx, -dy)
+			if t1 and t2 then
 				does_collide = true
 				rawset(candidates, other, {dx,dy, x=dx, y=dy})
 			else
@@ -151,6 +154,12 @@ function HC:collisions(shape)
 		end
 	end
 	return candidates, does_collide
+end
+
+function HC:update()
+	for shape in pairs(self.shapes) do
+		shape._prev_x, shape._prev_y = shape:center();
+	end
 end
 
 -- the class and the instance
