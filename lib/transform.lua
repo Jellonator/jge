@@ -14,7 +14,12 @@ function Transform.new(x, y)
 		_matcache = jge.Matrix3():const(),
 		_invid = -1,
 		_invcache = jge.Matrix3():const(),
+		_transform_hook = nil
 	}, Transform)
+end
+
+function Transform:set_hook(func)
+	self._transform_hook = func
 end
 
 function Transform:get_translation()
@@ -29,38 +34,50 @@ function Transform:get_scale()
 	return self.scalex, self.scaley
 end
 
+function Transform:_try_hook()
+	if self._transform_hook then
+		self._transform_hook()
+	end
+end
+
 function Transform:translate(x, y)
 	self.x = self.x + x;
 	self.y = self.y + y;
 	self._id = self._id + 1;
+	self:_try_hook();
 end
 
 function Transform:scale(sx, sy)
 	self.scalex = self.scalex * sx;
 	self.scaley = self.scaley * (sy or sx);
 	self._id = self._id + 1;
+	self:_try_hook();
 end
 
 function Transform:rotate(phi)
 	self.rotation = self.rotation + phi
 	self._id = self._id + 1;
+	self:_try_hook();
 end
 
 function Transform:set_rotation(phi)
 	self.rotation = phi
 	self._id = self._id + 1;
+	self:_try_hook();
 end
 
 function Transform:set_scale(sx, sy)
 	self.scalex = sx;
 	self.scaley = sy;
 	self._id = self._id + 1
+	self:_try_hook();
 end
 
 function Transform:set_translation(x, y)
 	self.x = x
 	self.y = y
 	self._id = self._id + 1
+	self:_try_hook();
 end
 
 function Transform:set_x(x)

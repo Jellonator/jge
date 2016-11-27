@@ -49,7 +49,7 @@ function LevelManager:set_level(levelname, mfunc, speed, translate_nodes)
 
 		level_node:get_root():_finalize_reset_draws();
 		level_node:get_root():_finalize_reset_updates();
-		level_node:get_root():_transformed();
+		-- level_node:get_root():_transformed();
 
 		local len = jge.vlt.dist(start_x, start_y, end_x, end_y)
 		local total_len = len;

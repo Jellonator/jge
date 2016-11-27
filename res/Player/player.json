@@ -12,8 +12,6 @@
 			"image": "res/Player/Girl.png",
 			"ox": 8,
 			"oy": 8,
-			"sx": 2,
-			"sy": 2,
 			"frames": [
 				[ 0,  0, 16, 16], [16,  0, 16, 16], [32,  0, 16, 16],
 				[ 0, 16, 16, 16], [16, 16, 16, 16], [32, 16, 16, 16],
@@ -51,9 +49,9 @@
 			"mask": "player",
 			"layers": ["solid"],
 			"shape": "circle",
-			"radius": 8,
+			"radius": 4,
 			"x": 0,
-			"y": 8,
+			"y": 4,
 			"pushable": true
 		}
 	]

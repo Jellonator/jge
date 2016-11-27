@@ -6,22 +6,21 @@ return {
   renderorder = "right-down",
   width = 25,
   height = 120,
-  tilewidth = 32,
-  tileheight = 32,
+  tilewidth = 16,
+  tileheight = 16,
   nextobjectid = 7,
   properties = {},
   tilesets = {
     {
       name = "Background",
       firstgid = 1,
-      filename = "Background.tsx",
-      tilewidth = 32,
-      tileheight = 32,
+      tilewidth = 16,
+      tileheight = 16,
       spacing = 0,
       margin = 0,
       image = "../Background.png",
-      imagewidth = 192,
-      imageheight = 192,
+      imagewidth = 96,
+      imageheight = 96,
       tileoffset = {
         x = 0,
         y = 0
@@ -34,14 +33,14 @@ return {
     {
       name = "Foreground",
       firstgid = 37,
-      filename = "Foreground.tsx",
-      tilewidth = 32,
-      tileheight = 32,
+      filename = "Background.tsx",
+      tilewidth = 16,
+      tileheight = 16,
       spacing = 0,
       margin = 0,
       image = "../Foreground.png",
-      imagewidth = 192,
-      imageheight = 192,
+      imagewidth = 96,
+      imageheight = 96,
       tileoffset = {
         x = 0,
         y = 0
@@ -555,10 +554,10 @@ return {
           name = "to_enterance",
           type = "",
           shape = "rectangle",
-          x = -72,
-          y = 32,
-          width = 72,
-          height = 352,
+          x = -36,
+          y = 16,
+          width = 36,
+          height = 176,
           rotation = 0,
           visible = true,
           properties = {
@@ -573,10 +572,10 @@ return {
           name = "platform",
           type = "",
           shape = "rectangle",
-          x = 288,
-          y = 352,
-          width = 224,
-          height = 96,
+          x = 144,
+          y = 176,
+          width = 112,
+          height = 48,
           rotation = 0,
           visible = true,
           properties = {
@@ -591,15 +590,15 @@ return {
           name = "path",
           type = "",
           shape = "polyline",
-          x = 320,
-          y = 352,
+          x = 160,
+          y = 176,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
             { x = 0, y = 0 },
-            { x = 0, y = 3168 }
+            { x = 0, y = 1584 }
           },
           properties = {}
         }

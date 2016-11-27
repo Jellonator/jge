@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="30" height="48" tilewidth="32" tileheight="32" nextobjectid="3">
- <tileset firstgid="1" source="Background.tsx"/>
- <tileset firstgid="37" source="Foreground.tsx"/>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="30" height="48" tilewidth="16" tileheight="16" nextobjectid="3">
+ <tileset firstgid="1" name="Background" tilewidth="16" tileheight="16" tilecount="36" columns="6">
+  <image source="../Background.png" width="96" height="96"/>
+ </tileset>
+ <tileset firstgid="37" source="Background.tsx"/>
  <layer name="Background" width="30" height="48">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -110,7 +112,7 @@
 </data>
  </layer>
  <objectgroup name="Object Layer 1">
-  <object id="2" x="960" y="544" width="64" height="448">
+  <object id="2" x="480" y="272" width="32" height="224">
    <properties>
     <property name="json" type="file" value="../Objects/loadzone/loadzone.json"/>
     <property name="level" type="file" value="enterance.lua"/>

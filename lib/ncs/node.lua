@@ -2,7 +2,7 @@ local Node = {}
 Node.__index = Node;
 
 function Node.new(x, y)
-	return setmetatable({
+	local self = setmetatable({
 		transform = jge.Transform(x, y),
 		components = {},
 		components_named = {},
@@ -39,6 +39,8 @@ function Node.new(x, y)
 		-- _lerp_x = x or 0,
 		-- _lerp_y = y or 0,
 	}, Node);
+	self.transform:set_hook(jge.bind(self._transform_hook, self))
+	return self;
 end
 
 function Node:pause()
@@ -111,6 +113,22 @@ function Node:get_mat_inv()
 end
 
 -- Transform functions
+function Node:_transform_hook()
+	self._cache_rotation = self.transform.rotation;
+	if self:get_parent() then
+		self._cache_rotation = self._cache_rotation + self:get_parent().transform.rotation
+	end
+	self._cache_x, self._cache_y = self:transform_point(0, 0);
+	for _, c in pairs(self.components) do
+		if c.on_transform then
+			c:on_transform(self.transform)
+		end
+	end
+	for _, c in pairs(self.children) do
+		c:_transform_hook()
+	end
+end
+
 function Node:transform_point(x, y, w) -- local -> global
 	local mat = self:get_mat()
 	return mat:transform_point(x, y, w)
@@ -121,42 +139,11 @@ function Node:transform_point_inv(x, y, w) -- global -> local
 	return mat:transform_point(x, y, w)
 end
 
-function Node:_transformed()
-	self._self_id = self.transform._id;
-	if self._parent then
-		local prot = self._parent:getrot()
-		self._cache_rotation = prot + self.transform.rotation;
-	else
-		self._cache_rotation = self.transform.rotation;
-	end
-	self._cache_x, self._cache_y = self:transform_point(0, 0);
-
-	-- callback for components and nodes
-	for i, c in pairs(self.components) do
-		c:on_transform(self.transform);
-	end
-	for i, node in pairs(self.children) do
-		node:_transformed()
-	end
-end
-
-function Node:_recalculate()
-	if self._self_id ~= self.transform._id or force then
-		self:_transformed();
-	else
-		for _, child in pairs(self.children) do
-			child:_recalculate()
-		end
-	end
-end
-
 function Node:getpos()
-	self:_recalculate();
-	return self._cache_x, self._cache_y;
+	return self._cache_x, self._cache_y
 end
 
 function Node:getrot()
-	self:_recalculate();
 	return self._cache_rotation;
 end
 --
@@ -169,7 +156,7 @@ end
 function Node:update_real(dt)
 	if self._paused then return end
 	dt = dt * self._timescale;
-	self:_recalculate();
+	-- self:_recalculate();
 	for i, c in pairs(self.components_update) do
 		if c.on_update_real then c:on_update_real(dt); end
 	end
@@ -220,7 +207,7 @@ function Node:update(dt)
 		self:_finalize_reset_updates()
 	end
 
-	self:_recalculate();
+	-- self:_recalculate();
 	for i, c in pairs(self.components_update) do
 		if c.on_update then c:on_update(dt); end
 	end
@@ -500,6 +487,13 @@ function Node:from_json(json, override)
 			self:add_to_group(name)
 		end
 	end
+	-- load transforms
+	self.transform:scale(
+		json.scale or json.sx or json.scalex or 1,
+		json.scale or json.sy or json.scaley or 1)
+	self.transform:translate(json.x or 0, json.y or 0)
+	self.transform:rotate(
+		json.r or json.rot or json.rotation or json.angle or 0)
 	-- load components
 	if json.components then
 		local t = {}
@@ -534,13 +528,6 @@ function Node:from_json(json, override)
 			v:from_json(v._jsondata)
 		end
 	end
-	-- load transforms
-	self.transform:scale(
-		json.scale or json.sx or json.scalex or 1,
-		json.scale or json.sy or json.scaley or 1)
-	self.transform:translate(json.x or 0, json.y or 0)
-	self.transform:rotate(
-		json.r or json.rot or json.rotation or json.angle or 0)
 	-- load children
 	if json.children then
 		for k,v in pairs(json.children) do
@@ -549,7 +536,7 @@ function Node:from_json(json, override)
 			if c.on_add then c:on_add() end
 		end
 	end
-	self:_transformed();
+	-- self:_transformed();
 end
 
 return setmetatable(Node, {

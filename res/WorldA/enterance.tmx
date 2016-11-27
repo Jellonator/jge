@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="75" height="75" tilewidth="32" tileheight="32" backgroundcolor="#352643" nextobjectid="72">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="75" height="75" tilewidth="16" tileheight="16" backgroundcolor="#352643" nextobjectid="72">
  <tileset firstgid="1" source="Foreground.tsx"/>
  <tileset firstgid="37" source="Objects.tsx"/>
  <tileset firstgid="39" source="Background.tsx"/>
@@ -244,79 +244,79 @@
 </data>
  </layer>
  <objectgroup color="#e6e6a2" name="Objects">
-  <object id="31" name="rotatingthing" x="832" y="896" width="160" height="32">
+  <object id="31" name="rotatingthing" x="416" y="448" width="80" height="16">
    <properties>
     <property name="script" type="file" value="../rotateme.lua"/>
     <property name="speed" type="float" value="-0.05"/>
    </properties>
   </object>
-  <object id="32" name="path1" x="1008" y="744">
+  <object id="32" name="path1" x="504" y="372">
    <properties>
     <property name="stops" value="1,4,5"/>
    </properties>
-   <polyline points="-16,-104 -16,88 304,88 304,-104"/>
+   <polyline points="-8,-52 -8,44 152,44 152,-52"/>
   </object>
-  <object id="35" name="mover" x="928" y="640">
+  <object id="35" name="mover" x="464" y="320">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
     <property name="path" value="@object:path1"/>
-    <property name="speed" type="float" value="320"/>
+    <property name="speed" type="float" value="120"/>
    </properties>
-   <polygon points="0,0 128,0 96,32 32,32"/>
+   <polygon points="0,0 64,0 48,16 16,16"/>
   </object>
-  <object id="36" name="path5" x="1984" y="640">
-   <polyline points="-64,0 96,0"/>
+  <object id="36" name="path5" x="992" y="320">
+   <polyline points="-32,0 48,0"/>
   </object>
-  <object id="37" name="path4" x="1856" y="640">
-   <polyline points="0,0 0,-256"/>
+  <object id="37" name="path4" x="928" y="320">
+   <polyline points="0,0 0,-128"/>
   </object>
-  <object id="38" name="path3" x="1728" y="512">
-   <polyline points="-160,0 -160,-128 64,-128"/>
+  <object id="38" name="path3" x="864" y="256">
+   <polyline points="-80,0 -80,-64 32,-64"/>
   </object>
-  <object id="39" name="path2" x="1504" y="512">
-   <polyline points="0,0 0,128"/>
+  <object id="39" name="path2" x="752" y="256">
+   <polyline points="0,0 0,64"/>
   </object>
-  <object id="44" x="1472" y="512" width="64" height="32">
+  <object id="44" x="736" y="256" width="32" height="16">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
-    <property name="length" type="float" value="4"/>
+    <property name="length" type="float" value="2"/>
     <property name="path" value="@object:path2"/>
    </properties>
   </object>
-  <object id="45" x="1536" y="512" width="64" height="32">
+  <object id="45" x="768" y="256" width="32" height="16">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
-    <property name="length" type="float" value="4"/>
+    <property name="length" type="float" value="2"/>
     <property name="path" value="@object:path3"/>
    </properties>
   </object>
-  <object id="46" x="1824" y="640" width="64" height="32">
+  <object id="46" x="912" y="320" width="32" height="16">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
-    <property name="length" type="float" value="4"/>
+    <property name="length" type="float" value="2"/>
     <property name="path" value="@object:path4"/>
    </properties>
   </object>
-  <object id="47" x="1888" y="640" width="64" height="32">
+  <object id="47" x="944" y="320" width="32" height="16">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
-    <property name="length" type="float" value="4"/>
+    <property name="length" type="float" value="2"/>
     <property name="path" value="@object:path5"/>
    </properties>
   </object>
-  <object id="54" x="1984" y="1280">
+  <object id="54" x="992" y="640">
    <properties>
     <property name="json" type="file" value="../Objects/pathfollow.json"/>
     <property name="path" value="@object:path_long"/>
-    <property name="speed" type="float" value="320"/>
+    <property name="speed" type="float" value="120"/>
     <property name="stops" value="5,6"/>
    </properties>
-   <polygon points="0,0 96,0 64,32 32,32"/>
+   <polygon points="0,0 48,0 32,16 16,16"/>
   </object>
-  <object id="55" name="path_long" x="2032" y="1024">
-   <polygon points="0,256 -352,256 -352,544 -640,832 -640,-128 0,-128"/>
+  <object id="55" name="path_long" x="1016" y="512">
+   <polygon points="0,128 -176,128 -176,272 -320,416 -320,-64 0,-64"/>
   </object>
-  <object id="60" x="2400" y="320" width="64" height="352">
+  <object id="60" x="1200" y="160" width="32" height="176">
    <properties>
     <property name="json" type="file" value="../Objects/loadzone/loadzone.json"/>
     <property name="level" type="file" value="tunnel.lua"/>
@@ -324,12 +324,12 @@
     <property name="target" value="enterance"/>
    </properties>
   </object>
-  <object id="68" x="512" y="352" width="96" height="64">
+  <object id="68" x="256" y="176" width="48" height="32">
    <properties>
     <property name="script" type="file" value="../Player/player_spawner.lua"/>
    </properties>
   </object>
-  <object id="69" x="-64" y="576" width="64" height="448">
+  <object id="69" x="-32" y="288" width="32" height="224">
    <properties>
     <property name="json" type="file" value="../Objects/loadzone/loadzone.json"/>
     <property name="level" type="file" value="side.lua"/>

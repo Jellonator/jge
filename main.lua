@@ -48,7 +48,7 @@ function generate_json(jfile, x, y)
 end
 
 function get_camera_size()
-	return 400*2, 240*2
+	return 400, 240
 end
 
 function set_tree(newtree)

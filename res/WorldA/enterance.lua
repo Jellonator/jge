@@ -6,8 +6,8 @@ return {
   renderorder = "right-down",
   width = 75,
   height = 75,
-  tilewidth = 32,
-  tileheight = 32,
+  tilewidth = 16,
+  tileheight = 16,
   nextobjectid = 72,
   backgroundcolor = { 53, 38, 67 },
   properties = {},
@@ -16,13 +16,13 @@ return {
       name = "Foreground",
       firstgid = 1,
       filename = "Foreground.tsx",
-      tilewidth = 32,
-      tileheight = 32,
+      tilewidth = 16,
+      tileheight = 16,
       spacing = 0,
       margin = 0,
       image = "../Foreground.png",
-      imagewidth = 192,
-      imageheight = 192,
+      imagewidth = 96,
+      imageheight = 96,
       tileoffset = {
         x = 0,
         y = 0
@@ -170,8 +170,8 @@ return {
                 visible = true,
                 polygon = {
                   { x = 0, y = 0 },
-                  { x = 24, y = 0 },
-                  { x = 0, y = 24 }
+                  { x = 12, y = 0 },
+                  { x = 0, y = 12 }
                 },
                 properties = {}
               }
@@ -200,16 +200,16 @@ return {
                 name = "",
                 type = "",
                 shape = "polygon",
-                x = 8,
+                x = -8,
                 y = 0,
                 width = 0,
                 height = 0,
                 rotation = 0,
                 visible = true,
                 polygon = {
-                  { x = 0, y = 0 },
+                  { x = 12, y = 0 },
                   { x = 24, y = 0 },
-                  { x = 24, y = 24 }
+                  { x = 24, y = 12 }
                 },
                 properties = {}
               }
@@ -249,13 +249,13 @@ return {
       name = "Background",
       firstgid = 39,
       filename = "Background.tsx",
-      tilewidth = 32,
-      tileheight = 32,
+      tilewidth = 16,
+      tileheight = 16,
       spacing = 0,
       margin = 0,
       image = "../Background.png",
-      imagewidth = 192,
-      imageheight = 192,
+      imagewidth = 96,
+      imageheight = 96,
       tileoffset = {
         x = 0,
         y = 0
@@ -557,10 +557,10 @@ return {
           name = "rotatingthing",
           type = "",
           shape = "rectangle",
-          x = 832,
-          y = 896,
-          width = 160,
-          height = 32,
+          x = 416,
+          y = 448,
+          width = 80,
+          height = 16,
           rotation = 0,
           visible = true,
           properties = {
@@ -573,17 +573,17 @@ return {
           name = "path1",
           type = "",
           shape = "polyline",
-          x = 1008,
-          y = 744,
+          x = 504,
+          y = 372,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
-            { x = -16, y = -104 },
-            { x = -16, y = 88 },
-            { x = 304, y = 88 },
-            { x = 304, y = -104 }
+            { x = -8, y = -52 },
+            { x = -8, y = 44 },
+            { x = 152, y = 44 },
+            { x = 152, y = -52 }
           },
           properties = {
             ["stops"] = "1,4,5"
@@ -594,22 +594,22 @@ return {
           name = "mover",
           type = "",
           shape = "polygon",
-          x = 928,
-          y = 640,
+          x = 464,
+          y = 320,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
             { x = 0, y = 0 },
-            { x = 128, y = 0 },
-            { x = 96, y = 32 },
-            { x = 32, y = 32 }
+            { x = 64, y = 0 },
+            { x = 48, y = 16 },
+            { x = 16, y = 16 }
           },
           properties = {
             ["json"] = "../Objects/pathfollow.json",
             ["path"] = "@object:path1",
-            ["speed"] = 320
+            ["speed"] = 120
           }
         },
         {
@@ -617,15 +617,15 @@ return {
           name = "path5",
           type = "",
           shape = "polyline",
-          x = 1984,
-          y = 640,
+          x = 992,
+          y = 320,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
-            { x = -64, y = 0 },
-            { x = 96, y = 0 }
+            { x = -32, y = 0 },
+            { x = 48, y = 0 }
           },
           properties = {}
         },
@@ -634,15 +634,15 @@ return {
           name = "path4",
           type = "",
           shape = "polyline",
-          x = 1856,
-          y = 640,
+          x = 928,
+          y = 320,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
             { x = 0, y = 0 },
-            { x = 0, y = -256 }
+            { x = 0, y = -128 }
           },
           properties = {}
         },
@@ -651,16 +651,16 @@ return {
           name = "path3",
           type = "",
           shape = "polyline",
-          x = 1728,
-          y = 512,
+          x = 864,
+          y = 256,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
-            { x = -160, y = 0 },
-            { x = -160, y = -128 },
-            { x = 64, y = -128 }
+            { x = -80, y = 0 },
+            { x = -80, y = -64 },
+            { x = 32, y = -64 }
           },
           properties = {}
         },
@@ -669,15 +669,15 @@ return {
           name = "path2",
           type = "",
           shape = "polyline",
-          x = 1504,
-          y = 512,
+          x = 752,
+          y = 256,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polyline = {
             { x = 0, y = 0 },
-            { x = 0, y = 128 }
+            { x = 0, y = 64 }
           },
           properties = {}
         },
@@ -686,15 +686,15 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 1472,
-          y = 512,
-          width = 64,
-          height = 32,
+          x = 736,
+          y = 256,
+          width = 32,
+          height = 16,
           rotation = 0,
           visible = true,
           properties = {
             ["json"] = "../Objects/pathfollow.json",
-            ["length"] = 4,
+            ["length"] = 2,
             ["path"] = "@object:path2"
           }
         },
@@ -703,15 +703,15 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 1536,
-          y = 512,
-          width = 64,
-          height = 32,
+          x = 768,
+          y = 256,
+          width = 32,
+          height = 16,
           rotation = 0,
           visible = true,
           properties = {
             ["json"] = "../Objects/pathfollow.json",
-            ["length"] = 4,
+            ["length"] = 2,
             ["path"] = "@object:path3"
           }
         },
@@ -720,15 +720,15 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 1824,
-          y = 640,
-          width = 64,
-          height = 32,
+          x = 912,
+          y = 320,
+          width = 32,
+          height = 16,
           rotation = 0,
           visible = true,
           properties = {
             ["json"] = "../Objects/pathfollow.json",
-            ["length"] = 4,
+            ["length"] = 2,
             ["path"] = "@object:path4"
           }
         },
@@ -737,15 +737,15 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 1888,
-          y = 640,
-          width = 64,
-          height = 32,
+          x = 944,
+          y = 320,
+          width = 32,
+          height = 16,
           rotation = 0,
           visible = true,
           properties = {
             ["json"] = "../Objects/pathfollow.json",
-            ["length"] = 4,
+            ["length"] = 2,
             ["path"] = "@object:path5"
           }
         },
@@ -754,22 +754,22 @@ return {
           name = "",
           type = "",
           shape = "polygon",
-          x = 1984,
-          y = 1280,
+          x = 992,
+          y = 640,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
             { x = 0, y = 0 },
-            { x = 96, y = 0 },
-            { x = 64, y = 32 },
-            { x = 32, y = 32 }
+            { x = 48, y = 0 },
+            { x = 32, y = 16 },
+            { x = 16, y = 16 }
           },
           properties = {
             ["json"] = "../Objects/pathfollow.json",
             ["path"] = "@object:path_long",
-            ["speed"] = 320,
+            ["speed"] = 120,
             ["stops"] = "5,6"
           }
         },
@@ -778,19 +778,19 @@ return {
           name = "path_long",
           type = "",
           shape = "polygon",
-          x = 2032,
-          y = 1024,
+          x = 1016,
+          y = 512,
           width = 0,
           height = 0,
           rotation = 0,
           visible = true,
           polygon = {
-            { x = 0, y = 256 },
-            { x = -352, y = 256 },
-            { x = -352, y = 544 },
-            { x = -640, y = 832 },
-            { x = -640, y = -128 },
-            { x = 0, y = -128 }
+            { x = 0, y = 128 },
+            { x = -176, y = 128 },
+            { x = -176, y = 272 },
+            { x = -320, y = 416 },
+            { x = -320, y = -64 },
+            { x = 0, y = -64 }
           },
           properties = {}
         },
@@ -799,10 +799,10 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 2400,
-          y = 320,
-          width = 64,
-          height = 352,
+          x = 1200,
+          y = 160,
+          width = 32,
+          height = 176,
           rotation = 0,
           visible = true,
           properties = {
@@ -817,10 +817,10 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = 512,
-          y = 352,
-          width = 96,
-          height = 64,
+          x = 256,
+          y = 176,
+          width = 48,
+          height = 32,
           rotation = 0,
           visible = true,
           properties = {
@@ -832,10 +832,10 @@ return {
           name = "",
           type = "",
           shape = "rectangle",
-          x = -64,
-          y = 576,
-          width = 64,
-          height = 448,
+          x = -32,
+          y = 288,
+          width = 32,
+          height = 224,
           rotation = 0,
           visible = true,
           properties = {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset name="Foreground" tilewidth="32" tileheight="32" tilecount="36" columns="6">
- <image source="../Foreground.png" width="192" height="192"/>
+<tileset name="Foreground" tilewidth="16" tileheight="16" tilecount="36" columns="6">
+ <image source="../Foreground.png" width="96" height="96"/>
  <terraintypes>
   <terrain name="solid" tile="-1"/>
  </terraintypes>
@@ -32,15 +32,15 @@
  <tile id="29">
   <objectgroup draworder="index">
    <object id="3" x="0" y="0">
-    <polygon points="0,0 24,0 0,24"/>
+    <polygon points="0,0 12,0 0,12"/>
    </object>
   </objectgroup>
  </tile>
  <tile id="30" terrain="0,0,0,0" probability="0.3"/>
  <tile id="35">
   <objectgroup draworder="index">
-   <object id="1" x="8" y="0">
-    <polygon points="0,0 24,0 24,24"/>
+   <object id="1" x="-8" y="0">
+    <polygon points="12,0 24,0 24,12"/>
    </object>
   </objectgroup>
  </tile>

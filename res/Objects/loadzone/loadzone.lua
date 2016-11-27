@@ -8,7 +8,7 @@ function loadzone:on_init()
 	body:disable();
 	local shape = body.shape;
 	local _, tilemap = self.node:get_parent_with_component("tiledmaploader");
-	self.node:_recalculate()
+	-- self.node:_recalculate()
 	local x1,y1, x2,y2 = shape:bbox();
 	loadzone_bboxes[self.name] = self
 	if not self.edge then
@@ -82,11 +82,11 @@ function loadzone:load_zone(shape)
 		local mx, my = to_x - player_x, to_y - player_y
 		shape:move(mx, my);
 		shape.body:_move_node(mx, my);
-		player:get_root():_recalculate();
+		-- player:get_root():_recalculate();
 		return offx, offy, player
 	end, 640, {})
 
-	player:get_root():_recalculate();
+	-- player:get_root():_recalculate();
 	player:get_root():add_child(player)
 	if tilemap then
 		tilemap:bind_camera()

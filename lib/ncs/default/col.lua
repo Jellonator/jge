@@ -13,7 +13,8 @@ function Body:on_init(shape, ...)
 	self.enabled = true;
 	self.prot = 0;
 	self.pmat = jge.Matrix3();
-	self.node:_transformed()
+	-- initial transform
+	self:on_transform();
 end
 
 function Body:on_remove()
@@ -494,6 +495,7 @@ function Map:on_init(fname)
 		for shape in pairs(self.map.hc_collidables) do
 			world.world:remove(shape)
 			local properties = jge.table_union(
+				shape.tiled_layer_properties or {},
 				shape.tileset_properties or {},
 				shape.tile_properties or {},
 				shape.object_properties or {})
@@ -580,8 +582,10 @@ function Map:on_draw()
 	self.map:draw();
 	if not self.draw then return end
 	-- Draw Collision Map (useful for debugging)
+	self.node.transform:draw_pop();
 	love.graphics.setColor(255, 0, 0, 255)
 	self.map:hc_draw()
+	self.node.transform:draw_push();
 end
 
 function Map:bbox()

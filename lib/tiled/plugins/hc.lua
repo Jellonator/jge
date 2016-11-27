@@ -75,6 +75,7 @@ local function generate_object_shape(map, hc, object,
 	shape:move(ox+x, oy+y)
 	shape.tiled_object = object
 	shape.tiled_layer = layer
+	shape.tiled_layer_properties = layer.properties
 	shape.tiled_layer_index = layer_index
 	shape.object_properties = object.properties
 	if object.gid then
@@ -168,6 +169,7 @@ local function load_tilelayer(map, hc, layer, collidables)
 		for _, instance in ipairs(tiles) do
 			if instance.layer == layer then
 				if tile.objectGroup then
+					tile.objectGroup.properties = layer.properties
 					load_objectgroup(map, hc, tile.objectGroup, collidables,
 						instance.x + layer.offsetx, instance.y + layer.offsety, true)
 				else
@@ -205,7 +207,7 @@ local function load_tilelayer(map, hc, layer, collidables)
 			}
 			local shape = generate_shape(hc, object)
 			collidables[shape] = shape
-			shape.tile_properties = {collidable=true}
+			shape.tile_properties = layer.properties
 			count = count + 1
 		end
 	end
