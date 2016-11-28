@@ -8,7 +8,7 @@ require(NAME .. ".col")
 
 local _file_cache = {}
 local function require_file(file)
-	_file_cache[file] = _file_cache[file] or loadfile(file)()
+	_file_cache[file] = _file_cache[file] or love.filesystem.load(jge.fix_path(file))()
 	return _file_cache[file];
 end
 

@@ -64,12 +64,26 @@ function get_tree()
 end
 
 function love.load(arg)
+	print("ARGS")
+	for k,v in pairs(arg) do
+		print(k, v)
+	end
+	print()
 	tree = jge.ncs.Node();
 	camera = tree:add_component("camera", get_camera_size())
 	tree:add_component("collisionworld");
 
 	local the_manager_is_here = tree:add_component("levelmanager");
-	the_manager_is_here:load_level("res/Worlds/Underground/enterance.lua")
+	local f = arg[2]
+	if f then
+		local pos = f:find("/res/")
+		if pos then
+			f = f:sub(pos+1)
+		end
+		f = f:gsub("Source/([^%.]*)%.tmx", "%1.lua")
+	end
+
+	the_manager_is_here:load_level(f or "res/Worlds/Underground/enterance.lua")
 end
 
 -- make sure that calls to love.timer.getDelta are update_delta inside of

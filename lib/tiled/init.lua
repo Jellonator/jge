@@ -40,7 +40,7 @@ local function new(map, plugins, ox, oy)
 
 	-- Load map
 	print("Loading tiled map:", map)
-	map = setmetatable(love.filesystem.load(map)(), Map)
+	map = setmetatable(love.filesystem.load(jge.fix_path(map))(), Map)
 	map:init(path, plugins, ox, oy)
 
 	return map

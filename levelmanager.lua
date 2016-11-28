@@ -21,7 +21,7 @@ function LevelManager:clear_levels()
 end
 
 function LevelManager:set_level(levelname, mfunc, speed, translate_nodes)
-	speed = speed or 200;
+	speed = speed or 100;
 	local rm_levels = self.levels;
 	self.levels = {}
 

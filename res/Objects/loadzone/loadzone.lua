@@ -84,7 +84,7 @@ function loadzone:load_zone(shape)
 		shape.body:_move_node(mx, my);
 		-- player:get_root():_recalculate();
 		return offx, offy, player
-	end, 640, {})
+	end, 300, {})
 
 	-- player:get_root():_recalculate();
 	player:get_root():add_child(player)
