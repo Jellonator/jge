@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset name="Foreground" tilewidth="16" tileheight="16" tilecount="36" columns="6">
- <image source="../Foreground.png" width="96" height="96"/>
+<tileset name="Rustic Foreground" tilewidth="16" tileheight="16" tilecount="36" columns="6">
+ <image source="rustic_foreground.png" width="96" height="96"/>
  <terraintypes>
   <terrain name="solid" tile="-1"/>
  </terraintypes>

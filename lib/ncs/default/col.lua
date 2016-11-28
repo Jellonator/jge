@@ -536,7 +536,7 @@ function Map:on_init(fname)
 						script[k] = v
 					end
 				end
-			elseif properties.collidable then
+			elseif properties.collidable and not properties.nonsolid then
 				self.node:add_component("collisionbody", shape)
 			end
 		end

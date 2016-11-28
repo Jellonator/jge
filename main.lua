@@ -69,7 +69,7 @@ function love.load(arg)
 	tree:add_component("collisionworld");
 
 	local the_manager_is_here = tree:add_component("levelmanager");
-	the_manager_is_here:load_level("res/WorldA/enterance.lua")
+	the_manager_is_here:load_level("res/Worlds/Underground/enterance.lua")
 end
 
 -- make sure that calls to love.timer.getDelta are update_delta inside of

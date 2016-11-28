@@ -461,7 +461,10 @@ end
 function Node:from_json(json, override)
 	-- load json
 	if type(json) == "string" then
-		json = json:gsub("/[^/%.]+/%.%.", "")
+		-- print(json)
+		-- print("LOADING NODE FROM JSON: " .. tostring(json))
+		-- json = json:gsub("/[^/%.]+/%.%.", "")
+		json = jge.fix_path(json)
 		print("LOADING NODE FROM JSON: " .. tostring(json))
 		local contents = love.filesystem.read(json)
 		json,pos,err = jge.json.decode(contents)

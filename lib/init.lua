@@ -131,6 +131,26 @@ function minmax(...)
 	return math.min(...), math.max(...)
 end
 
+--[[
+Because for some god-forsaken reason Love2d does not allow for '..' to show up
+in filepaths, I have to use this function to fix up paths so that I can
+actually use them.
+--]]
+function fix_path(p)
+	local dot_s, dot_e = p:find("/../", 1, true);
+	if not dot_s then return p end
+	local begin = p:sub(1, dot_s - 1)
+	local ending = p:sub(dot_e + 1)
+	begin = begin:reverse();
+	local slash = begin:find("/", 1, true);
+	if slash then
+		begin = begin:sub(slash):reverse();
+	else
+		begin = ""
+	end
+	return fix_path(begin .. ending)
+end
+
 vlt   = reqlocal("hump.vector-light")
 vec   = reqlocal("hump.vector")
 hcam  = reqlocal("hump.camera")
