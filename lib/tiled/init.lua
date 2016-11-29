@@ -13,8 +13,6 @@ local STI = {
 }
 STI.__index = STI
 
-local THETA = 1e-3
-
 local path       = (...):gsub('%.init$', '') .. "."
 local pluginPath = string.gsub(path, "[.]", "/") .. "plugins/"
 local utils      = require(path .. "utils")
@@ -164,8 +162,8 @@ function Map:setTiles(index, tileset, gid)
 				gid         = gid,
 				tileset     = index,
 				quad        = quad(
-					0.5, 0.5,
-					tile.width, tile.height, tile.width + 1, tile.height + 1
+					0, 0,
+					tile.width, tile.height, tile.width, tile.height
 				),
 				properties  = tile.properties or {},
 				terrain     = tile.terrain,
@@ -221,9 +219,9 @@ function Map:setTiles(index, tileset, gid)
 					-- Since I can't mess up the quad's width or height, I
 					-- instead have to use a different approach for padding
 					-- tiles.
-
-					(quadX+0.5) * (1 + 1/tileW), (quadY+0.5) * (1 + 1/tileH),
-					tileW, tileH, imageW+imageW/tileW, imageH+imageH/tileH
+					quadX , quadY, tileW, tileH, imageW, imageH
+					-- (quadX+0.5) * (1 + 1/tileW), (quadY+0.5) * (1 + 1/tileH),
+					-- tileW, tileH, imageW+imageW/tileW, imageH+imageH/tileH
 				),
 				properties  = properties or {},
 				terrain     = terrain,
@@ -421,9 +419,9 @@ function Map:setSpriteBatches(layer)
 		startY, endY, incrementY = endY, startY, -1
 	end
 
-	-- Minimum of 400 tiles per batch
-	if batchW < 20 then batchW = 20 end
-	if batchH < 20 then batchH = 20 end
+	-- Minimum of 256 tiles per batch
+	if batchW < 16 then batchW = 16 end
+	if batchH < 16 then batchH = 16 end
 
 	local batchSize = batchW * batchH
 	local batches   = {
@@ -496,7 +494,7 @@ function Map:setSpriteBatches(layer)
 						tileX = (x - 1) * colW + tile.offset.x
 					end
 				end
-				local id = batch:add(tile.quad, tileX-THETA, tileY-THETA, tile.r, tile.sx+THETA*2, tile.sy+THETA*2)
+				local id = batch:add(tile.quad, tileX, tileY, tile.r, tile.sx, tile.sy)
 				self.tileInstances[tile.gid] = self.tileInstances[tile.gid] or {}
 				table.insert(self.tileInstances[tile.gid], {
 					layer = layer,
@@ -579,18 +577,18 @@ function Map:setDrawRange(transX, transY, w, h)
 	local startX, startY, endX, endY
 
 	if self.orientation == "orthogonal" then
-		startX = ceil(transX / tileW)
-		startY = ceil(transY / tileH)
+		startX = floor(transX / tileW)
+		startY = floor(transY / tileH)
 		endX   = ceil(startX + w / tileW)
 		endY   = ceil(startY + h / tileH)
 	elseif self.orientation == "isometric" then
-		startX = ceil(((transY / (tileH / 2)) + (transX / (tileW / 2))) / 2)
-		startY = ceil(((transY / (tileH / 2)) - (transX / (tileW / 2))) / 2 - h / tileH)
+		startX = floor(((transY / (tileH / 2)) + (transX / (tileW / 2))) / 2)
+		startY = floor(((transY / (tileH / 2)) - (transX / (tileW / 2))) / 2 - h / tileH)
 		endX   = ceil(startX + (h / tileH) + (w / tileW))
 		endY   = ceil(startY + (h / tileH) * 2 + (w / tileW))
 	elseif self.orientation == "staggered" or self.orientation == "hexagonal" then
-		startX = ceil(transX / tileW - 1)
-		startY = ceil(transY / tileH)
+		startX = floor(transX / tileW - 1)
+		startY = floor(transY / tileH)
 		endX   = ceil(startX + w / tileW + 1)
 		endY   = ceil(startY + h / tileH * 2)
 	end
@@ -729,8 +727,38 @@ function Map:draw()
 		love.graphics.rectangle('fill', 0, 0, self.width*self.tilewidth, self.height*self.tileheight)
 	end
 
+	local x1 = (self.drawRange.sx-1)*self.tilewidth
+	local y1 = (self.drawRange.sy-1)*self.tileheight
+	local x2 = (self.drawRange.ex+1)*self.tilewidth
+	local y2 = (self.drawRange.ey+1)*self.tileheight
+
+	local cw = self.width*self.tilewidth--math.ceil(x2 - x1)
+	local ch = self.height*self.tileheight--math.ceil(y2 - y1)
+	if not self.canvas
+	or self.canvas:getWidth() ~= cw
+	or self.canvas:getHeight() ~= ch then
+		print("Creating a new canvas!", cw, ch);
+		self.canvas = love.graphics.newCanvas(cw, ch, nil, 0)
+	end
+
+	-- draw tile layers
+	love.graphics.setColor(255, 255, 255)
+	love.graphics.push("all")
+	love.graphics.setScissor()
+	love.graphics.setCanvas(self.canvas)
+	love.graphics.origin()
+	love.graphics.clear()
+	-- love.graphics.translate(-x1, -y1)
 	for _, layer in ipairs(self.layers) do
-		if layer.visible and layer.opacity > 0 then
+		if layer.visible and layer.opacity > 0 and layer.type == "tilelayer" then
+			self:drawLayer(layer)
+		end
+	end
+	love.graphics.pop()
+	love.graphics.draw(self.canvas)--, x1, y1)--, self.drawRange.sx, self.drawRange.sy)
+	-- draw object/other layers
+	for _, layer in ipairs(self.layers) do
+		if layer.visible and layer.opacity > 0 and layer.type ~= "tilelayer" then
 			self:drawLayer(layer)
 		end
 	end

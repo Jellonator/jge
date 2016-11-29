@@ -169,63 +169,63 @@ local stop = {1}
 local cache_mat;
 local cache_mat_inv;
 
--- function love.graphics.push(...)
--- 	lg_push(...)
--- 	table.insert(matrices, Matrix3())
--- 	table.insert(stop, stop[mindex])
--- 	mindex = mindex + 1
--- 	cache_mat = nil
--- 	cache_mat_inv = nil
--- end
--- function love.graphics.pop()
--- 	lg_pop()
--- 	table.remove(stop)
--- 	table.remove(matrices)
--- 	mindex = mindex - 1
--- 	cache_mat = nil
--- 	cache_mat_inv = nil
--- end
--- function love.graphics.origin()
--- 	lg_origin()
--- 	stop[mindex] = mindex
--- 	matrices[mindex]:identity();
--- end
--- function love.graphics.scale(sx, sy)
--- 	lg_scale(sx, sy)
--- 	sy = sy or sx
--- 	matrices[mindex]:scale(sx, sy)
--- end
--- function love.graphics.rotate(angle)
--- 	lg_rotate(angle)
--- 	matrices[mindex]:rotate(angle)
--- end
--- function love.graphics.shear(kx, ky)
--- 	lg_shear(kx, ky)
--- 	matrices[mindex]:skew(kx, ky)
--- end
--- function love.graphics.translate(x, y)
--- 	lg_translate(x, y)
--- 	matrices[mindex]:translate(x, y)
--- end
---
--- function love.graphics.getScreenPos(x, y)
--- 	if not cache_mat then
--- 		cache_mat = Matrix3();
--- 		for i = mindex, stop[mindex], -1 do
--- 			cache_mat = cache_mat * matrices[i]
--- 		end
--- 	end
--- 	x, y = cache_mat:transform_point(x, y)
--- 	return x, y
--- end
---
--- function love.graphics.getWorldPos(x, y)
--- 	if not cache_mat_inv then
--- 		cache_mat_inv = Matrix3();
--- 		for i = stop[mindex], mindex do
--- 			cache_mat_inv = cache_mat_inv * matrices[i]:clone():inverse()
--- 		end
--- 	end
--- 	x, y = cache_mat_inv:transform_point(x, y)
--- 	return x, y
--- end
+function love.graphics.push(...)
+	lg_push(...)
+	table.insert(matrices, Matrix3())
+	table.insert(stop, stop[mindex])
+	mindex = mindex + 1
+	cache_mat = nil
+	cache_mat_inv = nil
+end
+function love.graphics.pop()
+	lg_pop()
+	table.remove(stop)
+	table.remove(matrices)
+	mindex = mindex - 1
+	cache_mat = nil
+	cache_mat_inv = nil
+end
+function love.graphics.origin()
+	lg_origin()
+	stop[mindex] = mindex
+	matrices[mindex]:identity();
+end
+function love.graphics.scale(sx, sy)
+	lg_scale(sx, sy)
+	sy = sy or sx
+	matrices[mindex]:scale(sx, sy)
+end
+function love.graphics.rotate(angle)
+	lg_rotate(angle)
+	matrices[mindex]:rotate(angle)
+end
+function love.graphics.shear(kx, ky)
+	lg_shear(kx, ky)
+	matrices[mindex]:skew(kx, ky)
+end
+function love.graphics.translate(x, y)
+	lg_translate(x, y)
+	matrices[mindex]:translate(x, y)
+end
+
+function love.graphics.getScreenPos(x, y)
+	if not cache_mat then
+		cache_mat = Matrix3();
+		for i = mindex, stop[mindex], -1 do
+			cache_mat = cache_mat * matrices[i]
+		end
+	end
+	x, y = cache_mat:transform_point(x, y)
+	return x, y
+end
+
+function love.graphics.getWorldPos(x, y)
+	if not cache_mat_inv then
+		cache_mat_inv = Matrix3();
+		for i = stop[mindex], mindex do
+			cache_mat_inv = cache_mat_inv * matrices[i]:clone():inverse()
+		end
+	end
+	x, y = cache_mat_inv:transform_point(x, y)
+	return x, y
+end

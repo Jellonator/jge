@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset name="trees" tilewidth="16" tileheight="16" tilecount="60" columns="10">
- <image source="trees.png" width="160" height="96"/>
+<tileset name="trees" tilewidth="16" tileheight="16" tilecount="70" columns="10">
+ <image source="trees.png" width="160" height="112"/>
  <terraintypes>
   <terrain name="solid" tile="-1"/>
  </terraintypes>
@@ -78,18 +78,24 @@
  <tile id="30" terrain=",0,,"/>
  <tile id="31" terrain="0,0,,"/>
  <tile id="34" terrain="0,,,"/>
- <tile id="44">
+ <tile id="44" terrain=",,,0" probability="0">
   <objectgroup draworder="index">
    <object id="1" x="0" y="16">
     <polygon points="0,0 16,-16 16,0"/>
    </object>
   </objectgroup>
  </tile>
- <tile id="45">
+ <tile id="45" terrain=",,0," probability="0">
   <objectgroup draworder="index">
    <object id="1" x="0" y="0">
     <polygon points="0,0 16,16 0,16"/>
    </object>
   </objectgroup>
  </tile>
+ <tile id="54" probability="0"/>
+ <tile id="55" probability="0"/>
+ <tile id="60" terrain="0,,0,0" probability="0"/>
+ <tile id="61" terrain=",0,0,0" probability="0"/>
+ <tile id="62" terrain="0,0,0," probability="0"/>
+ <tile id="63" terrain="0,0,,0" probability="0"/>
 </tileset>
