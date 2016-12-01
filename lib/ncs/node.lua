@@ -38,11 +38,126 @@ function Node.new(x, y)
 		--
 		-- _lerp_x = x or 0,
 		-- _lerp_y = y or 0,
+		-- debug information
+		_debug = false,
 	}, Node);
 	self.transform:set_hook(jge.bind(self._transform_hook, self))
 	return self;
 end
 
+
+--[[ Debugging functions ]]
+local time_count = 1;
+function _node_debug_update_real(node, dt)
+	local ptime = love.timer.getTime()
+	Node.update_real(node, dt)
+	local diff = love.timer.getTime() - ptime
+	dt = love.timer.getRealDelta();
+
+	node._debug._u = node._debug._u + diff
+	node._debug.timer = node._debug.timer + dt
+	if node._debug.timer >= time_count then
+		-- local total = node._debug.utime + node._dtime
+		node._debug.utime = node._debug._u / node._debug.timer
+		node._debug.dtime = node._debug._d / node._debug.timer
+		node._debug._d = 0
+		node._debug._u = 0
+		node._debug.timer = 0
+		-- print("UPDATE")
+	end
+end
+
+function _node_debug_update(node, dt)
+	local ptime = love.timer.getTime()
+	Node.update(node, dt)
+	local diff = love.timer.getTime() - ptime
+	node._debug._u = node._debug._u + diff
+end
+
+function _node_debug_draw(node, lerp)
+	local ptime = love.timer.getTime()
+	Node.draw(node, lerp)
+	node._debug._d = node._debug._d + love.timer.getTime() - ptime
+end
+
+function Node:set_debug(val)
+	self._debug = val and (self._debug or {utime = 0, dtime = 0, timer = 0, _u = 0, _d = 0}) or false
+	if val then
+		self.update = _node_debug_update
+		self.draw = _node_debug_draw
+		self.update_real = _node_debug_update_real
+	else
+		self.update = Node.update
+		self.draw = Node.draw
+		self.update_real = Node.update_real
+	end
+end
+
+function Node:set_debug_depth(d, val)
+	if val == nil then val = true end
+	if d > 0 then
+		self:set_debug(val);
+		for _, node in pairs(self.children) do
+			node:set_debug_depth(d - 1, val)
+		end
+	end
+end
+
+local function draw_rect_aabb(x1, y1, x2, y2, mode)
+	love.graphics.rectangle(mode or "fill", x1, y1, x2-x1, y2-y1)
+	-- love.graphics.setColor(255, 255, 255)
+	-- love.graphics.rectangle("line", x1, y1, x2-x1, y2-y1)
+end
+
+function Node:debug_draw(label, x1, y1, x2, y2)
+	if not self._debug then return end
+	x1 = x1 or 8
+	if not x2 or not y1 or not y2 then
+		local ww, wh = love.graphics.getDimensions();
+		y1 = y1 or wh - 20
+		x2 = x2 or ww - 8
+		y2 = y2 or y1 + 12
+	end
+
+	local uratio = self._debug.utime
+	local dratio = self._debug.dtime
+
+	love.graphics.setColor(240, 240, 240)
+	draw_rect_aabb(x1, y1, x2, y2)
+
+	-- love.graphics.setColor(0, 0, 0)
+	-- draw_rect_aabb(x1, y1, x2, y2)
+	local x_mid = jge.lerp(uratio, x1, x2)
+	local x_final = jge.lerp(uratio + dratio, x1, x2)
+	love.graphics.setColor(120, 140, 240)
+	draw_rect_aabb(x1, y1, x_mid, y2)
+	love.graphics.setColor(240, 120, 140)
+	draw_rect_aabb(x_mid, y1, x_final, y2)
+
+	love.graphics.setColor(0, 0, 0)
+	draw_rect_aabb(x_mid, y1, x_mid, y2)
+	love.graphics.print(label, x1 + 4, y1)
+
+	local width = x2 - x1
+	local height = y2 - y1
+	-- x1 = x1 + width + 8
+	-- x2 = x2 + width + 8
+	-- local height = y2 - y1
+
+	for name, node in pairs(self.children) do
+		if node._debug then
+			y2 = y2 - height - 8
+			y1 = y1 - height - 8
+			-- x1 = x1 + 16
+			-- local node_time = node._debug.utime + node._debug.dtime
+			-- local node_ratio = node_time-- / total_time
+			-- local x2 = x1 + node_ratio * width
+			node:debug_draw(label .. "/" .. name, x1 + 16, y1, x2, y2)
+		end
+	end
+end
+
+--[[ Node state functions ]]
 function Node:pause()
 	self._paused = true
 end

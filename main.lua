@@ -29,6 +29,10 @@ love.timer.getDelta = function()
 	else return old_get_delta() end
 end
 
+love.timer.getRealDelta = function()
+	return old_get_delta()
+end
+
 function generate_solid(...)
 	local n = tree:add_child();
 	local body = n:add_component("collisionbody", "polygon", ...);
@@ -94,6 +98,7 @@ function love.update(dt)
 	local i = 0;
 	is_in_update = true;
 	while update_timer >= update_delta and i < MAX_UPDATE_FRAMES do
+		-- tree:set_debug_depth(525600)
 		update_timer = update_timer - update_delta;
 		tree:update(update_delta);
 		i = i + 1
@@ -122,6 +127,7 @@ function love.draw()
 	tree:draw(0)--update_timer/update_delta);
 	love.graphics.setColor(255, 0, 0);
 	love.graphics.print(("FPS: %.2f"):format(love.timer.getFPS()))
+	-- tree:debug_draw("root")--, 8, 16);
 	-- love.graphics.polygon("fill", 100,100, 400,200, 300,300)
 end
 
@@ -168,6 +174,7 @@ function override_main_loop(f)
 	end
 	is_in_update = old_is_in_update
 	love.graphics.pop()
+	love.timer.step()
 end
 
 function love.quit()
