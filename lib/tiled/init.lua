@@ -35,10 +35,12 @@ local function new(map, plugins, ox, oy)
 	if path ~= "" then
 		path = map:sub(1, 1 + (#map - path))
 	end
+	map = jge.fix_path(map)
+	path = jge.fix_path(path)
 
 	-- Load map
-	print("Loading tiled map:", map)
-	map = setmetatable(love.filesystem.load(jge.fix_path(map))(), Map)
+	print("Loading tiled map:", path, map)
+	map = setmetatable(love.filesystem.load(map)(), Map)
 	map:init(path, plugins, ox, oy)
 
 	return map
