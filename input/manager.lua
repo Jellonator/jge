@@ -4,6 +4,7 @@ Manager.__index = Manager;
 function Manager.new()
 	local self = setmetatable({}, Manager);
 	self.events = {}
+	self.key_presses = {}
 	self.callbacks = setmetatable({}, {__mode = "v"})
 	return self
 end
@@ -12,6 +13,10 @@ function Manager:get_event(name)
 	local ev = self.events[name]
 	if not ev then return false end
 	return ev.is_down
+end
+
+function Manager:get_event_pressed(name)
+	return self.key_presses[name] and true or false
 end
 
 function Manager:add_event(name, imatch)
@@ -28,9 +33,14 @@ function Manager:remove_callback(key)
 	self.callbacks[key] = nil
 end
 
+function Manager:step()
+	self.key_presses = {}
+end
+
 function Manager:poll(event)
 	for imatchname, imatch in pairs(self.events) do
 		if imatch:match(event) then
+			self.key_presses[imatchname] = true
 			for calldata, t in pairs(self.callbacks) do
 				if calldata.ename == imatchname
 				and t[calldata.fname](t,unpack(calldata.args)) then

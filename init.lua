@@ -103,6 +103,14 @@ function to(a, b, speed)
 	return a
 end
 
+function to_2d(from_x, from_y, to_x, to_y, speed)
+	local dist = jge.vlt.dist(from_x, from_y, to_x, to_y);
+	-- local angle = jge.vlt.angle_to(from_x - to_x, from_y - to_y);
+	local nx, ny = jge.vlt.normalize(from_x-to_x, from_y-to_y)
+	dist = math.max(0, dist - speed)
+	return jge.vlt.add(to_x, to_y, jge.vlt.mul(dist, nx, ny))
+end
+
 function infnorm(x, n)
 	-- 'n' is the point at which this function will yeild 1/2
 	n = n or 1
@@ -129,6 +137,46 @@ end
 
 function minmax(...)
 	return math.min(...), math.max(...)
+end
+
+function random_normal_range(min, max, tries, rng)
+	-- useful for returning a random number without
+	-- the headache of standard deviation
+	local stddev = math.abs(max-min)/4
+	local mean = (max+min)/2
+	return random_normal_limit(stddev, mean, 2, tries, rng)
+end
+
+function random_normal_limit(stddev, mean, limit, tries, rng)
+	-- maximum standard deviations.
+	-- default limit is 2, meaning 95% chance to fall in range
+	limit = limit or 2
+	-- three tries, 5% failing each. (total of 0.0125% chance of failing)
+	tries = tries or 3
+	-- when using a smaller limit, the person calling the function should use
+	-- a higher number of tries. For example, with only 3 tries and a limit of 1
+	-- std. dev, there is a 3.27% chance of this function failing.
+	-- Or don't, the fallback should be fine anyways
+	local min = -limit * stddev + mean
+	local max = limit * stddev + mean
+	for i = 1, math.max(1, tries) do
+		local val;
+		if rng then
+			val = rng:randomNormal(stddev, mean)
+		else
+			val = love.math.randomNormal(stddev, mean)
+		end
+		if val >= min and val <= max then
+			return val
+		end
+	end
+	print("ugg, lets try something else")
+	-- if all else fails, return a random number (not normal)
+	if rng then
+		return rng:random(min, max)
+	else
+		return love.math.random(min, max)
+	end
 end
 
 --[[
@@ -162,70 +210,4 @@ json  = reqlocal("dkjson")
 tiled = reqlocal("tiled")
 ncs   = reqlocal("ncs")
 HC    = reqlocal("HC")
-
-local matrices = {Matrix3()}
-local mindex = 1;
-local stop = {1}
-local cache_mat;
-local cache_mat_inv;
-
-function love.graphics.push(...)
-	lg_push(...)
-	table.insert(matrices, Matrix3())
-	table.insert(stop, stop[mindex])
-	mindex = mindex + 1
-	cache_mat = nil
-	cache_mat_inv = nil
-end
-function love.graphics.pop()
-	lg_pop()
-	table.remove(stop)
-	table.remove(matrices)
-	mindex = mindex - 1
-	cache_mat = nil
-	cache_mat_inv = nil
-end
-function love.graphics.origin()
-	lg_origin()
-	stop[mindex] = mindex
-	matrices[mindex]:identity();
-end
-function love.graphics.scale(sx, sy)
-	lg_scale(sx, sy)
-	sy = sy or sx
-	matrices[mindex]:scale(sx, sy)
-end
-function love.graphics.rotate(angle)
-	lg_rotate(angle)
-	matrices[mindex]:rotate(angle)
-end
-function love.graphics.shear(kx, ky)
-	lg_shear(kx, ky)
-	matrices[mindex]:skew(kx, ky)
-end
-function love.graphics.translate(x, y)
-	lg_translate(x, y)
-	matrices[mindex]:translate(x, y)
-end
-
-function love.graphics.getScreenPos(x, y)
-	if not cache_mat then
-		cache_mat = Matrix3();
-		for i = mindex, stop[mindex], -1 do
-			cache_mat = cache_mat * matrices[i]
-		end
-	end
-	x, y = cache_mat:transform_point(x, y)
-	return x, y
-end
-
-function love.graphics.getWorldPos(x, y)
-	if not cache_mat_inv then
-		cache_mat_inv = Matrix3();
-		for i = stop[mindex], mindex do
-			cache_mat_inv = cache_mat_inv * matrices[i]:clone():inverse()
-		end
-	end
-	x, y = cache_mat_inv:transform_point(x, y)
-	return x, y
-end
+distribute = reqlocal("distribute")

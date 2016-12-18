@@ -138,6 +138,17 @@ function Body:get_collisions(s)
 	return ret;
 end
 
+function Body:get_colliding_nodes(s)
+	local t = self:get_collisions(s);
+	local ret = {}
+	for k, v in pairs(t) do
+		local node = k.body and k.body.node
+		-- print(k, k.body, k.body.node)
+		ret[node] = v
+	end
+	return ret
+end
+
 local function _get_correction(x, y, collisions)
 	local sx,sy,count,avglen = 0,0,0
 	for _, sep in pairs(collisions) do
