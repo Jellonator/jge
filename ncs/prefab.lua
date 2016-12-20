@@ -61,8 +61,17 @@ local function _instance(def, x, y)
 	node.transform:scale(def.scalex or 1, def.scaley or 1);
 	node.transform:rotate(def.rotation or 0);
 	if def.components then
-		for _, c in pairs(def.components) do
-			node:add_component(c.name, unpack(c.args))
+		for _, c in ipairs(def.components) do
+			if c.args then
+				local val = node:add_component(c.name, unpack(c.args))
+				if c.json then
+					val:from_json(c.json)
+				end
+			elseif c.json then
+				node:add_component_json(c.name, c.json)
+			else
+				error("Component definition defines neither args nor json!")
+			end
 		end
 	end
 

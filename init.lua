@@ -17,6 +17,7 @@ local function _mod(a, n)
 	return a - math.floor(a/n) * n
 end
 
+--[[ Extra String Functions ]]
 function string.trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
@@ -29,12 +30,14 @@ function string.begins_with(self, other)
 	return self:sub(1,#other) == other, self:sub(#other+1)
 end
 
+--[[ Extra Math Functions ]]
 function math.sign(x)
-	if x == 0 then return 0
-	elseif x > 0 then return 1
-	else return -1 end
+	if x > 0 then return 1
+	elseif x < 0 then return -1 end
+	return 0
 end
 
+--[[ Basic Utility Functions ]]
 function try_or(a, b, ...)
 	if a ~= nil then
 		return a
@@ -49,11 +52,12 @@ end
 
 function bind(f, x, ...)
 	if not x then return f end
-	return bind(function(...) return f(x, ...) end, ...)
+	return jge.bind(function(...) return f(x, ...) end, ...)
 end
 
 function nullfunc()end
 
+--[[ More Math Functions ]]
 function lerp(val, a, b)
 	return val*b + (1-val)*a
 end
@@ -72,26 +76,6 @@ function normalize(value, min, max, to_min, to_max, clamp)
 	value = a * value + b;
 	if clamp then return jge.clamp(value, to_min, to_max) end
 	return value;
-end
-
-function angle_diff(a, b)
-	local ret = b - a;
-	ret = _mod(ret + math.pi, math.pi*2) - math.pi
-	return ret;
-end
-
-function angle_lerp(lerp, a, b)
-	local diff = angle_diff(a, b);
-	a = a + diff * lerp;
-	return _mod(a, math.pi*2)
-end
-
-function angle_to(a, b, speed)
-	local diff = angle_diff(a, b);
-	if math.abs(diff) < speed*2 then return b end
-	diff = diff * speed / math.abs(diff);
-	a = a + diff;
-	return _mod(a, math.pi*2);
 end
 
 function to(a, b, speed)
@@ -117,6 +101,32 @@ function infnorm(x, n)
 	return x / (math.abs(x) + n)
 end
 
+function minmax(...)
+	return math.min(...), math.max(...)
+end
+
+--[[ Angle Functions ]]
+function angle_diff(a, b)
+	local ret = b - a;
+	ret = _mod(ret + math.pi, math.pi*2) - math.pi
+	return ret;
+end
+
+function angle_lerp(lerp, a, b)
+	local diff = angle_diff(a, b);
+	a = a + diff * lerp;
+	return _mod(a, math.pi*2)
+end
+
+function angle_to(a, b, speed)
+	local diff = angle_diff(a, b);
+	if math.abs(diff) < speed*2 then return b end
+	diff = diff * speed / math.abs(diff);
+	a = a + diff;
+	return _mod(a, math.pi*2);
+end
+
+--[[ Extra Table Functions ]]
 function table_clear(t)
 	for k in pairs(t) do
 		t[k] = nil
@@ -135,10 +145,7 @@ function table_union(...)
 	return _union({}, ...)
 end
 
-function minmax(...)
-	return math.min(...), math.max(...)
-end
-
+--[[ Probability Functions ]]
 function random_normal_range(min, max, tries, rng)
 	-- useful for returning a random number without
 	-- the headache of standard deviation
@@ -179,6 +186,7 @@ function random_normal_limit(stddev, mean, limit, tries, rng)
 	end
 end
 
+--[[ Path Functions ]]
 --[[
 Because for some god-forsaken reason Love2d does not allow for '..' to show up
 in filepaths, I have to use this function to fix up paths so that I can
@@ -199,6 +207,30 @@ function fix_path(p)
 	return fix_path(begin .. ending)
 end
 
+--[[ Function Binding Functions ]]
+function bind_method(object, method)
+	return function(...)
+		return object[method](object, ...)
+	end
+	-- return jge.bind(object[method], object, ...)
+end
+
+function bind_property(object, property, ...)
+	if not property then return nullfunc end
+	local f = bind_property(object, ...)
+	return function(v, ...)
+		object[property] = v
+		return f(...)
+	end
+end
+
+function bind_unpack(f)
+	return function(t)
+		return f(unpack(t))
+	end
+end
+
+--[[ Modules ]]
 vlt   = reqlocal("hump.vector-light")
 vec   = reqlocal("hump.vector")
 hcam  = reqlocal("hump.camera")

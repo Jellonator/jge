@@ -522,7 +522,7 @@ function Node:call_signal(cname, fname, recursive, ...)
 		end
 	end
 
-	if recursive == true or recursive > 1 then
+	if recursive == true or (type(recursive) == "number" and recursive > 1) then
 		local next_recursive = recursive == true and true or recursive - 1
 		for _, node in pairs(self.children) do
 			node:call_signal(cname, fname, next_recursive, ...)
@@ -562,9 +562,15 @@ function Node:_add_component_json(name, jsondata)
 	table.insert(self.components, c);
 	self.components_named[name] = c;
 	c.node = self;
+	if c.on_add then c:on_add() end
 	self:_reset_updates();
 	self:_reset_draws();
 	return c
+end
+
+function Node:add_component_json(name, jsondata)
+	local c = self:_add_component_json(name, jsondata)
+	c:from_json(jsondata)
 end
 
 local _contains = function(t, val)

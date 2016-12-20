@@ -6,8 +6,21 @@ local interpolation_functions = {
 	none = function(a, b, lerp)
 		return a
 	end,
+	ceil = function(a, b, lerp)
+		return b
+	end,
+	floor = function(a, b, lerp)
+		return a
+	end,
 	linear = function(a, b, lerp)
-		return a*(1-lerp) + b*lerp
+		if type(a) == "table" then
+			local ret = {}
+			for k in pairs(a) do
+				ret[k] = jge.lerp(lerp, a[k], b[k])
+			end
+			return ret
+		end
+		return jge.lerp(lerp, a, b)
 	end,
 }
 
@@ -29,9 +42,11 @@ function Track.new(data, func, interpolation, loop)
 		current_i = 1,
 		pos = 0,
 		loop = loop,
-		pvalue
+		pvalue,
+		_i_am_a_track = true
 	}, Track);
 	if data then
+		print("LOADING TRACK DATA")
 		for _, datum in ipairs(data) do
 			local value = datum[1] or datum.value
 			local length = datum[2] or datum.length
@@ -112,6 +127,10 @@ function Track:set_position(p)
 	self:step(p)
 end
 
+function Track:step_random()
+	self:step(math.random() * self:get_length())
+end
+
 function Track:step(dt)
 	local ret = false;
 	if self:get_position() < self:get_length() or self.loop then
@@ -138,8 +157,8 @@ function Track:step(dt)
 		end
 	end
 	if self.func then
-		local val = self:get_current_value()
-		if val ~= self.pvalue then
+		local val, do_anyways = self:get_current_value()
+		if val ~= self.pvalue or do_anyways then
 			self.pvalue = val
 			self.func(val)
 		end
@@ -204,6 +223,10 @@ end
 function Track:set_offset(offset)
 	self.offset = offset
 	return self
+end
+
+function Track:set_func(func)
+	self.func = func
 end
 
 return setmetatable(Track, {

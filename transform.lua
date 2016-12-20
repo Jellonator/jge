@@ -73,6 +73,18 @@ function Transform:set_scale(sx, sy)
 	self:_try_hook();
 end
 
+function Transform:set_scale_x(sx)
+	self.scalex = sx;
+	self._id = self._id + 1
+	self:_try_hook();
+end
+
+function Transform:set_scale_y(sy)
+	self.scaley = sy;
+	self._id = self._id + 1
+	self:_try_hook();
+end
+
 function Transform:set_translation(x, y)
 	self.x = x
 	self.y = y
