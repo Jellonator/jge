@@ -13,15 +13,53 @@ local interpolation_functions = {
 		return a
 	end,
 	linear = function(a, b, lerp)
-		if type(a) == "table" then
-			local ret = {}
-			for k in pairs(a) do
-				ret[k] = jge.lerp(lerp, a[k], b[k])
-			end
-			return ret
-		end
 		return jge.lerp(lerp, a, b)
 	end,
+	min = function(a, b, lerp)
+		return math.min(a, b)
+	end,
+	max = function(a, b, lerp)
+		return math.max(a, b)
+	end,
+	cubic = function(a, b, lerp, length, self, key)
+		local i_prev = jge.limit_index(self.current_i - 1, #self.data)
+		local i_next = jge.limit_index(self.current_i + 1, #self.data)
+		if not self.loop then
+			if i_prev > self.current_i then
+				i_prev = nil
+			end
+			if i_next < self.current_i then
+				i_next = nil
+			end
+		end
+		local prev = self.data[i_prev]
+		local next = self.data[i_next]
+
+		-- Very simple spline algorithm
+		local m0, m1 = 0, 0
+		local mcur = (b - a) / length
+		if prev and self:get_b(i_prev, key) == a and prev.length > 0 then
+			m0 = (mcur + self:get_slope(i_prev, key))/2
+		else
+			m0 = mcur
+		end
+		if next and self:get_a(i_next, key) == b and next.length > 0 then
+			m1 = (mcur + self:get_slope(i_next, key))/2
+		else
+			m1 = mcur
+		end
+
+		-- Cubic hermite interpolation
+		local lerp2 = lerp*lerp
+		local lerp3 = lerp2*lerp
+		value =
+		   a * ( 2*lerp3 - 3*lerp2 +    1)
+		+ m0 * (   lerp3 - 2*lerp2 + lerp)
+		+  b * (-2*lerp3 + 3*lerp2       )
+		+ m1 * ( lerp3 - lerp2 );
+		-- return jge.lerp(lerp, a, b) + m*(b-a)
+		return value
+	end
 }
 
 --[[
@@ -64,6 +102,30 @@ function Track.new(data, func, interpolation, loop)
 	return self
 end
 
+function Track:get_slope(i, key)
+	local d = self.data[i]
+	if key then
+		return (d.b[key] - d.a[key])/d.length
+	end
+	return (d.b - d.a)/d.length
+end
+
+function Track:get_a(i, key)
+	local d = self.data[i]
+	if key then
+		return d.a[key]
+	end
+	return d.a
+end
+
+function Track:get_b(i, key)
+	local d = self.data[i]
+	if key then
+		return d.b[key]
+	end
+	return d.b
+end
+
 function Track:clone(func)
 	local other = setmetatable({
 		func = func or self.func,
@@ -95,10 +157,28 @@ function Track:_call_func()
 	self.func(self:get_current_value())
 end
 
+function Track:_interpolate(func, a, b, length, lerp)
+	if type(a) == "table" then
+		local ret = {}
+		for k in pairs(a) do
+			ret[k] = func(a[k], b[k], lerp, length, self, k)
+		end
+		return ret
+	else
+		return func(a, b, lerp, length, self)
+	end
+end
+
 function Track:get_current_value()
 	local d = self:get_current()
 	local lerp = self.time/d.length
-	return interpolation_functions[self.interpolation](d.a, d.b, lerp)
+	local f;
+	if self.interpolation == "function" then
+		f = self.interpolation
+	else
+		f = interpolation_functions[self.interpolation]
+	end
+	return self:_interpolate(f, d.a, d.b, d.length, lerp)
 end
 
 function Track:get_current()

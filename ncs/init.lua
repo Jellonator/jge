@@ -10,4 +10,6 @@ register_component = ncs.Component.register_component;
 require(NAME .. ".default");
 register_component = nil
 
+ncs.register_component = ncs.Component.register_component;
+
 return ncs;

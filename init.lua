@@ -62,6 +62,10 @@ function lerp(val, a, b)
 	return val*b + (1-val)*a
 end
 
+function limit_index(i, length)
+	return ((i - 1) % length) + 1
+end
+
 function clamp(val, ...)
 	local lowest = math.min(...)
 	local highest = math.max(...)
@@ -177,8 +181,7 @@ function random_normal_limit(stddev, mean, limit, tries, rng)
 			return val
 		end
 	end
-	print("ugg, lets try something else")
-	-- if all else fails, return a random number (not normal)
+	-- if all else fails, return a random number (not normal, but close enough)
 	if rng then
 		return rng:random(min, max)
 	else
@@ -231,16 +234,18 @@ function bind_unpack(f)
 end
 
 --[[ Modules ]]
+-- types
+Transform = reqlocal("transform")
+Matrix3 = reqlocal("matrix3")
+Input = reqlocal("input")
+HC    = reqlocal("HC")
+
+-- modules
 vlt   = reqlocal("hump.vector-light")
 vec   = reqlocal("hump.vector")
 hcam  = reqlocal("hump.camera")
-Transform = reqlocal("transform")
-Matrix3 = reqlocal("matrix3")
--- Tween  = reqlocal("tween")
-anim = reqlocal("anim")
-Input = reqlocal("input")
 json  = reqlocal("dkjson")
 tiled = reqlocal("tiled")
 ncs   = reqlocal("ncs")
-HC    = reqlocal("HC")
+anim = reqlocal("anim")
 distribute = reqlocal("distribute")
