@@ -12,8 +12,16 @@ function DrawableRect:on_init(mode, x1, y1, x2, y2, color)
 	self.y1 = y1 or self.y1;
 	self.x2 = x2 or self.x2;
 	self.y2 = y2 or self.y2;
-	self.mode = mode or mode;
+	self.mode = mode or self.mode;
 	self.color = color or {unpack(self.color)};
+end
+function DrawableRect:from_json(json)
+	self.x1 = json.x1 or self.x1;
+	self.y1 = json.y1 or self.y1;
+	self.x2 = json.x2 or self.x2;
+	self.y2 = json.y2 or self.y2;
+	self.mode = json.mode or self.mode;
+	self.color = json.color or {unpack(self.color)};
 end
 function DrawableRect:on_draw()
 	-- local x, y = node:getpos();
@@ -37,6 +45,13 @@ function DrawableCircle:on_init(mode, x, y, radius, color)
 	self.radius = radius or self.radius
 	self.color = color or {unpack(self.color)}
 end
+function DrawableCircle:from_json(json)
+	self.mode = json.mode or self.mode
+	self.x = json.x or self.x
+	self.y = json.y or self.y
+	self.radius = json.radius or self.radius
+	self.color = json.color or {unpack(self.color)}
+end
 function DrawableCircle:on_draw()
 	love.graphics.setColor(self.color);
 	love.graphics.circle(self.mode, self.x, self.y, self.radius)
@@ -47,7 +62,14 @@ local DrawablePolygon = {
 	mode = "fill",
 	color = {255, 255, 255, 255},
 }
-
+function DrawablePolygon:from_json(json)
+	self.mode = mode or self.mode
+	self.color = json.color or {unpack(self.color)}
+	local p = json.points or json.vertices
+	if p then
+		self:_add_point(unpack(p))
+	end
+end
 function DrawablePolygon:on_init(mode, color, ...)
 	self.mode = mode or self.mode
 	if type(color) == "table" then
@@ -86,6 +108,24 @@ local Drawable = {
 	kx = 0,
 	ky = 0
 }
+function Drawable:from_json(json)
+	self.x = json.x or self.x
+	self.y = json.y or self.y
+	self.rot = json.r or self.rot
+	self.sx = json.sx or self.sx
+	self.sy = json.sy or self.sy
+	self.ox = json.ox or self.ox
+	self.oy = json.oy or self.oy
+	self.kx = json.kx or self.kx
+	self.ky = json.ky or self.ky
+	if json.text then
+		self.drawable = love.graphics.newText(love.graphics.getFont(), json.text)
+	elseif json.image then
+		self.drawable = love.graphics.newImage(json.image, json.flags)
+	elseif json.video then
+		self.drawable = love.graphics.newVideo(json.video, json.load_audio)
+	end
+end
 function Drawable:on_init(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
 	self.drawable = drawable
 	self.x = x or self.x
@@ -99,6 +139,7 @@ function Drawable:on_init(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
 	self.ky = ky or self.ky
 end
 function Drawable:on_draw()
+	if not self.drawable then return end
 	love.graphics.draw(self.drawable, self.x, self.y, self.rot,
 		self.sx, self.sy, self.ox, self.oy, self.kx, self.ky);
 end

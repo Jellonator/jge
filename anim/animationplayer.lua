@@ -37,7 +37,6 @@ function AnimationPlayer:clone()
 end
 
 function AnimationPlayer:add_animation(name, anim, ...)
-	print(name, anim, ...)
 	if anim and anim._i_am_an_animation then
 		self.animations[name] = anim:clone()
 	else
@@ -63,8 +62,6 @@ function AnimationPlayer:set_ending(name, anim)
 		self.default_ending = name
 		return
 	end
-	jge.printf("Set ending %s to %s", name, anim)
-	-- self:get_animation(name):set_loop(false)
 	self.endings[name] = anim
 end
 

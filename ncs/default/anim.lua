@@ -1,4 +1,30 @@
 -- Animations
+local function calc_bindings(node, bindings, anim)
+	for track, bind in pairs(bindings) do
+		local colon_pos = bind:find(':', 1, true)
+		local path, func_def
+		if colon_pos then
+			path = bind:sub(1, colon_pos-1)
+			func_def = bind:sub(colon_pos+1)
+			if path == "" then path = "." end
+		else
+			func_def = bind
+			path = "."
+		end
+		local target = node:get_node(path)
+		local dot_pos = func_def:find(".", 1, true)
+		local component_name = func_def:sub(1, dot_pos-1)
+		local function_name = func_def:sub(dot_pos+1)
+		if component_name == "transform" then
+			local tr = target.transform
+			anim:track_set_func(track, jge.bind_method(tr, function_name))
+		else
+			local func = jge.bind(target.call_signal, target, function_name, false)
+			anim:track_set_func(track, func)
+		end
+	end
+end
+
 local Animation = {
 	animation = nil
 }
@@ -7,6 +33,22 @@ function Animation:on_init(tracks, length, loop)
 		self.animation = tracks:clone()
 	else
 		self.animation = jge.anim.Animation(tracks, length, loop)
+	end
+end
+function Animation:from_json(json)
+	local tracks = {}
+	local length = json.length
+	local loop = json.loop
+	if anim_def.tracks then
+		for track_name, track_def in pairs(json.tracks) do
+			tracks[track_name] = jge.anim.Track(track_def.data,
+			track_def.func, track_def.interpolation, track_def.loop,
+			track_def.ease)
+		end
+	end
+	self.animation = jge.anim.Animation(tracks, length, loop)
+	if json.bindings then
+		calc_bindings(self.node, json.bindings, self.animationplayer)
 	end
 end
 function Animation:on_update(dt)
@@ -69,21 +111,17 @@ function AnimationPlayer:from_json(json)
 	local animations = json.animations
 	local current = json.current
 	if animations then
-		print("LOADING ANIMATIONS")
 		for anim_name, anim_def in pairs(animations) do
-			jge.printf("LOADING ANIM: %s", anim_name)
 			local tracks = {}
 			local length = anim_def.length
 			local loop = anim_def.loop
 			if anim_def.tracks then
-				print("LOADING TRACKS")
 				for track_name, track_def in pairs(anim_def.tracks) do
-					jge.printf("LOADING TRACK: %s with interpolation %s", track_name, track_def.data)
 					tracks[track_name] = jge.anim.Track(track_def.data,
-					track_def.func, track_def.interpolation, track_def.loop)
+					track_def.func, track_def.interpolation, track_def.loop,
+					track_def.ease)
 				end
 			end
-			jge.printf("Loaded %d tracks!", #tracks)
 			local anim = jge.anim.Animation(tracks, length, loop)
 			self.animationplayer:add_animation(anim_name, anim)
 			if anim_def.ending then
@@ -98,6 +136,9 @@ function AnimationPlayer:from_json(json)
 	end
 	if json.ending_default then
 		self.animationplayer:set_ending(json.ending_default)
+	end
+	if json.bindings then
+		calc_bindings(self.node, json.bindings, self.animationplayer)
 	end
 	if current then
 		self:play(current)

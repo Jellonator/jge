@@ -100,7 +100,6 @@ function Animation:step(dt)
 				track:step(self.pos)
 			end
 		else
-			print(self.loop, self.pos, self.length)
 			if not self.loop and self.pos >= self.length then
 				ret = true
 			end
@@ -110,6 +109,13 @@ function Animation:step(dt)
 		end
 	end
 	return ret
+end
+
+function Animation:track_set_func(track, ...)
+	local t = self:get_track(track)
+	if t then
+		t:set_func(...)
+	end
 end
 
 return setmetatable(Animation, {

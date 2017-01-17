@@ -414,7 +414,13 @@ function BodyDraw:on_init(shape, color)
 	self.color = color and {unpack(color)} or {0,255,255}
 end
 
+function BodyDraw:from_json(json)
+	local body = self.node:get_component("collisionbody")
+	self:on_init(body.shape, json.color)
+end
+
 function BodyDraw:post_draw()
+	if not self.shape then return end
 	love.graphics.setColor(self.color)
 	if self.shape.body then
 		self.shape:transform_mat(self.shape.body.pmat);
@@ -439,6 +445,9 @@ function World:on_update(dt)
 	self.world:update()
 end
 
+function World:from_json(json)
+	self.world = jge.HC.new(json.cellsize)
+end
 -- function World:on_draw()
 -- 	-- love.graphics.setColor(0, 255, 0, 140)
 -- 	-- for s in pairs(self.world.hash:shapes()) do
@@ -554,6 +563,10 @@ function Map:on_init(fname)
 
 		finalize_removals(self.map)
 	end
+end
+
+function Map:from_json(json)
+	self:on_init(json.map)
 end
 
 function Map:bind_camera()

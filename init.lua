@@ -1,15 +1,6 @@
 local lpath = ... .. '.';
 module('jge', package.seeall)
 
-local lg = love.graphics
-local lg_push = love.graphics.push
-local lg_pop = love.graphics.pop
-local lg_origin = love.graphics.origin
-local lg_scale = love.graphics.scale
-local lg_rotate = love.graphics.rotate
-local lg_shear = love.graphics.shear
-local lg_translate = love.graphics.translate
-
 local function reqlocal(path)
 	return require(lpath .. path)
 end
@@ -22,12 +13,42 @@ function string.trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-function string.split(s)
-	return s:gmatch("[^%s]")
+function _str_split(state, i)
+	if state.i == nil then return nil end
+	local f_start, f_end = state.str:find(state.sep, state.i, true)
+	local ret, next_i
+	if f_start == nil then
+		ret = state.str:sub(state.i)
+		next_i = nil
+	else
+		ret = state.str:sub(state.i, f_start-1)
+		next_i = f_end + 1
+	end
+	state.i = next_i
+	return ret
+end
+
+function string.split(s, val)
+	if val then
+		return _str_split, {
+			sep = val,
+			str = s,
+			i = 1
+		}
+	else
+		return s:gmatch("[^%s]")
+	end
 end
 
 function string.begins_with(self, other)
-	return self:sub(1,#other) == other, self:sub(#other+1)
+	local ret = self:sub(1,#other) == other
+	return ret, ret and self:sub(#other+1)
+end
+
+function string.ends_with(self, other)
+	local pos = #self-#other
+	local ret = self:sub(pos+1) == other
+	return ret, ret and self:sub(1, pos)
 end
 
 --[[ Extra Math Functions ]]
@@ -149,46 +170,6 @@ function table_union(...)
 	return _union({}, ...)
 end
 
---[[ Probability Functions ]]
-function random_normal_range(min, max, tries, rng)
-	-- useful for returning a random number without
-	-- the headache of standard deviation
-	local stddev = math.abs(max-min)/4
-	local mean = (max+min)/2
-	return random_normal_limit(stddev, mean, 2, tries, rng)
-end
-
-function random_normal_limit(stddev, mean, limit, tries, rng)
-	-- maximum standard deviations.
-	-- default limit is 2, meaning 95% chance to fall in range
-	limit = limit or 2
-	-- three tries, 5% failing each. (total of 0.0125% chance of failing)
-	tries = tries or 3
-	-- when using a smaller limit, the person calling the function should use
-	-- a higher number of tries. For example, with only 3 tries and a limit of 1
-	-- std. dev, there is a 3.27% chance of this function failing.
-	-- Or don't, the fallback should be fine anyways
-	local min = -limit * stddev + mean
-	local max = limit * stddev + mean
-	for i = 1, math.max(1, tries) do
-		local val;
-		if rng then
-			val = rng:randomNormal(stddev, mean)
-		else
-			val = love.math.randomNormal(stddev, mean)
-		end
-		if val >= min and val <= max then
-			return val
-		end
-	end
-	-- if all else fails, return a random number (not normal, but close enough)
-	if rng then
-		return rng:random(min, max)
-	else
-		return love.math.random(min, max)
-	end
-end
-
 --[[ Path Functions ]]
 --[[
 Because for some god-forsaken reason Love2d does not allow for '..' to show up
@@ -249,3 +230,5 @@ tiled = reqlocal("tiled")
 ncs   = reqlocal("ncs")
 anim = reqlocal("anim")
 distribute = reqlocal("distribute")
+random = reqlocal("random")
+ease = reqlocal("ease")

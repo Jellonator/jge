@@ -66,8 +66,7 @@ local interpolation_functions = {
 Data format:
 {{4,1}, {3,1}, {2}}
 --]]
-function Track.new(data, func, interpolation, loop)
-	interpolation = interpolation or "none"
+function Track.new(data, func, interpolation, loop, ease)
 	func = func or nullfunc
 	loop = jge.try_or(loop, true)
 	local self = setmetatable({
@@ -81,10 +80,10 @@ function Track.new(data, func, interpolation, loop)
 		pos = 0,
 		loop = loop,
 		pvalue,
+		ease = ease,
 		_i_am_a_track = true
 	}, Track);
 	if data then
-		print("LOADING TRACK DATA")
 		for _, datum in ipairs(data) do
 			local value = datum[1] or datum.value
 			local length = datum[2] or datum.length
@@ -157,7 +156,7 @@ function Track:_call_func()
 	self.func(self:get_current_value())
 end
 
-function Track:_interpolate(func, a, b, length, lerp)
+function Track:_interpolate(func, a, b, length, lerp, ease)
 	if type(a) == "table" then
 		local ret = {}
 		for k in pairs(a) do
@@ -172,11 +171,25 @@ end
 function Track:get_current_value()
 	local d = self:get_current()
 	local lerp = self.time/d.length
+	if type(d.ease) == "string" then
+		d.ease = jge.ease[d.ease]
+	end
+	if type(self.ease) == "string" then
+		self.ease = jge.ease[self.ease]
+	end
+	local ease = d.ease or self.ease
+	if ease then
+		lerp = ease(lerp)
+	end
 	local f;
-	if self.interpolation == "function" then
+	if type(self.interpolation) == "function" then
 		f = self.interpolation
 	else
-		f = interpolation_functions[self.interpolation]
+		local interpol = self.interpolation
+		if not interpol then
+			interpol = ease and "linear" or "none"
+		end
+		f = interpolation_functions[interpol]
 	end
 	return self:_interpolate(f, d.a, d.b, d.length, lerp)
 end
@@ -271,9 +284,9 @@ function Track:get_at(t)
 	return self.data[i]
 end
 
-function Track:append_raw(a, b, length)
+function Track:append_raw(a, b, length, ease)
 	self.length = self.length + length
-	local d = {a=a, b=b, length=length}
+	local d = {a=a, b=b, length=length, ease=ease or self.ease}
 	table.insert(self.data, d)
 	return self
 end
@@ -290,13 +303,13 @@ function Track:append_stop(value)
 	return self
 end
 
-function Track:append(value, length)
+function Track:append(value, length, ease)
 	local last = self:get_last()
 	local first = self:get_first()
 	if last and last.can_replace ~= false then
 		last.b = value
 	end
-	self:append_raw(value, first and first.a or value, length)
+	self:append_raw(value, first and first.a or value, length, ease)
 	return self
 end
 

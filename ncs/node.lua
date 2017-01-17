@@ -588,9 +588,15 @@ function Node:from_json(json, override)
 		json = jge.fix_path(json)
 		print("LOADING NODE FROM JSON: " .. tostring(json))
 		local contents = love.filesystem.read(json)
+		local pos, err
 		json,pos,err = jge.json.decode(contents)
 		if err then error(err) end
 	end
+	-- inheritance
+	if json.inherit then
+		self:from_json(json.inherit)
+	end
+	-- override variables
 	local override_t = {}
 	if override then
 		for ok, ov in pairs(override) do
@@ -599,6 +605,8 @@ function Node:from_json(json, override)
 			if a and b then
 				override_t[a] = override_t[a] or {}
 				override_t[a][b] = ov
+			else
+				print(("Warning: %s is an invalid override!"))
 			end
 		end
 	end
@@ -622,6 +630,12 @@ function Node:from_json(json, override)
 	if json.components then
 		local t = {}
 		for k,v in pairs(json.components) do
+			if type(v) == "string" then
+				local contents = love.filesystem.read(v)
+				local json,pos,err = jge.json.decode(contents)
+				if err then error(err) end
+				v = json
+			end
 			local cname = v.component or k
 			local override_component = override_t[cname]
 			if override_component then
@@ -660,6 +674,7 @@ function Node:from_json(json, override)
 			if c.on_add then c:on_add() end
 		end
 	end
+	return self
 	-- self:_transformed();
 end
 

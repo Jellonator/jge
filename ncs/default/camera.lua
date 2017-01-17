@@ -8,11 +8,8 @@ local Camera = {
 	rot = 0,
 	zoom = 1
 }
-function Camera:set_bounds(x1, y1, x2, y2)
-	self.bounds[1] = math.min(x1, x2);
-	self.bounds[2] = math.min(y1, y2);
-	self.bounds[3] = math.max(x1, x2);
-	self.bounds[4] = math.max(y1, y2);
+function Camera:set_bounds(...)
+	self.camera:setBounds(...)
 end
 function Camera:set_position(x, y)
 	self.x = x
@@ -37,6 +34,20 @@ function Camera:on_init(width, height)
 	self.width = width or self.width
 	self.height = height or self.height
 	self.camera = jge.hcam(0, 0)
+end
+function Camera:from_json(json)
+	self.width = json.width or self.width
+	self.height = json.height or self.height
+	self.camera = jge.hcam(0, 0)
+	self:set_position(json.x or 0, json.y or 0);
+	self:set_rotation(json.rotation or json.angle or json.r or json.rot or 0)
+	self:set_zoom(json.zoom or 1)
+	if json.bounds then
+		self.camera:setBounds(
+			json.bounds.x1, json.bounds.y1, 
+			json.bounds.x2, json.bounds.y2,
+			json.bounds.correct, json.bounds.range)
+	end
 end
 function Camera:_push()
 	local window_width, window_height = love.graphics.getDimensions()
